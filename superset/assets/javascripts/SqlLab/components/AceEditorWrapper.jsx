@@ -111,7 +111,7 @@ class AceEditorWrapper extends React.PureComponent {
     return (
       <AceEditor
         mode="sql"
-        theme="github"
+        theme="xcode"
         onLoad={this.onEditorLoad.bind(this)}
         onBlur={this.onBlur.bind(this)}
         minLines={8}
