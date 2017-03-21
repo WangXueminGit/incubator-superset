@@ -408,8 +408,6 @@ class SliceModelView(SupersetModelView, DeleteMixin):  # noqa
         sources = ConnectorRegistry.sources
         for source in sources:
             ds = db.session.query(ConnectorRegistry.sources[source]).first()
-            print source
-            print ds
             if ds is not None:
                 url = "/{}/list/".format(ds.baselink)
                 msg = _("Click on a {} link to create a Slice".format(source))
