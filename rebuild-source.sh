@@ -1,1 +1,3 @@
-pip uninstall superset || (cd /home/songyan.ho/shopee-superset/superset/assets && npm install && npm run build && cd ../../ && python setup.py install)
+pip uninstall -y superset
+cd /home/songyan.ho/shopee-superset/superset/assets && npm install && npm run build
+cd /home/songyan.ho/shopee-superset && python setup.py install)

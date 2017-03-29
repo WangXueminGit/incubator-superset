@@ -35,8 +35,14 @@ VIZ_ROW_LIMIT = 10000
 SUPERSET_WORKERS = 2
 SUPERSET_CELERY_WORKERS = 32
 
-SUPERSET_WEBSERVER_ADDRESS = 'instage.superset.shopeemobile.com'
-SUPERSET_WEBSERVER_PORT = 8088
+DEBUG_MODE = os.environ.get("DEBUG_MODE", False)
+if DEBUG_MODE:
+    SUPERSET_WEBSERVER_ADDRESS = 'instage.superset.shopeemobile.com'
+    SUPERSET_WEBSERVER_PORT = 8088
+else:
+    SUPERSET_WEBSERVER_ADDRESS = 'localhost'
+    SUPERSET_WEBSERVER_PORT = 80
+
 SUPERSET_WEBSERVER_TIMEOUT = 60
 EMAIL_NOTIFICATIONS = False
 CUSTOM_SECURITY_MANAGER = None
@@ -99,24 +105,24 @@ DRUID_ANALYSIS_TYPES = ['cardinality']
 # AUTH_DB : Is for database (username/password()
 # AUTH_LDAP : Is for LDAP
 # AUTH_REMOTE_USER : Is for using REMOTE_USER from web server
-# AUTH_TYPE = AUTH_DB
-
-AUTH_TYPE = AUTH_OAUTH
-
-OAUTH_PROVIDERS = [
-    {'name':'google', 'icon':'fa-google', 'token_key':'access_token',
-        'remote_app': {
-            'consumer_key':'748238606804-nsavpc4kv621hscek7fbaluv56kltvir.apps.googleusercontent.com',
-            'consumer_secret':'uFvQA3gwxwnWpnjH7loU0Wc_',
-            'base_url':'https://www.googleapis.com/plus/v1/',
-            'request_token_params':{
-              'scope': 'https://www.googleapis.com/auth/userinfo.email'
-            },
-            'request_token_url':None,
-            'access_token_url':'https://accounts.google.com/o/oauth2/token',
-            'authorize_url':'https://accounts.google.com/o/oauth2/auth'}
-    }
-]
+if not DEBUG_MODE:
+    AUTH_TYPE = AUTH_DB
+else:
+    AUTH_TYPE = AUTH_OAUTH
+    OAUTH_PROVIDERS = [
+        {'name':'google', 'icon':'fa-google', 'token_key':'access_token',
+            'remote_app': {
+                'consumer_key':'748238606804-nsavpc4kv621hscek7fbaluv56kltvir.apps.googleusercontent.com',
+                'consumer_secret':'uFvQA3gwxwnWpnjH7loU0Wc_',
+                'base_url':'https://www.googleapis.com/plus/v1/',
+                'request_token_params':{
+                  'scope': 'https://www.googleapis.com/auth/userinfo.email'
+                },
+                'request_token_url':None,
+                'access_token_url':'https://accounts.google.com/o/oauth2/token',
+                'authorize_url':'https://accounts.google.com/o/oauth2/auth'}
+        }
+    ]
 
 # Uncomment to setup Full admin role name
 # AUTH_ROLE_ADMIN = 'Admin'
