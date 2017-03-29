@@ -3,6 +3,7 @@ import { fixDataTableBodyHeight } from '../javascripts/modules/utils';
 import { timeFormatFactory, formatDate } from '../javascripts/modules/dates';
 
 require('./table.css');
+require('./table.scss');
 const $ = require('jquery');
 
 require('datatables-bootstrap3-plugin/media/css/datatables-bootstrap3.css');
@@ -19,8 +20,9 @@ function tableVis(slice, payload) {
   const fd = slice.formData;
 
   // Removing metrics (aggregates) that are strings
-  let metrics = fd.metrics || [];
-  metrics = metrics.filter(m => !isNaN(data.records[0][m]));
+  const tempMetrics = fd.metrics.map(m => m.toLowerCase()) || [];
+  const metrics = tempMetrics.filter(m => !isNaN(data.records[0][m]));
+  const percentageMetrics = tempMetrics.filter(m => /%/.test(m));
 
   function col(c) {
     const arr = [];
@@ -67,35 +69,40 @@ function tableVis(slice, payload) {
       const val = row[c];
       let html;
       const isMetric = metrics.indexOf(c) >= 0;
+      const isPercentage = percentageMetrics.indexOf(c) >= 0;
+
       if (c === 'timestamp') {
         html = timestampFormatter(val);
       }
       if (typeof(val) === 'string') {
         html = `<span class="like-pre">${val}</span>`;
       }
-      if (isMetric) {
+      if (isPercentage) {
+        html = `${val}%`;
+      }
+      else if (isMetric) {
         html = slice.d3format(c, val);
       }
       return {
         col: c,
         val,
-        html,
+        html: html,
         isMetric,
+        isPercentage
       };
     }))
     .enter()
     .append('td')
-    .style('background-image', function (d) {
+    .style('font-weight', 900)
+    .attr('class', function(d) {
       if (d.isMetric) {
-        const perc = Math.round((d.val / maxes[d.col]) * 100);
-        return (
-          `linear-gradient(to right, lightgrey, lightgrey ${perc}%, ` +
-          `rgba(0,0,0,0) ${perc}%`
-        );
+          let perc = Math.round((d.val / maxes[d.col]) * 100);
+          return `background-scale-${perc}`
       }
       return null;
     })
     .attr('title', (d) => {
+        console.log(d, Math.round((d.val / maxes[d.col]) * 100));
       if (!isNaN(d.val)) {
         return fC(d.val);
       }
@@ -137,13 +144,17 @@ function tableVis(slice, payload) {
     scrollCollapse: true,
     scrollX: true,
   });
-  fixDataTableBodyHeight(
-      container.find('.dataTables_wrapper'), height);
+  fixDataTableBodyHeight(container.find('.dataTables_wrapper'), height);
   // Sorting table by main column
   if (metrics.length > 0) {
     const mainMetric = metrics[0];
     datatable.column(data.columns.indexOf(mainMetric)).order('desc').draw();
   }
+  datatable.column(0).order('desc').draw();
+
+  // else {
+  //   datatable.column(0).order('desc').draw();
+  // }
   container.parents('.widget').find('.tooltip').remove();
 }
 

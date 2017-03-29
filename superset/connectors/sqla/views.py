@@ -89,6 +89,8 @@ class SqlMetricInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
         'metric_name', 'description', 'verbose_name', 'metric_type',
         'expression', 'table', 'd3format', 'is_restricted']
     description_columns = {
+        'metric_name': utils.markdown("Alias of column. For example: `SELECT COUNT(*) AS alias`", True),
+        'verbose_name': utils.markdown("ID for this column which **Explore View**", True),
         'expression': utils.markdown(
             "a valid SQL expression as supported by the underlying backend. "
             "Example: `count(DISTINCT userid)`", True),

@@ -14,7 +14,7 @@ import json
 import os
 
 from dateutil import tz
-from flask_appbuilder.security.manager import AUTH_DB
+from flask_appbuilder.security.manager import AUTH_DB, AUTH_OAUTH
 from werkzeug.contrib.cache import FileSystemCache
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -35,8 +35,8 @@ VIZ_ROW_LIMIT = 10000
 SUPERSET_WORKERS = 2
 SUPERSET_CELERY_WORKERS = 32
 
-SUPERSET_WEBSERVER_ADDRESS = 'localhost'
-SUPERSET_WEBSERVER_PORT = 80
+SUPERSET_WEBSERVER_ADDRESS = 'instage.superset.shopeemobile.com'
+SUPERSET_WEBSERVER_PORT = 8088
 SUPERSET_WEBSERVER_TIMEOUT = 60
 EMAIL_NOTIFICATIONS = False
 CUSTOM_SECURITY_MANAGER = None
@@ -44,6 +44,10 @@ CUSTOM_SECURITY_MANAGER = None
 
 # Your App secret key
 SECRET_KEY = 'HwesXr36GvNAdGdxaTL7CN3QDFsaMsfATzzTKYtDgay4DhAP'  # noqa
+
+# Redshift account
+# Username: superset
+# Password: t8dSVXELrpbCwYqDP77WgAXk
 
 # The SQLAlchemy connection string.
 # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DATA_DIR, 'superset.db')
@@ -59,7 +63,7 @@ CSRF_ENABLED = True
 
 # Whether to run the web server in debug mode or not
 DEBUG = False
-FLASK_USE_RELOAD = True
+FLASK_USE_RELOAD = False
 
 # Whether to show the stacktrace on 500 error
 SHOW_STACKTRACE = True
@@ -95,7 +99,24 @@ DRUID_ANALYSIS_TYPES = ['cardinality']
 # AUTH_DB : Is for database (username/password()
 # AUTH_LDAP : Is for LDAP
 # AUTH_REMOTE_USER : Is for using REMOTE_USER from web server
-AUTH_TYPE = AUTH_DB
+# AUTH_TYPE = AUTH_DB
+
+AUTH_TYPE = AUTH_OAUTH
+
+OAUTH_PROVIDERS = [
+    {'name':'google', 'icon':'fa-google', 'token_key':'access_token',
+        'remote_app': {
+            'consumer_key':'748238606804-nsavpc4kv621hscek7fbaluv56kltvir.apps.googleusercontent.com',
+            'consumer_secret':'uFvQA3gwxwnWpnjH7loU0Wc_',
+            'base_url':'https://www.googleapis.com/plus/v1/',
+            'request_token_params':{
+              'scope': 'https://www.googleapis.com/auth/userinfo.email'
+            },
+            'request_token_url':None,
+            'access_token_url':'https://accounts.google.com/o/oauth2/token',
+            'authorize_url':'https://accounts.google.com/o/oauth2/auth'}
+    }
+]
 
 # Uncomment to setup Full admin role name
 # AUTH_ROLE_ADMIN = 'Admin'
@@ -118,6 +139,11 @@ AUTH_TYPE = AUTH_DB
 #    { 'name': 'AOL', 'url': 'http://openid.aol.com/<username>' },
 #    { 'name': 'Flickr', 'url': 'http://www.flickr.com/<username>' },
 #    { 'name': 'MyOpenID', 'url': 'https://www.myopenid.com' }]
+
+RECAPTCHA_USE_SSL = False
+RECAPTCHA_PUBLIC_KEY = '6LepnBoUAAAAADMuE3gETWpWUKz1uK01UgPWUunA'
+RECAPTCHA_PRIVATE_KEY = '6LepnBoUAAAAABeQPgbEHKNRDqFSgRWrTGgJo0up'
+RECAPTCHA_OPTIONS = {'theme': 'white'}
 
 # ---------------------------------------------------
 # Roles config
@@ -186,6 +212,10 @@ DEFAULT_MODULE_DS_MAP = {
 }
 ADDITIONAL_MODULE_DS_MAP = {}
 ADDITIONAL_MIDDLEWARE = []
+
+# For automator access to screenshot
+SHOPEE_SUPERSET_AUTH_USERNAME = 'superset_automator'
+SHOPEE_SUPERSET_AUTH_PASSWORD = 'DmkJKha9ZHrzrHERx77uwtwy-bDFTpy8jUUbXuZjT4kGAF9tN-wD2mpd43wkvpLDMygnNHjj8R'
 
 """
 1) http://docs.python-guide.org/en/latest/writing/logging/

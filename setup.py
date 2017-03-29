@@ -51,6 +51,8 @@ setup(
         'flask-script==2.0.5',
         'flask-sqlalchemy==2.0',
         'flask-testing==0.6.1',
+        'Flask_OAuthlib==0.9.3',
+        'Flask-Mail==0.9.1',
         'humanize==0.5.1',
         'gunicorn==19.6.0',
         'markdown==2.6.8',

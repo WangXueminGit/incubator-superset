@@ -1,0 +1,8 @@
+@for $i from 0 through 100 {
+  .background-scale-#{$i} {
+    background-image: -webkit-linear-gradient(left, lightgrey, lightgrey percentage($i/100), rgba(0,0,0,0) percentage($i/100));
+    background-image: -moz-linear-gradient(to right, lightgrey, lightgrey percentage($i/100), rgba(0,0,0,0) percentage($i/100));
+    background-image: -o-linear-gradient(to right, lightgrey, lightgrey percentage($i/100), rgba(0,0,0,0) percentage($i/100));
+    background-image: linear-gradient(to right, lightgrey, lightgrey percentage($i/100), rgba(0,0,0,0) percentage($i/100));
+  }
+}

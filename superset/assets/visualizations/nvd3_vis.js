@@ -17,8 +17,8 @@ const timeStampFormats = TIME_STAMP_OPTIONS.map(opt => opt[0]);
 const minBarWidth = 15;
 const animationTime = 1000;
 
-const addTotalBarValues = function (chart, data, stacked) {
-  const svg = d3.select('svg');
+const addTotalBarValues = function (svg, chart, data, stacked) {
+  // const svg = d3.select('svg');
   const format = d3.format('.3s');
   const countSeriesDisplayed = data.length;
 
@@ -118,6 +118,11 @@ function nvd3Vis(slice, payload) {
   let row;
 
   const drawGraph = function () {
+    let svg = d3.select(slice.selector).select('svg');
+    if (svg.empty()) {
+      svg = d3.select(slice.selector).append('svg');
+    }
+
     switch (vizType) {
       case 'line':
         if (fd.show_brush) {
@@ -145,6 +150,8 @@ function nvd3Vis(slice, payload) {
 
       case 'bar':
         chart = nv.models.multiBarChart()
+        .reduceXTicks(false)
+        .rotateLabels(45)
         .showControls(fd.show_controls)
         .groupSpacing(0.1);
 
@@ -161,7 +168,7 @@ function nvd3Vis(slice, payload) {
 
         if (fd.show_bar_value) {
           setTimeout(function () {
-            addTotalBarValues(chart, payload.data, stacked);
+            addTotalBarValues(svg, chart, payload.data, stacked);
           }, animationTime);
         }
         break;
@@ -191,7 +198,7 @@ function nvd3Vis(slice, payload) {
         }
         if (fd.show_bar_value) {
           setTimeout(function () {
-            addTotalBarValues(chart, payload.data, stacked);
+            addTotalBarValues(svg, chart, payload.data, stacked);
           }, animationTime);
         }
         if (!reduceXTicks) {
@@ -366,10 +373,6 @@ function nvd3Vis(slice, payload) {
       chart.margin({ bottom: fd.bottom_margin });
     }
 
-    let svg = d3.select(slice.selector).select('svg');
-    if (svg.empty()) {
-      svg = d3.select(slice.selector).append('svg');
-    }
     if (vizType === 'dual_line') {
       const yAxisFormatter1 = d3.format(fd.y_axis_format);
       const yAxisFormatter2 = d3.format(fd.y_axis_2_format);
@@ -396,7 +399,7 @@ function nvd3Vis(slice, payload) {
     // - measure the width or height of the labels
     // ---- (x axis labels are rotated 45 degrees so we use height),
     // - adjust margins based on these measures and render again
-    if (isTimeSeries && vizType !== 'bar') {
+    if (isTimeSeries) { // && vizType !== 'bar'
       const maxXAxisLabelHeight = getMaxLabelSize(slice.container, 'nv-x', 'height');
       const marginPad = isExplore ? width * 0.01 : width * 0.03;
       const chartMargins = {

@@ -63,6 +63,11 @@ const config = {
         include: APP_DIR + '/node_modules/react-map-gl/src/overlays',
         loader: 'babel',
       },
+      /* for require('*.scss') */
+      {
+        test: /\.scss$/,
+        loader: 'style!css!sass'
+      },
       /* for require('*.css') */
       {
         test: /\.css$/,
