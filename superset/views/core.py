@@ -22,7 +22,7 @@ from flask import (
 from flask_appbuilder import expose
 from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
-from flask_appbuilder.security.decorators import has_access_api
+# from flask_appbuilder.security.decorators import has_access_api
 from flask_appbuilder.security.sqla import models as ab_models
 
 from flask_babel import gettext as __
@@ -36,7 +36,7 @@ from superset import (
     sm, sql_lab, results_backend, security,
 )
 from superset.legacy import cast_form_data
-from superset.utils import has_access
+from superset.utils import has_access, has_access_api
 from superset.connectors.connector_registry import ConnectorRegistry
 import superset.models.core as models
 from superset.sql_parse import SupersetQuery
@@ -1413,7 +1413,8 @@ class Superset(BaseSupersetView):
                 .get('connect_args', {}))
             engine = create_engine(uri, connect_args=connect_args)
             engine.connect()
-            return json.dumps(engine.table_names(), indent=4)
+            table_names = engine.table_names()
+            return json.dumps(table_names, indent=4)
         except Exception as e:
             return json_error_response((
                 "Connection failed!\n\n"

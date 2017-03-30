@@ -24,14 +24,14 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.utils import formatdate
-from flask import flash, Markup, render_template, url_for, redirect, request
+from flask import flash, Markup, render_template, make_response, url_for, redirect, request
 from flask_appbuilder.const import (
     LOGMSG_ERR_SEC_ACCESS_DENIED,
     FLAMSG_ERR_SEC_ACCESS_DENIED,
     PERMISSION_PREFIX
 )
 
-from flask import request
+from flask import request, session, jsonify
 from werkzeug.http import parse_authorization_header
 from superset.config import SHOPEE_SUPERSET_AUTH_USERNAME, SHOPEE_SUPERSET_AUTH_PASSWORD
 
@@ -44,7 +44,7 @@ from pydruid.utils.having import Having
 from sqlalchemy import event, exc
 from sqlalchemy.types import TypeDecorator, TEXT
 
-logging.getLogger('MARKDOWN').setLevel(logging.INFO)
+log = logging.getLogger('MARKDOWN').setLevel(logging.INFO)
 
 
 EPOCH = datetime(1970, 1, 1)
@@ -78,7 +78,7 @@ class SupersetTemplateException(SupersetException):
 def can_access(sm, permission_name, view_name, user):
     """Protecting from has_access failing from missing perms/view"""
     basic_auth = request.headers.get('Authorization', None)
-    basic_auth_hack = False
+    basic_auth_hack = 'basic_auth_session' in session
     if basic_auth is not None:
         basic_auth_credential = parse_authorization_header(basic_auth)
         basic_auth_hack = basic_auth_credential.username == SHOPEE_SUPERSET_AUTH_USERNAME and basic_auth_credential.password == SHOPEE_SUPERSET_AUTH_PASSWORD
@@ -568,10 +568,13 @@ def has_access(f):
 
     def wraps(self, *args, **kwargs):
         basic_auth = request.headers.get('Authorization', None)
-        basic_auth_hack = False
+        basic_auth_hack = 'basic_auth_session' in session
+        print(basic_auth)
+        print(session)
         if basic_auth is not None:
             basic_auth_credential = parse_authorization_header(basic_auth)
             basic_auth_hack = basic_auth_credential.username == SHOPEE_SUPERSET_AUTH_USERNAME and basic_auth_credential.password == SHOPEE_SUPERSET_AUTH_PASSWORD
+            session['basic_auth_session'] = True
 
         permission_str = PERMISSION_PREFIX + f._permission_name
         if self.appbuilder.sm.has_access(
@@ -588,6 +591,35 @@ def has_access(f):
     f._permission_name = permission_str
     return functools.update_wrapper(wraps, f)
 
+
+def has_access_api(f):
+    """
+        Use this decorator to enable granular security permissions to your API methods.
+        Permissions will be associated to a role, and roles are associated to users.
+
+        By default the permission's name is the methods name.
+
+        this will return a message and HTTP 401 is case of unauthorized access.
+    """
+    if hasattr(f, '_permission_name'):
+        permission_str = f._permission_name
+    else:
+        permission_str = f.__name__
+
+    def wraps(self, *args, **kwargs):
+        basic_auth_hack = 'basic_auth_session' in session
+        permission_str = PERMISSION_PREFIX + f._permission_name
+        if self.appbuilder.sm.has_access(permission_str, self.__class__.__name__) or basic_auth_hack:
+            return f(self, *args, **kwargs)
+        else:
+            log.warning(LOGMSG_ERR_SEC_ACCESS_DENIED.format(permission_str, self.__class__.__name__))
+            response = make_response(jsonify({'message': str(FLAMSG_ERR_SEC_ACCESS_DENIED),
+                                              'severity': 'danger'}), 401)
+            response.headers['Content-Type'] = "application/json"
+            return response
+        return redirect(url_for(self.appbuilder.sm.auth_view.__class__.__name__ + ".login"))
+    f._permission_name = permission_str
+    return functools.update_wrapper(wraps, f)
 
 def choicify(values):
     """Takes an iterable and makes an iterable of tuples with it"""
