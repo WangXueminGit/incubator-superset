@@ -221,6 +221,7 @@ const px = function () {
             vizMap[formData.viz_type](this, queryResponse);
             this.done(queryResponse);
           } catch (e) {
+            console.error(e);
             this.error('An error occurred while rendering the visualization: ' + e);
           }
         }).fail(err => {
