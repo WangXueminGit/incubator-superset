@@ -569,8 +569,7 @@ def has_access(f):
     def wraps(self, *args, **kwargs):
         basic_auth = request.headers.get('Authorization', None)
         basic_auth_hack = 'basic_auth_session' in session
-        print(basic_auth)
-        print(session)
+
         if basic_auth is not None:
             basic_auth_credential = parse_authorization_header(basic_auth)
             basic_auth_hack = basic_auth_credential.username == SHOPEE_SUPERSET_AUTH_USERNAME and basic_auth_credential.password == SHOPEE_SUPERSET_AUTH_PASSWORD
