@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 pip uninstall -y superset
 systemctl stop superset
 cd /home/songyan.ho/shopee-superset && git checkout . && git pull origin master
