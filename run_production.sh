@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-superset runserver
-superset worker
+superset runserver &
+su - songyan.ho -c "superset worker" &
