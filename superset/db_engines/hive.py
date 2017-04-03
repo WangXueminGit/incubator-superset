@@ -1,5 +1,5 @@
 from pyhive import hive
-from pyhive.TCLIService import ttypes
+from TCLIService import ttypes
 
 
 # TODO: contribute back to pyhive.
