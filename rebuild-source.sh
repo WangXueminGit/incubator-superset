@@ -11,4 +11,3 @@ cd /home/songyan.ho/shopee-superset && chmod +x ./rebuild-source.sh
 #systemctl start superset
 #systemctl enable superset-worker
 #systemctl start superset-worker
-/home/songyan.ho/shopee-superset/run_production.sh
