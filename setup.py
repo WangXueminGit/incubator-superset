@@ -67,7 +67,7 @@ setup(
         'sqlalchemy==1.1.5',
         'sqlalchemy-utils==0.32.12',
         'sqlparse==0.1.19',
-        'thrift>=0.9.3',
+        'thrift<=0.9.3',
         'thrift-sasl>=0.2.1',
         'werkzeug==0.11.15',
     ],

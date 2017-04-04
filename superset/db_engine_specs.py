@@ -524,7 +524,7 @@ class HiveEngineSpec(PrestoEngineSpec):
         hive.TCLIService = patched_TCLIService
         hive.constants = patched_constants
         hive.ttypes = patched_ttypes
-        hive.Cursor.fetch_logs = patched_hive.fetch_logs
+        # hive.Cursor.fetch_logs = patched_hive.fetch_logs
 
     @classmethod
     @cache_util.memoized_func(
@@ -588,7 +588,7 @@ class HiveEngineSpec(PrestoEngineSpec):
         )
         polled = cursor.poll()
         while polled.operationState in unfinished_states:
-            query = session.query(type(query)).filter_by(id=query.id)
+            query = session.query(type(query)).filter_by(id=query.id).one()
             if query.status == QueryStatus.STOPPED:
                 cursor.cancel()
                 break
