@@ -177,6 +177,7 @@ def worker(workers):
     application = celery.current_app._get_current_object()
     c_worker = celery_worker.worker(app=application)
     options = {
+        'app': 'superset:celery',
         'broker': config.get('CELERY_CONFIG').BROKER_URL,
         'loglevel': 'INFO',
         'traceback': True,

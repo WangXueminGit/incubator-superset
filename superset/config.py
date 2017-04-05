@@ -270,6 +270,7 @@ class CeleryConfig(object):
   CELERY_IMPORTS = ('superset.sql_lab', )
   CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
   CELERY_ANNOTATIONS = {'tasks.add': {'rate_limit': '10/s'}}
+  CELERY_TASK_PROTOCOL = 1
 CELERY_CONFIG = CeleryConfig
 
 # CELERY_CONFIG = None
