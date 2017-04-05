@@ -15,7 +15,7 @@ import os
 
 from dateutil import tz
 from flask_appbuilder.security.manager import AUTH_DB, AUTH_OAUTH
-from werkzeug.contrib.cache import FileSystemCache
+from werkzeug.contrib.cache import RedisCache #FileSystemCache
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATA_DIR = os.path.join(os.path.expanduser('~'), '.superset')
@@ -296,7 +296,8 @@ SQLLAB_DEFAULT_DBID = None
 # if enabled, it can be used to store the results of long-running queries
 # in SQL Lab by using the "Run Async" button/feature
 # RESULTS_BACKEND = None
-RESULTS_BACKEND = FileSystemCache('/tmp/sqllab_cache', default_timeout=60*24*7)
+# RESULTS_BACKEND = FileSystemCache('/tmp/sqllab_cache', default_timeout=60*24*7)
+RESULTS_BACKEND = RedisCache(host='localhost', port='6379', db=4, key_prefix='sqllab_cache_', default_timeout=60*24*7)
 
 # A dictionary of items that gets merged into the Jinja context for
 # SQL Lab. The existing context gets updated with this dictionary,
