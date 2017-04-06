@@ -39,7 +39,7 @@ DEBUG_MODE = os.environ.get("DEBUG_MODE", False)
 if DEBUG_MODE:
     SUPERSET_WEBSERVER_ADDRESS = 'instage.superset.shopeemobile.com'
 else:
-    SUPERSET_WEBSERVER_ADDRESS = 'lumos.shopeemobile.com'
+    SUPERSET_WEBSERVER_ADDRESS = 'localhost'
 SUPERSET_WEBSERVER_PORT = 8088
 
 SUPERSET_WEBSERVER_TIMEOUT = 60
