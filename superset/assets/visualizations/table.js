@@ -102,7 +102,6 @@ function tableVis(slice, payload) {
       return null;
     })
     .attr('title', (d) => {
-        console.log(d, Math.round((d.val / maxes[d.col]) * 100));
       if (!isNaN(d.val)) {
         return fC(d.val);
       }

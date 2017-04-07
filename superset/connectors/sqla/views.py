@@ -1,7 +1,8 @@
 import logging
+import re
 
-from flask import Markup, flash
-from flask_appbuilder import CompactCRUDMixin
+from flask import Markup, flash, request, redirect
+from flask_appbuilder import CompactCRUDMixin, expose
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 import sqlalchemy as sa
 
@@ -9,6 +10,7 @@ from flask_babel import lazy_gettext as _
 from flask_babel import gettext as __
 
 from superset import appbuilder, db, utils, security, sm
+from superset.utils import has_access
 from superset.views.base import (
     SupersetModelView, ListWidgetWithCheckboxes, DeleteMixin, DatasourceFilter,
     get_datasource_exist_error_mgs,
@@ -209,6 +211,43 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
 
     def post_update(self, table):
         self.post_add(table)
+
+    @expose('/edit/<pk>/update_columns/', methods=['POST'])
+    @has_access
+    def update_columns(self, pk):
+        item = self.datamodel.get(pk, self._base_filters)
+        if not item:
+            return redirect('/tablemodelview/edit/' + str(pk))
+        # convert pk to correct type, if pk is non string type.
+        pk = self.datamodel.get_pk_value(item)
+        columns = dict()
+        regex_fields = re.compile('__')
+        regex_columns = re.compile('##')
+        availableFields = ['filterable', 'groupby', 'count_distinct', 'is_dttm', 'min', 'max']
+        for field, value in request.form.iteritems():
+            if regex_fields.search(field) is not None:
+                field_components = field.split('__')
+                column_id = str(field_components[0])
+                column_type = str(field_components[1])
+                if column_id not in columns:
+                    columns[column_id] = []
+                columns[column_id].append(column_type)
+
+            elif regex_columns.search(field) is not None:
+                field_components = field.split('##')
+                if str(field_components[0]) not in columns:
+                    columns[str(field_components[0])] = []
+
+        for column, value in columns.iteritems():
+            column_obj = db.session.query(models.TableColumn).get(int(column))
+            if column_obj.table_id != pk:
+                continue
+            for column_type in availableFields:
+                if hasattr(column_obj, column_type):
+                    setattr(column_obj, column_type, True if column_type in value else False)
+            db.session.commit()
+
+        return redirect('/tablemodelview/edit/' + str(pk) + '?success=true&type=save_columns_type')
 
 appbuilder.add_view(
     TableModelView,

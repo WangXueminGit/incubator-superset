@@ -4,6 +4,7 @@
 
     {% block begin_content scoped %}
         <div class="table-responsive">
+        <form method="POST" action="{{ request.path }}/update_columns/" enctype="multipart/form-data">
         <table class="table table-bordered table-hover">
     {% endblock %}
 
@@ -52,6 +53,7 @@
                 {% endif %}
                 {% if can_show or can_edit or can_delete %}
                     <td><center>
+                    <input name="{{pk}}##columnid" value="{{pk}}" type="hidden">
                     {{ lib.btn_crud(can_show, can_edit, can_delete, pk, modelview_name, filters) }}
                     </center></td>
                 {% endif %}
@@ -64,7 +66,8 @@
                           {{'checked' if item[value] }}
                           name="{{ '{}__{}'.format(pk, value) }}"
                           id="{{ '{}__{}'.format(pk, value) }}"
-                          data-checkbox-api-prefix="/superset/checkbox/{{ modelview_name }}/{{ pk }}/{{ value }}/">
+                          data-checkbox-api-prefix="/superset/checkbox/{{ modelview_name }}/{{ pk }}/{{ value }}/"
+                          value="true">
                     {% else %}
                       {{ item[value] }}
                     {% endif %}
@@ -76,6 +79,8 @@
 
     {% block end_content scoped %}
         </table>
+        <button type="submit" value="Submit" class="btn btn-primary">Submit</button>
+        </form>
         </div>
     {% endblock %}
 
