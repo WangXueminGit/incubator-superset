@@ -164,12 +164,16 @@ export function dashboardContainer(dashboard) {
     },
     finishRendering(slice) {
       console.log("Checking", this.slicesDone, slice);
-      if (!(slice.slice_id in this.slicesDone)) {
-        this.slicesDone.push(slice.slice_id);
+      if (!(slice.data.slice_id in this.slicesDone)) {
+        this.slicesDone.push(slice.data.slice_id);
       }
       if (this.slicesDone.length >= this.sliceObjects.length) {
-        window.callPhantom('takeShot');
-        alert("Yay");
+        try {
+          window.callPhantom('takeShot');
+        }
+        catch(err) {
+          console.info('It is not running in PhantomJS');
+        }
       }
     },
     effectiveExtraFilters(sliceId) {

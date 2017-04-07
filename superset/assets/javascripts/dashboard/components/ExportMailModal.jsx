@@ -82,7 +82,7 @@ class ExportMailModal extends React.PureComponent {
               bsStyle="primary"
               onClick={() => { this.exportEmail(this.state.target); }}
             >
-              Save
+              Export
             </Button>
           </div>
         }
