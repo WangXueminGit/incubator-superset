@@ -7,7 +7,7 @@ import Button from '../../components/Button';
 import CssEditor from './CssEditor';
 import RefreshIntervalModal from './RefreshIntervalModal';
 import SaveModal from './SaveModal';
-import ExportMailModal from '/ExportMailModal';
+import ExportMailModal from './ExportMailModal';
 import CodeModal from './CodeModal';
 import SliceAdder from './SliceAdder';
 
