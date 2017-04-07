@@ -102,6 +102,7 @@ export function dashboardContainer(dashboard) {
   return Object.assign({}, dashboard, {
     type: 'dashboard',
     filters: {},
+    slicesDone: [],
     init() {
       this.sliceObjects = [];
       dashboard.slices.forEach((data) => {
@@ -158,6 +159,17 @@ export function dashboardContainer(dashboard) {
         .removeClass('danger')
         .attr('title', 'Click to force refresh')
         .tooltip('fixTitle');
+      }
+      this.finishRendering(slice);
+    },
+    finishRendering(slice) {
+      console.log("Checking", this.slicesDone, slice);
+      if (!(slice.slice_id in this.slicesDone)) {
+        this.slicesDone.push(slice.slice_id);
+      }
+      if (this.slicesDone.length >= this.sliceObjects.length) {
+        window.callPhantom('takeShot');
+        alert("Yay");
       }
     },
     effectiveExtraFilters(sliceId) {
