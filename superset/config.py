@@ -38,8 +38,14 @@ SUPERSET_CELERY_WORKERS = 32
 DEBUG_MODE = os.environ.get("DEBUG_MODE", False)
 if DEBUG_MODE:
     SUPERSET_WEBSERVER_ADDRESS = 'instage.superset.shopeemobile.com'
+    WEBSHOT_ROOT_ADDRESS = 'http://localhost:8011/webshot/'
+    WEBSHOT_AUTH_USERNAME = 'superset_export'
+    WEBSHOT_AUTH_PASSWORD = 'REyvsmZtyxdLxQH55bPSFg2xj678dnm4EazyL2SaLWPfBTyZ'
 else:
     SUPERSET_WEBSERVER_ADDRESS = 'localhost'
+    WEBSHOT_ROOT_ADDRESS = 'http://localhost/webshot/'
+    WEBSHOT_AUTH_USERNAME = 'superset_export'
+    WEBSHOT_AUTH_PASSWORD = 'REyvsmZtyxdLxQH55bPSFg2xj678dnm4EazyL2SaLWPfBTyZ'
 SUPERSET_WEBSERVER_PORT = 8088
 
 SUPERSET_WEBSERVER_TIMEOUT = 60

@@ -105,8 +105,9 @@ class Controls extends React.PureComponent {
         <ExportMailModal
           dashboard={dashboard}
           css={this.state.css}
+          isButton
           triggerNode={
-            <i className="fa fa-line-chart" />
+            <i className="fa fa-share-alt" />
           }
         />
       </ButtonGroup>

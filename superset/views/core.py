@@ -9,6 +9,7 @@ import logging
 import pandas as pd
 import pickle
 import re
+import requests
 import sys
 import time
 import traceback
@@ -2278,6 +2279,16 @@ class Superset(BaseSupersetView):
             'superset/sqllab.html',
             bootstrap_data=json.dumps(d, default=utils.json_iso_dttm_ser)
         )
+
+    @has_access_api
+    @expose("/export/dashboard/<dashboard_id>/<export_type>", methods=['POST'])
+    def export_dashbaord(self, dashboard_id, export_type):
+        webshot_path = app.config.get('WEBSHOT_ROOT_ADDRESS') + 'superset/dashboard/' + \
+                       str(dashboard_id) + '/' + str(export_type)
+        webshot_auth = (app.config.get('WEBSHOT_AUTH_USERNAME'), app.config.get('WEBSHOT_AUTH_PASSWORD'))
+        r = requests.post(webshot_path, data=request.form, auth=webshot_auth)
+        return json_success(r.content)
+
 appbuilder.add_view_no_menu(Superset)
 
 if config['DRUID_IS_ACTIVE']:

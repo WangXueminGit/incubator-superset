@@ -10,6 +10,9 @@ const propTypes = {
   css: React.PropTypes.string,
   dashboard: React.PropTypes.object.isRequired,
   triggerNode: React.PropTypes.node.isRequired,
+  slice: React.PropTypes.object,
+  isButton: React.PropTypes.bool,
+  isLink: React.PropTypes.bool,
 };
 
 class ExportMailModal extends React.PureComponent {
@@ -19,6 +22,7 @@ class ExportMailModal extends React.PureComponent {
       dashboard: props.dashboard,
       css: props.css,
       target: '',
+      working: false
     };
     this.modal = null;
     this.handleTargetChange = this.handleTargetChange.bind(this);
@@ -29,25 +33,38 @@ class ExportMailModal extends React.PureComponent {
       target: event.target.value,
     });
   }
-  exportEmail(target) {
+  exportEmail(target, exportType) {
     const dashboard = this.props.dashboard;
     const exportMailModal = this.modal;
+    const slice = this.props.slice;
+    var data = {
+      target: target,
+      "dashbaord_name": dashboard.dashboard_title,
+      selector: slice ? '#slice_' + slice.slice_id : false,
+    };
+    this.setState({working: true});
     $.ajax({
       type: 'POST',
-      url: '/webshot/superset/dashboard/' + dashboard.id,
-      data: {
-        target: target,
-        dashbaord_name: dashboard.dashboard_title
-      },
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader ("Authorization", "Basic " + btoa('superset_export:REyvsmZtyxdLxQH55bPSFg2xj678dnm4EazyL2SaLWPfBTyZ'));
-      },
+      url: '/superset/export/dashboard/' + dashboard.id + '/' + exportType,
+      data: data,
       success(resp) {
         exportMailModal.close();
-        showModal({
-          title: 'Success',
-          body: 'This dashboard was exported to '+target+' successfully.',
-        });
+        if(exportType === 'download') {
+          showModal({
+            title: 'Success',
+            body: 'The download of snapshot should be started immediately.',
+          });
+          var filename = slice ? "Lumos-Dashboard-"+dashboard.id+"-slice-"+slice.slice_id+".jpeg" : "Lumos-Dashboard-"+dashboard.id+".jpg", a = document.createElement('a');
+          a.setAttribute("download", filename);
+          a.setAttribute("href", 'data:image/jpeg;base64,' + resp.image);
+          a.click();
+        }
+        else if(exportType === 'email') {
+          showModal({
+            title: 'Success',
+            body: 'The snapshot of dashboard was sent to '+target+' successfully.',
+          });
+        }
       },
       error(error) {
         exportMailModal.close();
@@ -60,17 +77,32 @@ class ExportMailModal extends React.PureComponent {
     });
   }
   render() {
+    let sliceFormControl = null, working = this.state.working;
+    if(this.props.slice) {
+      sliceFormControl = <FormControl
+        type="text"
+        disabled
+        defaultValue={this.props.slice.slice_name}
+      />
+    }
+    let loadingElement = null;
+    if(working) {
+      loadingElement = (<i className="fa fa-spinner fa-spin fa-fw"></i>)
+    }
     return (
       <ModalTrigger
         ref={(modal) => { this.modal = modal; }}
         triggerNode={this.props.triggerNode}
-        isButton
-        modalTitle="Export Snapshot to email"
+        isButton={this.props.isButton}
+        tooltip="Export"
+        isLink={this.props.isLink}
+        modalTitle="Export Snapshot as image"
         modalBody={
           <FormGroup>
+            { sliceFormControl }
             <FormControl
               type="text"
-              placeholder="Recepient of snapshot"
+              placeholder="Recepient emails, separated by comma(,)"
               onFocus={this.handleTargetChange}
               onChange={this.handleTargetChange}
             />
@@ -78,11 +110,20 @@ class ExportMailModal extends React.PureComponent {
         }
         modalFooter={
           <div>
+            {loadingElement}
             <Button
               bsStyle="primary"
-              onClick={() => { this.exportEmail(this.state.target); }}
+              onClick={() => { this.exportEmail(this.state.target, 'email'); }}
+              disabled={working}
             >
-              Export
+              <i className="fa fa-envelope" aria-hidden="true"></i> Send to email
+            </Button>
+            <Button
+              bsStyle="primary"
+              onClick={() => { this.exportEmail(this.state.target, 'download'); }}
+              disabled={working}
+            >
+              <i className="fa fa-download" aria-hidden="true"></i> Download to local
             </Button>
           </div>
         }

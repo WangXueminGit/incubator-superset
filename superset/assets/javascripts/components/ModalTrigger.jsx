@@ -11,6 +11,7 @@ const propTypes = {
   beforeOpen: PropTypes.func,
   onExit: PropTypes.func,
   isButton: PropTypes.bool,
+  isLink: PropTypes.bool,
   bsSize: PropTypes.string,
   className: PropTypes.string,
   tooltip: PropTypes.string,
@@ -20,6 +21,7 @@ const defaultProps = {
   beforeOpen: () => {},
   onExit: () => {},
   isButton: false,
+  isLink: false,
   bsSize: null,
   className: '',
 };
@@ -77,6 +79,14 @@ export default class ModalTrigger extends React.Component {
           {this.props.triggerNode}
           {this.renderModal()}
         </Button>
+      );
+    }
+    if (this.props.isLink) {
+      return (
+        <a title={this.props.tooltip} data-toggle="tooltip" onClick={this.open}>
+          {this.props.triggerNode}
+          {this.renderModal()}
+        </a>
       );
     }
     return (

@@ -101,6 +101,7 @@ class GridLayout extends React.Component {
             className={`widget ${slice.form_data.viz_type}`}
           >
             <SliceCell
+              dashboard={this.props.dashboard}
               slice={slice}
               removeSlice={this.removeSlice.bind(this, slice.slice_id)}
               expandedSlices={this.props.dashboard.metadata.expanded_slices}

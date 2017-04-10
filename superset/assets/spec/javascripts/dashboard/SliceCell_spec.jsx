@@ -10,6 +10,7 @@ describe('SliceCell', () => {
   const mockedProps = {
     slice,
     removeSlice: () => {},
+    downloadSlice: () => {},
     expandedSlices: () => {},
   };
   it('is valid', () => {

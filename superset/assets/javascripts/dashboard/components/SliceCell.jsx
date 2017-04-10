@@ -1,12 +1,14 @@
 import React, { PropTypes } from 'react';
+import ExportMailModal from './ExportMailModal';
 
 const propTypes = {
+  dashboard: PropTypes.object.isRequired,
   slice: PropTypes.object.isRequired,
   removeSlice: PropTypes.func.isRequired,
   expandedSlices: PropTypes.object,
 };
 
-function SliceCell({ expandedSlices, removeSlice, slice }) {
+function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
   return (
     <div className="slice-cell" id={`${slice.token}-cell`}>
       <div className="chart-header">
@@ -51,6 +53,16 @@ function SliceCell({ expandedSlices, removeSlice, slice }) {
                   onClick={() => { removeSlice(slice.slice_id); }}
                 />
               </a>
+              <ExportMailModal
+                dashboard={dashboard}
+                slice={slice}
+                css={dashboard.css}
+                isButton={false}
+                isLink={true}
+                triggerNode={
+                  <i className="fa fa-share-alt" />
+                }
+              />
             </div>
           </div>
         </div>
