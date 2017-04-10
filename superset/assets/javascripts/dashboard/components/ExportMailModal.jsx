@@ -48,6 +48,7 @@ class ExportMailModal extends React.PureComponent {
       url: '/superset/export/dashboard/' + dashboard.id + '/' + exportType,
       data: data,
       success(resp) {
+        this.setState({working: false});
         exportMailModal.close();
         if(exportType === 'download') {
           showModal({
@@ -67,6 +68,7 @@ class ExportMailModal extends React.PureComponent {
         }
       },
       error(error) {
+        this.setState({working: false});
         exportMailModal.close();
         const errorMsg = getAjaxErrorMsg(error);
         showModal({
