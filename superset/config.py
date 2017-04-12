@@ -37,19 +37,18 @@ SUPERSET_CELERY_WORKERS = 32
 
 DEBUG_MODE = os.environ.get("DEBUG_MODE", False)
 if DEBUG_MODE:
-    SUPERSET_WEBSERVER_ADDRESS = 'instage.superset.shopeemobile.com'
+    SUPERSET_WEBSERVER_ADDRESS = 'instage.superset.shopeemobile.com:8088'
     WEBSHOT_ROOT_ADDRESS = 'http://localhost:8011/webshot/'
     WEBSHOT_AUTH_USERNAME = 'superset_export'
     WEBSHOT_AUTH_PASSWORD = 'REyvsmZtyxdLxQH55bPSFg2xj678dnm4EazyL2SaLWPfBTyZ'
 else:
-    SUPERSET_WEBSERVER_ADDRESS = 'localhost'
+    SUPERSET_WEBSERVER_ADDRESS = 'lumos.shopeemobile.com'
     WEBSHOT_ROOT_ADDRESS = 'http://localhost/webshot/'
     WEBSHOT_AUTH_USERNAME = 'superset_export'
     WEBSHOT_AUTH_PASSWORD = 'REyvsmZtyxdLxQH55bPSFg2xj678dnm4EazyL2SaLWPfBTyZ'
 SUPERSET_WEBSERVER_PORT = 8088
 
-SUPERSET_WEBSERVER_TIMEOUT = 60
-EMAIL_NOTIFICATIONS = False
+SUPERSET_WEBSERVER_TIMEOUT = 300
 CUSTOM_SECURITY_MANAGER = None
 # ---------------------------------------------------------
 
@@ -86,7 +85,7 @@ ENABLE_PROXY_FIX = False
 # GLOBALS FOR APP Builder
 # ------------------------------
 # Uncomment to setup Your App name
-APP_NAME = "Superset"
+APP_NAME = "Shopee Lumos"
 
 # Uncomment to setup an App icon
 APP_ICON = "/static/assets/images/superset-logo@2x.png"
@@ -130,10 +129,10 @@ OAUTH_PROVIDERS = [
 ]
 
 # Uncomment to setup Full admin role name
-# AUTH_ROLE_ADMIN = 'Admin'
+AUTH_ROLE_ADMIN = 'Admin'
 
 # Uncomment to setup Public role name, no authentication needed
-# AUTH_ROLE_PUBLIC = 'Public'
+AUTH_ROLE_PUBLIC = 'Public'
 
 # Will allow user self registration
 # AUTH_USER_REGISTRATION = True
@@ -326,6 +325,10 @@ SMTP_USER = 'superset'
 SMTP_PORT = 25
 SMTP_PASSWORD = 'superset'
 SMTP_MAIL_FROM = 'superset@superset.com'
+
+# for Flask-Mail
+MAIL_SERVER = 'localhost'
+MAIL_DEFAULT_SENDER = 'no-reply@lumos.shopeemobile.com'
 
 if not CACHE_DEFAULT_TIMEOUT:
     CACHE_DEFAULT_TIMEOUT = CACHE_CONFIG.get('CACHE_DEFAULT_TIMEOUT')
