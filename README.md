@@ -1,5 +1,102 @@
-Superset
-=========
+Shopee Lumos - Data Visualization Platform
+==========================================
+
+Environment Setup (First time)
+------------------------------
+### OS-level library dependencies
+1. Ubuntu
+
+		sudo apt-get install build-essential libssl-dev libffi-dev python-dev python-pip libsasl2-dev libldap2-dev
+
+1. Fedora/Centos (Current Kafka00 OS)
+
+		sudo yum upgrade python-setuptools
+		sudo yum install gcc libffi-devel python-devel python-pip python-wheel openssl-devel libsasl2-devel openldap-devel
+
+1. macOs
+
+		brew install pkg-config libffi openssl pythonenv LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" 		pip install cryptography
+
+1. Windows
+
+		# install pip first from
+		C:\> pip install cryptography
+
+		# You may also have to create C:\Temp
+		C:\> md C:\Temp
+
+### Python’s setup tools and pip
+Install and update pip and setup tools by running
+		
+		pip install --upgrade setuptools pip
+		
+### Install required Python module
+Check the **Changes made to Lumos(Airbnb Superset)** to install exlucded modules manually
+		
+### Manual build for local machine (Test environment)
+
+		# Used to install new modules based on package.json
+		# and compile assets with Webpack
+		cd $SUPERSET_HOME/superset/assets
+		npm install
+		npm run build
+		
+		# Install superset as package and can be accessed using CLI
+		cd $SUPERSET_HOME
+		python setup.py install
+
+### Start lumos in debug mode
+		
+		DEBUG_MODE=True superset runserver -d
+		
+### Start lumos in production server
+1. Logged in as admin
+
+		# rebuild_source.sh pulls latest git from private github repository
+		# in future sshd should be used rather than pull from private github
+		cd /home/songyan.ho/shopee-lumos/
+		./rebuild_source.sh
+		
+1. Logged in as normal user
+
+		# start Lumos and its celery thread(32 workers by default)
+		su - songyan.ho
+		superset runserver & superset worker
+		
+
+Changes made to Lumos(Airbnb Superset)
+--------------------------------------
+1. Superset
+	1. Several bugs has been fixed and submitted to airbnb/superset
+	2. Several modifications has been committed to shopee-lumos based on requirements
+		1. setup.py
+			1. Flask-appbuilder v1.8.1
+				- The default check & install by setup.py has been disabled due to its outdated code. The modification and bug fix is not published yet but available in [Flask-appbuilder github repo](https://github.com/dpgaspar/Flask-AppBuilder)
+				- The main fix required is `Flask-AppBuilder/flask_appbuilder/security/views.py:531`
+				- A manual installation is required in environment
+						
+						git clone https://github.com/dpgaspar/Flask-AppBuilder.git
+						cd ~/Flask-AppBuilder
+						pip uninstall pyhive -y
+						python setup.py install
+						
+				- It should be enabled once Flask-appbuilder release next version and only if it is compatible with Superset
+				
+			2. PyHive v0.2.1
+				- The default check & install by setup.py has been disabled due to its outdated code.
+				- The TCLIService is outdated and not compatible with Superset v0.17.1
+				- The quickfix version is uploaded to **shopee-data/PyHive** repository
+				- A manual installation is required in environment
+						
+						cd ~/PyHive
+						pip uninstall pyhive -y
+						python setup.py install
+			
+		
+
+
+Superset V0.17.1
+================
 
 [![Build Status](https://travis-ci.org/airbnb/superset.svg?branch=master)](https://travis-ci.org/airbnb/superset)
 [![PyPI version](https://badge.fury.io/py/superset.svg)](https://badge.fury.io/py/superset)
