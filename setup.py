@@ -45,7 +45,7 @@ setup(
         'boto3==1.4.4',
         'celery==3.1.23',
         'cryptography==1.7.2',
-        'flask-appbuilder==1.8.1',
+        # 'flask-appbuilder==1.8.1', # Use the master build but not 1.8.1 and 2.0.0
         'flask-cache==0.13.1',
         'flask-migrate==1.5.1',
         'flask-script==2.0.5',

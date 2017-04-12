@@ -12,8 +12,14 @@ from logging.handlers import TimedRotatingFileHandler
 from flask import Flask, redirect
 from flask_appbuilder import SQLA, AppBuilder, IndexView
 from flask_appbuilder.baseviews import expose
+# from flask import flash, session
+# from flask_appbuilder._compat import as_unicode
+# from flask_appbuilder.security.manager import BaseSecurityManager
+# from flask_appbuilder.security.views import AuthOAuthView
+# from flask_login import login_user
 from flask_migrate import Migrate
 from superset.connectors.connector_registry import ConnectorRegistry
+# from superset.utils import SupersetSecurityException
 from werkzeug.contrib.fixers import ProxyFix
 from superset import utils, config  # noqa
 
@@ -89,6 +95,46 @@ class MyIndexView(IndexView):
     @expose('/')
     def index(self):
         return redirect('/superset/welcome')
+
+
+# log = logging.getLogger(__name__)
+#
+#
+# class CustomAuthOAuthView(AuthOAuthView):
+#
+#     @expose('/oauth-authorized/<provider>')
+#     def oauth_authorized(self, provider):
+#         log.debug("Authorized init")
+#         resp = self.appbuilder.sm.oauth_remotes[provider].authorized_response()
+#         if resp is None:
+#             flash(u'You denied the request to sign in.', 'warning')
+#             return redirect('login')
+#         log.debug('OAUTH Authorized resp: {0}'.format(resp))
+#         # Retrieves specific user info from the provider
+#         try:
+#             self.appbuilder.sm.set_oauth_session(provider, resp)
+#             userinfo = self.appbuilder.sm.oauth_user_info(provider)
+#             log.debug("User info retrieved from {0}: {1}".format(provider, userinfo))
+#         except SupersetSecurityException as e:
+#             log.error("Error returning OAuth user info: {0}".format(e))
+#             flash(as_unicode(e), 'warning')
+#             return redirect('login')
+#         except Exception as e:
+#             log.error("Error returning OAuth user info: {0}".format(e))
+#         # Is this Authorization to register a new user ?
+#         if session.pop('register', None):
+#             return redirect(self.appbuilder.sm.registeruseroauthview.get_default_url(**userinfo))
+#         user = self.appbuilder.sm.auth_user_oauth(userinfo)
+#         if user is None:
+#             flash(as_unicode(self.invalid_login_message), 'warning')
+#             return redirect('login')
+#         else:
+#             login_user(user)
+#             return redirect(self.appbuilder.get_url_for_index)
+#
+#
+# class CustomSecurityManager(BaseSecurityManager):
+#     AuthOAuthView = CustomAuthOAuthView
 
 appbuilder = AppBuilder(
     app, db.session,

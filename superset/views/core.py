@@ -37,7 +37,7 @@ from superset import (
     sm, sql_lab, results_backend, security,
 )
 from superset.legacy import cast_form_data
-from superset.utils import has_access, has_access_api
+from superset.utils import has_access, has_access_api, SupersetSecurityException
 from superset.connectors.connector_registry import ConnectorRegistry
 import superset.models.core as models
 from superset.sql_parse import SupersetQuery
@@ -61,6 +61,32 @@ ACCESS_REQUEST_MISSING_ERR = __(
     "The access requests seem to have been deleted")
 USER_MISSING_ERR = __("The user seems to have been deleted")
 DATASOURCE_ACCESS_ERR = __("You don't have access to this datasource")
+
+
+@appbuilder.sm.oauth_user_info_getter
+def my_user_info_getter(sm, provider, response=None):
+    if provider == 'google':
+        me = sm[provider].get('people/me')
+        email = me.data['emails'][0].get('value', '')
+        domain = email[(email.find('@')+1 if email.find('@') >= 0 else 0):]
+        authorized_email_extensions = [
+            'garena.com',
+            'shopeemobile.com',
+            'jingle.cn',
+            'garena.cn',
+            'garena.co.th',
+            'ved.com.vn',
+            'garena.co.in',
+            'shopee.vn',
+            'garena.co.id'
+        ]
+        if domain not in authorized_email_extensions:
+            raise SupersetSecurityException('Email domain is not allowed.')
+        return {'username': email,
+                'email': email,
+                'first_name': me.data['name'].get('givenName', ''),
+                'last_name': me.data['name'].get('familyName', '')}
+    return {}
 
 
 def get_database_access_error_msg(database_name):
