@@ -33,22 +33,43 @@ class ExportMailModal extends React.PureComponent {
       target: event.target.value,
     });
   }
+  isEmail(emailList) {
+    var i, emails = emailList.split(','), re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (emails.length == 0) {
+      return false;
+    }
+    for (i = 0; i < emails.length; i++) {
+      if (!(re.test(emails[i].trim()))) {
+        return false;
+      }
+    }
+    return true;
+  }
   exportEmail(target, exportType) {
     const dashboard = this.props.dashboard;
     const exportMailModal = this.modal;
     const slice = this.props.slice;
+    const $this = this;
     var data = {
       target: target,
       "dashbaord_name": dashboard.dashboard_title,
       selector: slice ? '#slice_' + slice.slice_id : false,
     };
+    if (exportType === 'email' && !this.isEmail(target)) {
+      exportMailModal.close();
+      showModal({
+        title: 'Invalid email',
+        body: 'Please enter valid email address',
+      });
+      return;
+    }
     this.setState({working: true});
     $.ajax({
       type: 'POST',
       url: '/superset/export/dashboard/' + dashboard.id + '/' + exportType,
       data: data,
       success(resp) {
-        this.setState({working: false});
+        $this.setState({working: false});
         exportMailModal.close();
         if(exportType === 'download') {
           showModal({
@@ -68,7 +89,7 @@ class ExportMailModal extends React.PureComponent {
         }
       },
       error(error) {
-        this.setState({working: false});
+        $this.setState({working: false});
         exportMailModal.close();
         const errorMsg = getAjaxErrorMsg(error);
         showModal({

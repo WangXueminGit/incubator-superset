@@ -14,8 +14,8 @@ import json
 import os
 
 from dateutil import tz
-from flask_appbuilder.security.manager import AUTH_DB, AUTH_OAUTH
-from werkzeug.contrib.cache import RedisCache #FileSystemCache
+from flask_appbuilder.security.manager import AUTH_OAUTH
+from werkzeug.contrib.cache import RedisCache
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATA_DIR = os.path.join(os.path.expanduser('~'), '.superset')
@@ -37,15 +37,13 @@ SUPERSET_CELERY_WORKERS = 32
 
 DEBUG_MODE = os.environ.get("DEBUG_MODE", False)
 if DEBUG_MODE:
-    SUPERSET_WEBSERVER_ADDRESS = 'instage.superset.shopeemobile.com'
+    # SUPERSET_WEBSERVER_ADDRESS = 'instage.superset.shopeemobile.com'
     WEBSHOT_ROOT_ADDRESS = 'http://localhost:8011/webshot/'
-    WEBSHOT_AUTH_USERNAME = 'superset_export'
-    WEBSHOT_AUTH_PASSWORD = 'REyvsmZtyxdLxQH55bPSFg2xj678dnm4EazyL2SaLWPfBTyZ'
 else:
-    SUPERSET_WEBSERVER_ADDRESS = 'localhost'
     WEBSHOT_ROOT_ADDRESS = 'http://localhost/webshot/'
-    WEBSHOT_AUTH_USERNAME = 'superset_export'
-    WEBSHOT_AUTH_PASSWORD = 'REyvsmZtyxdLxQH55bPSFg2xj678dnm4EazyL2SaLWPfBTyZ'
+SUPERSET_WEBSERVER_ADDRESS = 'localhost'
+WEBSHOT_AUTH_USERNAME = 'superset_export'
+WEBSHOT_AUTH_PASSWORD = 'REyvsmZtyxdLxQH55bPSFg2xj678dnm4EazyL2SaLWPfBTyZ'
 SUPERSET_WEBSERVER_PORT = 8088
 
 SUPERSET_WEBSERVER_TIMEOUT = 300
@@ -73,7 +71,7 @@ CSRF_ENABLED = True
 
 # Whether to run the web server in debug mode or not
 DEBUG = False
-FLASK_USE_RELOAD = False
+FLASK_USE_RELOAD = True
 
 # Whether to show the stacktrace on 500 error
 SHOW_STACKTRACE = True
@@ -109,9 +107,6 @@ DRUID_ANALYSIS_TYPES = ['cardinality']
 # AUTH_DB : Is for database (username/password()
 # AUTH_LDAP : Is for LDAP
 # AUTH_REMOTE_USER : Is for using REMOTE_USER from web server
-# if not DEBUG_MODE:
-#     AUTH_TYPE = AUTH_DB
-# else:
 AUTH_TYPE = AUTH_OAUTH
 OAUTH_PROVIDERS = [
     {'name':'google', 'icon':'fa-google', 'token_key':'access_token',
