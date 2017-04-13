@@ -1,7 +1,7 @@
 import React from 'react';
 import AceEditor from 'react-ace';
 import 'brace/mode/sql';
-import 'brace/theme/github';
+import 'brace/theme/xcode';
 import 'brace/ext/language_tools';
 import ace from 'brace';
 import { areArraysShallowEqual } from '../../reduxUtils';
