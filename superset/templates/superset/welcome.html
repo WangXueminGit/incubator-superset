@@ -10,6 +10,14 @@
 {% block title %}{{ _("Welcome!") }}{% endblock %}
 
 {% block body %}
+<div class="container welcome welcome-lumos">
+  <div class="hero-unit" style="background-image: url('/static/assets/images/harry_potter.jpg');">
+    <h1>Welcome to Shopee Lumos</h1>
+    <h2>Shopee Lumos is a data visualization platform that brings inspiration through different visualizations.</h2>
+    <p>Lumos is originally a charm, a light-creation spell, taken from Harry Potter.</p>
+{#    <p><a class="btn btn-primary btn-large" href="#">Learn more</a></p>#}
+  </div>
+</div>
 <div class="container welcome">
   {% include 'superset/flash_wrapper.html' %}
   <div class="panel panel-default">
