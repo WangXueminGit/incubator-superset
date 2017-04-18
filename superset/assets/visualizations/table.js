@@ -18,6 +18,7 @@ function tableVis(slice, payload) {
 
   const data = payload.data;
   const fd = slice.formData;
+  const styling = fd['styling'] ? fd['styling'] : null;
 
   // Removing metrics (aggregates) that are strings
   const tempMetrics = fd.metrics.map(m => m.toLowerCase()) || [];
@@ -96,10 +97,26 @@ function tableVis(slice, payload) {
     .style('font-weight', 900)
     .attr('class', function(d) {
       if (d.isMetric) {
-          let perc = Math.round((d.val / maxes[d.col]) * 100);
+        let perc = Math.round((d.val / maxes[d.col]) * 100);
+        if (styling) {
+          return `background-scale-reverse-${perc}`
+        }
+        else {
           return `background-scale-${perc}`
+        }
       }
       return null;
+    })
+    .style('background-color', function(d) {
+      if (styling === null || !d.isMetric) {
+        return null;
+      }
+      let perc = d.val / maxes[d.col] * 1.4;
+      let colorIndex = metrics.indexOf(d.col);
+      if (colorIndex >= 0 && styling.length >colorIndex) {
+        return 'rgba(' + styling[colorIndex] + ', ' + perc + ')';
+      }
+      return 'lightgrey';
     })
     .attr('title', (d) => {
       if (!isNaN(d.val)) {
@@ -149,11 +166,6 @@ function tableVis(slice, payload) {
     const mainMetric = metrics[0];
     datatable.column(data.columns.indexOf(mainMetric)).order('desc').draw();
   }
-  datatable.column(0).order('desc').draw();
-
-  // else {
-  //   datatable.column(0).order('desc').draw();
-  // }
   container.parents('.widget').find('.tooltip').remove();
 }
 

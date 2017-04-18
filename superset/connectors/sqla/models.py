@@ -66,7 +66,7 @@ class TableColumn(Model, BaseColumn):
         col = self.sqla_col.label('__time')
         return and_(
             col >= text(self.dttm_sql_literal(start_dttm)),
-            col <= text(self.dttm_sql_literal(end_dttm)),
+            col < text(self.dttm_sql_literal(end_dttm)),
         )
 
     def get_timestamp_expression(self, time_grain):
