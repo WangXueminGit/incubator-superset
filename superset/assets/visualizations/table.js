@@ -149,11 +149,6 @@ function tableVis(slice, payload) {
     const mainMetric = metrics[0];
     datatable.column(data.columns.indexOf(mainMetric)).order('desc').draw();
   }
-  datatable.column(0).order('desc').draw();
-
-  // else {
-  //   datatable.column(0).order('desc').draw();
-  // }
   container.parents('.widget').find('.tooltip').remove();
 }
 

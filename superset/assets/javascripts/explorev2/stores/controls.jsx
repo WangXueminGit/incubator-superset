@@ -1200,5 +1200,12 @@ export const controls = {
     hidden: true,
     description: 'The id of the active slice',
   },
+
+  styling: {
+    type: 'ColorPickerControl',
+    label: 'Add colors',
+    default: [],
+    description: 'Colors are added based on theirs order. Drag and drop to rearrange the order'
+  },
 };
 export default controls;

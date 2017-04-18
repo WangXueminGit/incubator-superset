@@ -70,6 +70,13 @@ export const commonControlPanelSections = {
       controlSetRows: [['having_filters']],
     },
   ],
+  styling: [
+    {
+      label: 'Styling',
+      description: 'Add styling rules to the visualization',
+      controlSetRows: [['styling']],
+    }
+  ],
 };
 
 const visTypes = {
@@ -763,7 +770,7 @@ export function sectionsToRender(vizType, datasourceType) {
   const viz = visTypes[vizType];
   const timeSection = datasourceType === 'table' ?
     commonControlPanelSections.sqlaTimeSeries : commonControlPanelSections.druidTimeSeries;
-  const { datasourceAndVizType, sqlClause, filters } = commonControlPanelSections;
+  const { datasourceAndVizType, sqlClause, filters, styling } = commonControlPanelSections;
   const filtersToRender =
     datasourceType === 'table' ? filters[0] : filters;
   return [].concat(
@@ -771,6 +778,7 @@ export function sectionsToRender(vizType, datasourceType) {
     timeSection,
     viz.controlPanelSections,
     sqlClause,
-    filtersToRender
+    filtersToRender,
+    styling
   );
 }
