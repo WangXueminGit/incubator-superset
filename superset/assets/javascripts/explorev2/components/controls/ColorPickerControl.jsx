@@ -1,8 +1,9 @@
 import React, { PropTypes } from 'react';
 import Select, { Creatable } from 'react-select';
-import { TwitterPicker } from 'react-color';
+import { SwatchesPicker } from 'react-color';
 import { WithContext as ReactTags } from 'react-tag-input';
 import '../../../../stylesheets/react-tag/react-tag.css';
+import '../../../../stylesheets/react-color/react-color.css';
 
 const propTypes = {
   choices: PropTypes.array,
@@ -50,7 +51,8 @@ export default class ColorPickerControl extends React.PureComponent {
     this.props.onChange(value);
   }
   handleColorAddition(color) {
-    this.handleAddition(color.hex);
+    let colorString = color.rgb.r + ', ' + color.rgb.g + ', ' + color.rgb.b;
+    this.handleAddition(colorString);
     this.getTagArray();
   }
   handleAddition(tag) {
@@ -63,8 +65,7 @@ export default class ColorPickerControl extends React.PureComponent {
     let value = this.state.value;
 
     // mutate array
-    value.splice(currPos, 1);
-    value.splice(newPos, 0, tag);
+    value.splice(newPos, 0, value.splice(currPos, 1)[0]);
 
     // re-render
     this.setState({ value: value });
@@ -73,12 +74,12 @@ export default class ColorPickerControl extends React.PureComponent {
   }
   renderColorTag(value) {
     const style = {
-      width: "10px",
-      height: "10px",
+      width: "12px",
+      height: "12px",
       display: "inline-block",
-      background: value.text
+      background: "rgb(" + value.text + ")",
     };
-    return (<div style={{display: "inline-block"}}><span style={Object.assign({}, style)}></span>{value.text}</div>);
+    return (<div style={{display: "inline-block"}}><span style={Object.assign({}, style)}></span></div>);
   }
   getTagArray() {
     let output = [], i;
@@ -96,8 +97,7 @@ export default class ColorPickerControl extends React.PureComponent {
                                    handleDrag={this.handleDrag.bind(this)}
                                    renderTag={this.renderColorTag}
                                    inline={false}/>);
-    const defaultColors = ['#FF6900', '#FCB900', '#7BDCB5', '#00D084', '#8ED1FC', '#0693E3', '#ABB8C3', '#EB144C', '#F78DA7', '#9900EF', '#2196F3', '#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#795548', '#F44336', '#E91E63'];
-    const colorPicker = (<TwitterPicker onChangeComplete={this.handleColorAddition.bind(this)} colors={defaultColors} />);
+    const colorPicker = (<SwatchesPicker onChange={this.handleColorAddition.bind(this)} height={560} width={"100%"} />);
     return (
       <div>
         {selectWrap}
