@@ -120,6 +120,7 @@ export function dashboardContainer(dashboard) {
       this.loadPreSelectFilters();
       this.startPeriodicRender(0);
       this.bindResizeToWindowResize();
+      // this.initialReload = true;
     },
     onChange() {
       onBeforeUnload(true);
@@ -170,10 +171,12 @@ export function dashboardContainer(dashboard) {
         try {
           window.callPhantom('takeShot');
         }
-        catch(err) {
-          console.info('It is not running in PhantomJS', err);
-          console.info('Start auto reload');
-          this.startPeriodicRender(dashboard['metadata']['refreshInterval'] * 1000 || 0);
+        catch (err) {
+          // Not in snapshot mode
+          let refreshInterval = dashboard['metadata']['refreshInterval'] || 0;
+          if (refreshInterval > 0) {
+            this.startPeriodicRender(refreshInterval * 1000);
+          }
         }
       }
     },
@@ -266,7 +269,6 @@ export function dashboardContainer(dashboard) {
         });
         dash.firstLoad = false;
       };
-
       const fetchAndRender = function () {
         refreshAll();
         if (interval > 0) {
