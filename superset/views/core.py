@@ -1393,6 +1393,7 @@ class Superset(BaseSupersetView):
         if 'filter_immune_slice_fields' not in md:
             md['filter_immune_slice_fields'] = {}
         md['expanded_slices'] = data['expanded_slices']
+        md['refreshInterval'] = data['refreshInterval'] or 0
         dashboard.json_metadata = json.dumps(md, indent=4)
 
     @api
