@@ -96,7 +96,8 @@ export default class ColorPickerControl extends React.PureComponent {
                                    handleAddition={this.handleAddition.bind(this)}
                                    handleDrag={this.handleDrag.bind(this)}
                                    renderTag={this.renderColorTag}
-                                   inline={false}/>);
+                                   inline={false}
+                                   autofocus={false}/>);
     const colorPicker = (<SwatchesPicker onChange={this.handleColorAddition.bind(this)} height={560} width={"100%"} />);
     return (
       <div>
