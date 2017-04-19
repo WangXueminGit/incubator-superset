@@ -10,6 +10,7 @@ const propTypes = {
   css: React.PropTypes.string,
   dashboard: React.PropTypes.object.isRequired,
   triggerNode: React.PropTypes.node.isRequired,
+  refreshInterval: React.PropTypes.number,
 };
 
 class SaveModal extends React.PureComponent {
@@ -80,10 +81,12 @@ class SaveModal extends React.PureComponent {
       }
     });
     const positions = dashboard.reactGridLayout.serialize();
+    const refreshInterval = this.props.refreshInterval || 0;
     const data = {
       positions,
       css: this.state.css,
       expanded_slices: expandedSlices,
+      refreshInterval: refreshInterval,
     };
     let url = null;
     if (saveType === 'overwrite') {

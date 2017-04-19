@@ -172,6 +172,8 @@ export function dashboardContainer(dashboard) {
         }
         catch(err) {
           console.info('It is not running in PhantomJS', err);
+          console.info('Start auto reload');
+          this.startPeriodicRender(dashboard['metadata']['refreshInterval'] * 1000 || 0);
         }
       }
     },
