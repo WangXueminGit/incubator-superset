@@ -4,6 +4,7 @@ import re
 from flask import Markup, flash, request, redirect
 from flask_login import current_user
 from flask_appbuilder import CompactCRUDMixin, expose
+from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 import sqlalchemy as sa
 
@@ -246,9 +247,19 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
     def post_update(self, table):
         self.post_add(table)
 
-    @expose('/edit/<pk>/update_columns/', methods=['POST'])
     @has_access
-    def update_columns(self, pk):
+    @action("refresh_table_fields", "Refresh table columns", "Fetch changes and add columns/metrics to table?", "fa-refresh", single=True)
+    def fetch_metadata(self, tables):
+        if isinstance(tables, list):
+            for table in tables:
+                table.fetch_metadata()
+        else:
+            tables.fetch_metadata()
+        return redirect('/tablemodelview/list/')
+
+    @expose('/<path>/<pk>/update_columns/', methods=['POST'])
+    @has_access
+    def update_columns(self, path, pk):
         item = self.datamodel.get(pk, self._base_filters)
         if not item:
             return redirect('/tablemodelview/edit/' + str(pk))
@@ -281,7 +292,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                     setattr(column_obj, column_type, True if column_type in value else False)
             db.session.commit()
 
-        return redirect('/tablemodelview/edit/' + str(pk) + '?success=true&type=save_columns_type')
+        return redirect('/tablemodelview/' + path + '/' + str(pk) + '?success=true&type=save_columns_type')
 
 appbuilder.add_view(
     TableModelView,
