@@ -69,6 +69,7 @@ def my_user_info_getter(sm, provider, response=None):
         me = sm[provider].get('people/me')
         email = me.data['emails'][0].get('value', '')
         domain = email[(email.find('@')+1 if email.find('@') >= 0 else 0):]
+        username = email[:(email.find('@') if email.find('@') >= 0 else 0)]
         authorized_email_extensions = [
             'garena.com',
             'shopeemobile.com',
@@ -82,7 +83,7 @@ def my_user_info_getter(sm, provider, response=None):
         ]
         if domain not in authorized_email_extensions:
             raise SupersetSecurityException('Email domain is not allowed.')
-        return {'username': email,
+        return {'username': username,
                 'email': email,
                 'first_name': me.data['name'].get('givenName', ''),
                 'last_name': me.data['name'].get('familyName', '')}
@@ -235,11 +236,11 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
     datamodel = SQLAInterface(models.Database)
     list_columns = [
         'verbose_name', 'backend', 'allow_run_sync', 'allow_run_async',
-        'allow_dml', 'creator', 'changed_on_', 'database_name']
+        'allow_dml', 'creator', 'changed_on_', 'database_name', 'allow_parquet_table']
     add_columns = [
         'database_name', 'sqlalchemy_uri', 'cache_timeout', 'extra',
         'expose_in_sqllab', 'allow_run_sync', 'allow_run_async',
-        'allow_ctas', 'allow_dml', 'force_ctas_schema']
+        'allow_ctas', 'allow_dml', 'force_ctas_schema', 'allow_parquet_table']
     search_exclude_columns = ('password',)
     edit_columns = add_columns
     show_columns = [
@@ -249,6 +250,7 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
         'database_name',
         'sqlalchemy_uri',
         'perm',
+        'allow_parquet_table',
         'created_by',
         'created_on',
         'changed_by',
@@ -290,6 +292,9 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
             "gets unpacked into the [sqlalchemy.MetaData]"
             "(http://docs.sqlalchemy.org/en/rel_1_0/core/metadata.html"
             "#sqlalchemy.schema.MetaData) call. ", True),
+        'allow_parquet_table': _(
+            "Allow users to create table in database based on parquet file path given. "
+            "This option is only applicable to ThriftServer"),
     }
     label_columns = {
         'expose_in_sqllab': _("Expose in SQL Lab"),
@@ -302,6 +307,7 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
         'sqlalchemy_uri': _("SQLAlchemy URI"),
         'cache_timeout': _("Cache Timeout"),
         'extra': _("Extra"),
+        'allow_parquet_table': _("Allow create table from Parquet"),
     }
 
     def pre_add(self, db):
