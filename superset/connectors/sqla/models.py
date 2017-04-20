@@ -593,7 +593,7 @@ class SqlaTable(Model, BaseDatasource):
                 metric_name=dbcol.column_name,
                 verbose_name=dbcol.column_name,
                 metric_type='default',
-                expression='"dbcol.column_name"'
+                expression='"' + dbcol.column_name + '"'
             ))
             if dbcol.sum:
                 metrics.append(M(
