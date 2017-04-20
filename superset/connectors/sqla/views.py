@@ -130,6 +130,14 @@ class SqlMetricInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
         if metric.is_restricted:
             security.merge_perm(sm, 'metric_access', metric.get_perm())
 
+    @action("delete_metrics", "Delete metric records", "Delete selected metrics from this table?", "fa-times")
+    def delete_metrics(self, metrics):
+        if isinstance(metrics, list):
+            self.datamodel.delete_all(metrics)
+        else:
+            self.datamodel.delete(metrics)
+        return redirect(self.get_redirect())
+
 appbuilder.add_view_no_menu(SqlMetricInlineView)
 
 
@@ -248,7 +256,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         self.post_add(table)
 
     @has_access
-    @action("refresh_table_fields", "Refresh table columns", "Fetch changes and add columns/metrics to table?", "fa-refresh", single=True)
+    @action("refresh_table_fields", "Refresh table columns", "Fetch changes and add columns/metrics to table?", "fa-refresh")
     def fetch_metadata(self, tables):
         if isinstance(tables, list):
             for table in tables:
