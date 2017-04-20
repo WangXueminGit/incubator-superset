@@ -2,6 +2,7 @@ import logging
 import re
 
 from flask import Markup, flash, request, redirect
+from flask_login import current_user
 from flask_appbuilder import CompactCRUDMixin, expose
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 import sqlalchemy as sa
@@ -15,6 +16,7 @@ from superset.views.base import (
     SupersetModelView, ListWidgetWithCheckboxes, DeleteMixin, DatasourceFilter,
     get_datasource_exist_error_mgs,
 )
+from superset.models.core import Database
 
 from . import models
 
@@ -137,13 +139,13 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         'changed_by_', 'changed_on_']
     order_columns = [
         'link', 'database', 'is_featured', 'changed_on_']
-    add_columns = ['database', 'schema', 'table_name']
+    add_columns = ['database', 'schema', 'table_name', 'parquet_path']
     edit_columns = [
         'table_name', 'sql', 'is_featured', 'filter_select_enabled',
         'database', 'schema',
         'description', 'owner',
         'main_dttm_col', 'default_endpoint', 'offset', 'cache_timeout']
-    show_columns = edit_columns + ['perm']
+    show_columns = edit_columns + ['perm'] + ['parquet_path']
     related_views = [TableColumnInlineView, SqlMetricInlineView]
     base_order = ('changed_on', 'desc')
     description_columns = {
@@ -160,6 +162,11 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
             "This fields acts a Superset view, meaning that Superset will "
             "run a query against this string as a subquery."
         ),
+        'parquet_path': utils.markdown(
+            "Add a Parquet file path to create a table in database. "
+            "Leave blank if table exists. "
+            "It is only applicable for **Shopee Playground** database. ", True
+        )
     }
     base_filters = [['id', DatasourceFilter, lambda: []]]
     label_columns = {
@@ -173,9 +180,15 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         'default_endpoint': _("Default Endpoint"),
         'offset': _("Offset"),
         'cache_timeout': _("Cache Timeout"),
+        'parquet_path': _("Path of Parquet file"),
     }
 
     def pre_add(self, table):
+        database = db.session.query(Database).get(table.database.id)
+        if database.allow_parquet_table and table.table_name is not None and len(table.parquet_path) > 0:
+            username = re.sub('[^a-zA-Z0-9]', '_', current_user.username)
+            table.table_name = table.table_name + '__' + username
+
         number_of_existing_tables = db.session.query(
             sa.func.count('*')).filter(
             models.SqlaTable.table_name == table.table_name,
@@ -185,6 +198,27 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         # table object is already added to the session
         if number_of_existing_tables > 1:
             raise Exception(get_datasource_exist_error_mgs(table.full_name))
+
+        # Create Table based on Parquet path
+        if database.allow_parquet_table and table.table_name is not None and len(table.parquet_path) > 0:
+            engine = database.get_sqla_engine()
+            connection = engine.connect()
+            transaction = connection.begin()
+            try:
+                connection.execute('CREATE TABLE ' + table.table_name +
+                               ' USING org.apache.spark.sql.parquet OPTIONS (path "' + table.parquet_path + '")')
+                transaction.commit()
+
+            except Exception as e:
+                transaction.rollback()
+                logging.exception(e)
+                raise Exception(
+                    "Parquet file [{}] could not be found, "
+                    "please double check your "
+                    "database connection, and parquet file path ".format(table.parquet_path))
+            finally:
+                connection.close()
+                engine.dispose()
 
         # Fail before adding if the table can't be found
         try:
