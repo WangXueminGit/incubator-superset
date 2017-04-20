@@ -525,6 +525,7 @@ class Database(Model, AuditMixinNullable):
     }
     """))
     perm = Column(String(1000))
+    allow_parquet_table = Column(Boolean, default=False)
 
     def __repr__(self):
         return self.verbose_name if self.verbose_name else self.database_name
