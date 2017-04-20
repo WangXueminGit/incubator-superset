@@ -587,6 +587,12 @@ class SqlaTable(Model, BaseDatasource):
 
             quoted = "{}".format(
                 column(dbcol.column_name).compile(dialect=db.engine.dialect))
+            metrics.append(M(
+                metric_name=dbcol.column_name,
+                verbose_name=dbcol.column_name,
+                metric_type='default',
+                expression=dbcol.column_name
+            ))
             if dbcol.sum:
                 metrics.append(M(
                     metric_name='sum__' + dbcol.column_name,

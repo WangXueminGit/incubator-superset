@@ -253,8 +253,6 @@ appbuilder.add_view(
     TableModelView,
     "Tables",
     label=__("Tables"),
-    category="Sources",
-    category_label=__("Sources"),
+    category="",
+    category_label="",
     icon='fa-table',)
-
-appbuilder.add_separator("Sources")

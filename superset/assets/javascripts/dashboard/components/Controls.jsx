@@ -21,6 +21,7 @@ class Controls extends React.PureComponent {
     this.state = {
       css: props.dashboard.css || '',
       cssTemplates: [],
+      refreshInterval: props.dashboard.metadata.refreshInterval || 0,
     };
   }
   refresh() {
@@ -42,12 +43,17 @@ class Controls extends React.PureComponent {
     this.setState({ css });
     this.props.dashboard.onChange();
   }
+  updateRefreshInterval(refreshInterval) {
+    this.setState({refreshInterval});
+    this.props.dashboard.startPeriodicRender(refreshInterval * 1000);
+  }
   render() {
     const dashboard = this.props.dashboard;
     const canSave = dashboard.context.dash_save_perm;
     const emailBody = `Checkout this dashboard: ${window.location.href}`;
     const emailLink = 'mailto:?Subject=Superset%20Dashboard%20'
       + `${dashboard.dashboard_title}&Body=${emailBody}`;
+    const initialRefreshInterval = dashboard['metadata']['refreshInterval'] || 0;
     return (
       <ButtonGroup>
         <Button
@@ -63,7 +69,8 @@ class Controls extends React.PureComponent {
           }
         />
         <RefreshIntervalModal
-          onChange={refreshInterval => dashboard.startPeriodicRender(refreshInterval * 1000)}
+          initialRefreshFrequency={initialRefreshInterval}
+          onChange={this.updateRefreshInterval.bind(this)}
           triggerNode={
             <i className="fa fa-clock-o" />
           }
@@ -93,6 +100,7 @@ class Controls extends React.PureComponent {
         <SaveModal
           dashboard={dashboard}
           css={this.state.css}
+          refreshInterval={this.state.refreshInterval}
           triggerNode={
             <i className="fa fa-save" />
           }
