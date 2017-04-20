@@ -120,7 +120,7 @@ export function dashboardContainer(dashboard) {
       this.loadPreSelectFilters();
       this.startPeriodicRender(0);
       this.bindResizeToWindowResize();
-      // this.initialReload = true;
+      this.initialReload = true;
     },
     onChange() {
       onBeforeUnload(true);
@@ -167,7 +167,8 @@ export function dashboardContainer(dashboard) {
       if (!(slice.data.slice_id in this.slicesDone)) {
         this.slicesDone.push(slice.data.slice_id);
       }
-      if (this.slicesDone.length >= this.sliceObjects.length) {
+      if (this.initialReload && this.slicesDone.length >= this.sliceObjects.length) {
+        this.initialReload = false;
         try {
           window.callPhantom('takeShot');
         }
@@ -270,13 +271,14 @@ export function dashboardContainer(dashboard) {
         dash.firstLoad = false;
       };
       const fetchAndRender = function () {
+        this.stopPeriodicRender();
         refreshAll();
         if (interval > 0) {
           dash.refreshTimer = setTimeout(function () {
             fetchAndRender();
           }, interval);
         }
-      };
+      }.bind(this);
       fetchAndRender();
     },
     refreshExcept(sliceId) {
