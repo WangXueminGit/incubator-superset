@@ -310,7 +310,7 @@ class SqlaTable(Model, BaseDatasource):
             timestamp = dttm_col.sqla_col.label('timestamp')
             time_filter = [
                 timestamp >= text(dttm_col.dttm_sql_literal(from_dttm)),
-                timestamp <= text(dttm_col.dttm_sql_literal(to_dttm)),
+                timestamp < text(dttm_col.dttm_sql_literal(to_dttm)),
             ]
             qry = qry.where(and_(*time_filter))
 
@@ -366,6 +366,7 @@ class SqlaTable(Model, BaseDatasource):
             if m not in metrics_dict:
                 raise Exception(_("Metric '{}' is not valid".format(m)))
         metrics_exprs = [metrics_dict.get(m).sqla_col for m in metrics]
+
         timeseries_limit_metric = metrics_dict.get(timeseries_limit_metric)
         timeseries_limit_metric_expr = None
         if timeseries_limit_metric:
@@ -592,7 +593,7 @@ class SqlaTable(Model, BaseDatasource):
                 metric_name=dbcol.column_name,
                 verbose_name=dbcol.column_name,
                 metric_type='default',
-                expression=dbcol.column_name
+                expression='"dbcol.column_name"'
             ))
             if dbcol.sum:
                 metrics.append(M(
