@@ -22,15 +22,22 @@ class ExportMailModal extends React.PureComponent {
       dashboard: props.dashboard,
       css: props.css,
       target: '',
+      screenWidth: 1600,
       working: false
     };
     this.modal = null;
     this.handleTargetChange = this.handleTargetChange.bind(this);
+    this.handleScreenWidthChange = this.handleScreenWidthChange.bind(this);
     this.exportEmail = this.exportEmail.bind(this);
   }
   handleTargetChange(event) {
     this.setState({
       target: event.target.value,
+    });
+  }
+  handleScreenWidthChange(event) {
+    this.setState({
+      screenWidth: event.target.value,
     });
   }
   isEmail(emailList) {
@@ -45,13 +52,14 @@ class ExportMailModal extends React.PureComponent {
     }
     return true;
   }
-  exportEmail(target, exportType) {
+  exportEmail(target, screenWidth, exportType) {
     const dashboard = this.props.dashboard;
     const exportMailModal = this.modal;
     const slice = this.props.slice;
     const $this = this;
     var data = {
       target: target,
+      screenwidth: screenWidth || 1600,
       "dashbaord_name": dashboard.dashboard_title,
       selector: slice ? '#slice_' + slice.slice_id : false,
     };
@@ -102,11 +110,11 @@ class ExportMailModal extends React.PureComponent {
   render() {
     let sliceFormControl = null, working = this.state.working;
     if(this.props.slice) {
-      sliceFormControl = <FormControl
+      sliceFormControl = (<FormControl
         type="text"
         disabled
         defaultValue={this.props.slice.slice_name}
-      />
+      />)
     }
     let loadingElement = null;
     if(working) {
@@ -123,11 +131,19 @@ class ExportMailModal extends React.PureComponent {
         modalBody={
           <FormGroup>
             { sliceFormControl }
+            Recipient emails (applicable to email export)
             <FormControl
               type="text"
               placeholder="Recepient emails, separated by comma(,)"
               onFocus={this.handleTargetChange}
               onChange={this.handleTargetChange}
+            />
+            Snapshot width(Screen width)
+            <FormControl
+              type="number"
+              placeholder="Leave blank for default 1600px"
+              onFocus={this.handleScreenWidthChange}
+              onChange={this.handleScreenWidthChange}
             />
           </FormGroup>
         }
@@ -136,14 +152,14 @@ class ExportMailModal extends React.PureComponent {
             {loadingElement}
             <Button
               bsStyle="primary"
-              onClick={() => { this.exportEmail(this.state.target, 'email'); }}
+              onClick={() => { this.exportEmail(this.state.target, this.state.screenWidth, 'email'); }}
               disabled={working}
             >
               <i className="fa fa-envelope" aria-hidden="true"></i> Send to email
             </Button>
             <Button
               bsStyle="primary"
-              onClick={() => { this.exportEmail(this.state.target, 'download'); }}
+              onClick={() => { this.exportEmail(this.state.target, this.state.screenWidth, 'download'); }}
               disabled={working}
             >
               <i className="fa fa-download" aria-hidden="true"></i> Download to local
