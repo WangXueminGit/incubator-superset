@@ -147,6 +147,21 @@ const visTypes = {
     ],
   },
 
+  simpleline: {
+    label: 'Simple Line Chart',
+    requiresTime: false,
+    controlPanelSections: [
+      {
+        label: null,
+        controlSetRows: [
+          ['x', 'metrics'],
+          ['groupby'],
+          ['limit']
+        ],
+      }
+    ],
+  },
+
   dual_line: {
     label: 'Time Series - Dual Axis Line Chart',
     requiresTime: true,

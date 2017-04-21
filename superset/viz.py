@@ -96,6 +96,7 @@ class BaseViz(object):
         if not query_obj:
             query_obj = self.query_obj()
 
+
         self.error_msg = ""
         self.results = None
 
@@ -976,6 +977,82 @@ class NVD3TimeSeriesViz(NVD3Viz):
         return chart_data
 
 
+class NVD3SimpleLineViz(NVD3Viz):
+    """A rich line chart component with tons of options"""
+
+    viz_type = "simpleline"
+    verbose_name = _("Simple Line Chart")
+    sort_series = False
+    is_timeseries = False
+
+    def query_obj(self):
+        form_data = self.form_data
+        d = super(NVD3SimpleLineViz, self).query_obj()
+        d['groupby'] = form_data.get("groupby") or []
+        metrics = form_data.get("metrics") or ['count']
+        metric_x = form_data.get('x', None)
+        if metric_x is not None and metric_x not in d['groupby']:
+            metrics.append(form_data.get('x'))
+
+        d['metrics'] = set(metrics)
+        if not all(d['metrics']):
+            raise Exception("Pick a metric for x, y and size")
+        return d
+
+    def to_series(self, df, classed='', title_suffix=''):
+        cols = []
+        print(df)
+        for col in df.columns:
+            if col == '':
+                cols.append('N/A')
+            elif col is None:
+                cols.append('NULL')
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict('series')
+        chart_data = []
+        for name in df.T.index.tolist():
+            ys = series[name]
+            if df[name].dtype.kind not in "biufc":
+                continue
+            if isinstance(name, string_types):
+                series_title = name
+            else:
+                name = ["{}".format(s) for s in name]
+                if len(self.form_data.get('metrics')) > 1:
+                    series_title = ", ".join(name)
+                else:
+                    series_title = ", ".join(name[1:])
+            if title_suffix:
+                series_title += title_suffix
+
+            d = {
+                "key": series_title,
+                "classed": classed,
+                "values": [
+                    {'x': ds, 'y': ys[ds] if ds in ys else None}
+                    for ds in df.index
+                ],
+            }
+            chart_data.append(d)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+        if fd.get("granularity") == "all":
+            raise Exception("Pick a time granularity for your time series")
+        print(df)
+        df = df.pivot_table(
+            index=fd.get('x'),
+            columns=[],
+            values=fd.get('metric'))
+
+        chart_data = self.to_series(df)
+        return chart_data
+
+
 class NVD3DualLineViz(NVD3Viz):
 
     """A rich line chart with dual axis"""
@@ -1584,6 +1661,7 @@ viz_types_list = [
     TableViz,
     PivotTableViz,
     NVD3TimeSeriesViz,
+    NVD3SimpleLineViz,
     NVD3DualLineViz,
     NVD3CompareTimeSeriesViz,
     NVD3TimeSeriesStackedViz,
