@@ -291,6 +291,17 @@ export const controls = {
     }),
   },
 
+  filterby: {
+    type: 'SelectControl',
+    multi: true,
+    label: 'Filter by',
+    default: [],
+    description: 'One or many controls to group by',
+    mapStateToProps: (state) => ({
+      choices: (state.datasource) ? state.datasource.gb_cols : [],
+    }),
+  },
+
   columns: {
     type: 'SelectControl',
     multi: true,

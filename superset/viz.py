@@ -140,6 +140,10 @@ class BaseViz(object):
         extra_filters = self.form_data.get('extra_filters', [])
         return {f['col']: f['val'] for f in extra_filters}
 
+    def get_extra_groupby(self):
+        extra_groupby = self.form_data.get('extra_groupby', [])
+        return extra_groupby
+
     def query_obj(self):
         """Building a query object"""
         form_data = self.form_data
@@ -150,6 +154,7 @@ class BaseViz(object):
         # to the slice definition. We use those for dynamic interactive
         # filters like the ones emitted by the "Filter Box" visualization
         extra_filters = self.get_extra_filters()
+        extra_groupby = self.get_extra_groupby()
         granularity = (
             form_data.get("granularity") or form_data.get("granularity_sqla")
         )
@@ -203,7 +208,7 @@ class BaseViz(object):
             'from_dttm': from_dttm,
             'to_dttm': to_dttm,
             'is_timeseries': self.is_timeseries,
-            'groupby': groupby,
+            'groupby': groupby + extra_groupby,
             'metrics': metrics,
             'row_limit': row_limit,
             'filter': filters,
@@ -1428,15 +1433,17 @@ class FilterBoxViz(BaseViz):
     def query_obj(self):
         qry = super(FilterBoxViz, self).query_obj()
         groupby = self.form_data.get('groupby')
-        if len(groupby) < 1 and not self.form_data.get('date_filter'):
+        filterby = self.form_data.get('filterby')
+        if len(groupby) < 1 and len(filterby) < 1 and not self.form_data.get('date_filter'):
             raise Exception("Pick at least one filter field")
         qry['metrics'] = [
             self.form_data['metric']]
+        # qry['groupby'] = groupby
         return qry
 
     def get_data(self, df):
         qry = self.query_obj()
-        filters = [g for g in self.form_data['groupby']]
+        filters = [g for g in self.form_data['filterby']]
         d = {}
         for flt in filters:
             qry['groupby'] = [flt]
