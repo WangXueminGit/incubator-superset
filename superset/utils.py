@@ -77,17 +77,16 @@ class SupersetTemplateException(SupersetException):
 
 def can_access(sm, permission_name, view_name, user):
     """Protecting from has_access failing from missing perms/view"""
-    basic_auth = request.headers.get('Authorization', None)
-    basic_auth_hack = 'basic_auth_session' in session
-    if basic_auth is not None:
-        basic_auth_credential = parse_authorization_header(basic_auth)
-        basic_auth_hack = basic_auth_credential.username == SHOPEE_SUPERSET_AUTH_USERNAME and basic_auth_credential.password == SHOPEE_SUPERSET_AUTH_PASSWORD
+    # basic_auth = request.headers.get('Authorization', None)
+    # basic_auth_hack = 'basic_auth_session' in session
+    # if basic_auth is not None:
+    #     basic_auth_credential = parse_authorization_header(basic_auth)
+    #     basic_auth_hack = basic_auth_credential.username == SHOPEE_SUPERSET_AUTH_USERNAME and basic_auth_credential.password == SHOPEE_SUPERSET_AUTH_PASSWORD
 
     return (
         sm.is_item_public(permission_name, view_name) or
         (not user.is_anonymous() and
-         sm._has_view_access(user, permission_name, view_name)) or
-        basic_auth_hack
+         sm._has_view_access(user, permission_name, view_name))
     )
 
 
@@ -567,17 +566,17 @@ def has_access(f):
         permission_str = f.__name__
 
     def wraps(self, *args, **kwargs):
-        basic_auth = request.headers.get('Authorization', None)
-        basic_auth_hack = 'basic_auth_session' in session
-
-        if basic_auth is not None:
-            basic_auth_credential = parse_authorization_header(basic_auth)
-            basic_auth_hack = basic_auth_credential.username == SHOPEE_SUPERSET_AUTH_USERNAME and basic_auth_credential.password == SHOPEE_SUPERSET_AUTH_PASSWORD
-            session['basic_auth_session'] = True
+        # basic_auth = request.headers.get('Authorization', None)
+        # basic_auth_hack = 'basic_auth_session' in session
+        #
+        # if basic_auth is not None:
+        #     basic_auth_credential = parse_authorization_header(basic_auth)
+        #     basic_auth_hack = basic_auth_credential.username == SHOPEE_SUPERSET_AUTH_USERNAME and basic_auth_credential.password == SHOPEE_SUPERSET_AUTH_PASSWORD
+        #     session['basic_auth_session'] = True
 
         permission_str = PERMISSION_PREFIX + f._permission_name
         if self.appbuilder.sm.has_access(
-                permission_str, self.__class__.__name__) or basic_auth_hack:
+                permission_str, self.__class__.__name__):
             return f(self, *args, **kwargs)
         else:
             logging.warning(LOGMSG_ERR_SEC_ACCESS_DENIED.format(
@@ -606,9 +605,9 @@ def has_access_api(f):
         permission_str = f.__name__
 
     def wraps(self, *args, **kwargs):
-        basic_auth_hack = 'basic_auth_session' in session
+        # basic_auth_hack = 'basic_auth_session' in session
         permission_str = PERMISSION_PREFIX + f._permission_name
-        if self.appbuilder.sm.has_access(permission_str, self.__class__.__name__) or basic_auth_hack:
+        if self.appbuilder.sm.has_access(permission_str, self.__class__.__name__):
             return f(self, *args, **kwargs)
         else:
             log.warning(LOGMSG_ERR_SEC_ACCESS_DENIED.format(permission_str, self.__class__.__name__))
