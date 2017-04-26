@@ -49,6 +49,18 @@ Check the **Changes made to Lumos(Airbnb Superset)** to install exlucded modules
 		
 		DEBUG_MODE=True superset runserver -d
 		
+### Manage Lumos Data Model
+
+Lumos/Superset uses Flask-appbuilder and SQLAlchemy with their support to ORM. In order to modify the model, add/remove field in `/superset/models/core.py`. To update the database table structure, run the following code(Thanks to Flask-Migrate):
+
+        superset db migrate # do simple migration to check database changes
+        # Review the python file generated in /superset/migrations/versions/
+        # Add/remove lines that applicable
+        superset db upgrade # Make changes to database
+        
+        # To undo changes, run
+        # superset db downgrade
+		
 ### Start lumos in production server
 1. Logged in as admin
 
