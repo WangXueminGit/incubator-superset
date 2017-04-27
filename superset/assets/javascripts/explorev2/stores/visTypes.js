@@ -1,4 +1,4 @@
-export const commonControlPanelSections = {
+export const sections = {
   druidTimeSeries: {
     label: 'Time',
     description: 'Time related form attributes',
@@ -12,7 +12,7 @@ export const commonControlPanelSections = {
     controlSetRows: [
       ['datasource'],
       ['viz_type'],
-      ['slice_id'],
+      ['slice_id', 'cache_timeout'],
     ],
   },
   sqlaTimeSeries: {
@@ -130,7 +130,7 @@ const visTypes = {
     label: 'Time Series - Line Chart',
     requiresTime: true,
     controlPanelSections: [
-      commonControlPanelSections.NVD3TimeSeries[0],
+      sections.NVD3TimeSeries[0],
       {
         label: 'Chart Options',
         controlSetRows: [
@@ -143,7 +143,7 @@ const visTypes = {
           ['x_axis_label', 'y_axis_label'],
         ],
       },
-      commonControlPanelSections.NVD3TimeSeries[1],
+      sections.NVD3TimeSeries[1],
     ],
   },
 
@@ -202,7 +202,7 @@ const visTypes = {
     label: 'Time Series - Bar Chart',
     requiresTime: true,
     controlPanelSections: [
-      commonControlPanelSections.NVD3TimeSeries[0],
+      sections.NVD3TimeSeries[0],
       {
         label: 'Chart Options',
         controlSetRows: [
@@ -216,7 +216,7 @@ const visTypes = {
           ['reduce_x_ticks', 'show_controls'],
         ],
       },
-      commonControlPanelSections.NVD3TimeSeries[1],
+      sections.NVD3TimeSeries[1],
     ],
   },
 
@@ -224,8 +224,8 @@ const visTypes = {
     label: 'Time Series - Percent Change',
     requiresTime: true,
     controlPanelSections: [
-      commonControlPanelSections.NVD3TimeSeries[0],
-      commonControlPanelSections.NVD3TimeSeries[1],
+      sections.NVD3TimeSeries[0],
+      sections.NVD3TimeSeries[1],
     ],
   },
 
@@ -233,7 +233,7 @@ const visTypes = {
     label: 'Time Series - Stacked',
     requiresTime: true,
     controlPanelSections: [
-      commonControlPanelSections.NVD3TimeSeries[0],
+      sections.NVD3TimeSeries[0],
       {
         label: 'Chart Options',
         controlSetRows: [
@@ -245,7 +245,7 @@ const visTypes = {
           ['line_interpolation', 'stacked_style'],
         ],
       },
-      commonControlPanelSections.NVD3TimeSeries[1],
+      sections.NVD3TimeSeries[1],
     ],
   },
 
@@ -264,7 +264,8 @@ const visTypes = {
         label: 'NOT GROUPED BY',
         description: 'Use this section if you want to query atomic rows',
         controlSetRows: [
-          ['all_columns', 'order_by_cols'],
+          ['all_columns'],
+          ['order_by_cols'],
         ],
       },
       {
@@ -278,8 +279,7 @@ const visTypes = {
     ],
     controlOverrides: {
       metrics: {
-        default: null,
-        validators: null,
+        validators: [],
       },
       time_grain_sqla: {
         default: null,
@@ -699,7 +699,7 @@ const visTypes = {
   horizon: {
     label: 'Horizon',
     controlPanelSections: [
-      commonControlPanelSections.NVD3TimeSeries[0],
+      sections.NVD3TimeSeries[0],
       {
         label: 'Chart Options',
         controlSetRows: [
@@ -784,17 +784,12 @@ export default visTypes;
 
 export function sectionsToRender(vizType, datasourceType) {
   const viz = visTypes[vizType];
-  const timeSection = datasourceType === 'table' ?
-    commonControlPanelSections.sqlaTimeSeries : commonControlPanelSections.druidTimeSeries;
-  const { datasourceAndVizType, sqlClause, filters, styling } = commonControlPanelSections;
-  const filtersToRender =
-    datasourceType === 'table' ? filters[0] : filters;
   return [].concat(
-    datasourceAndVizType,
-    timeSection,
+    sections.datasourceAndVizType,
+    datasourceType === 'table' ? sections.sqlaTimeSeries : sections.druidTimeSeries,
     viz.controlPanelSections,
-    sqlClause,
-    filtersToRender,
-    styling
+    datasourceType === 'table' ? sections.sqlClause : [],
+    datasourceType === 'table' ? sections.filters[0] : sections.filters,
+    sections.styling,
   );
 }

@@ -1,5 +1,5 @@
-import { formatSelectOptionsForRange, formatSelectOptions } from '../../modules/utils';
 import React from 'react';
+import { formatSelectOptionsForRange, formatSelectOptions } from '../../modules/utils';
 import visTypes from './visTypes';
 import * as v from '../validators';
 
@@ -67,7 +67,7 @@ export const controls = {
     validators: [v.nonEmpty],
     default: control =>
       control.choices && control.choices.length > 0 ? [control.choices[0][0]] : null,
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
     }),
     description: 'One or many metrics to display',
@@ -79,7 +79,7 @@ export const controls = {
     label: 'Ordering',
     default: [],
     description: 'One or many metrics to display',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.order_by_choices : [],
     }),
   },
@@ -91,7 +91,7 @@ export const controls = {
     description: 'Choose the metric',
     default: control =>
       control.choices && control.choices.length > 0 ? control.choices[0][0] : null,
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : null,
     }),
   },
@@ -102,7 +102,7 @@ export const controls = {
     choices: [],
     default: [],
     description: 'Choose a metric for right axis',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
     }),
   },
@@ -261,7 +261,7 @@ export const controls = {
     label: 'Color Metric',
     default: null,
     description: 'A metric to use for color',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
     }),
   },
@@ -286,7 +286,7 @@ export const controls = {
     label: 'Group by',
     default: [],
     description: 'One or many controls to group by',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.gb_cols : [],
     }),
   },
@@ -306,7 +306,7 @@ export const controls = {
     type: 'SelectControl',
     multi: true,
     label: 'Columns',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.gb_cols : [],
     }),
     default: [],
@@ -319,7 +319,7 @@ export const controls = {
     label: 'Columns',
     default: [],
     description: 'Columns to display',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.all_cols : [],
     }),
   },
@@ -329,7 +329,7 @@ export const controls = {
     label: 'X',
     default: null,
     description: 'Columns to display',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.all_cols : [],
     }),
   },
@@ -339,7 +339,7 @@ export const controls = {
     label: 'Y',
     default: null,
     description: 'Columns to display',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.all_cols : [],
     }),
   },
@@ -447,7 +447,7 @@ export const controls = {
                  'column in the table or. Also note that the ' +
                  'filter below is applied against this column or ' +
                  'expression',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.granularity_sqla : [],
     }),
   },
@@ -461,7 +461,7 @@ export const controls = {
                  'your time column and defines a new time granularity. ' +
                  'The options here are defined on a per database ' +
                  'engine basis in the Superset source code.',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.time_grain_sqla : null,
     }),
   },
@@ -607,7 +607,7 @@ export const controls = {
     label: 'Sort By',
     default: null,
     description: 'Metric used to define the top series',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
     }),
   },
@@ -636,7 +636,7 @@ export const controls = {
     description: 'Defines the grouping of entities. ' +
                  'Each series is shown as a specific color on the chart and ' +
                  'has a legend toggle',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.gb_cols : [],
     }),
   },
@@ -646,7 +646,7 @@ export const controls = {
     label: 'Entity',
     default: null,
     description: 'This define the element to be plotted on the chart',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.gb_cols : [],
     }),
   },
@@ -656,7 +656,7 @@ export const controls = {
     label: 'X Axis',
     default: null,
     description: 'Metric assigned to the [X] axis',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
     }),
   },
@@ -666,7 +666,7 @@ export const controls = {
     label: 'Y Axis',
     default: null,
     description: 'Metric assigned to the [Y] axis',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
     }),
   },
@@ -675,7 +675,7 @@ export const controls = {
     type: 'SelectControl',
     label: 'Bubble Size',
     default: null,
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
     }),
   },
@@ -685,7 +685,7 @@ export const controls = {
     label: 'URL',
     description: 'The URL, this control is templated, so you can integrate ' +
                  '{{ width }} and/or {{ height }} in your URL string.',
-    default: 'https: //www.youtube.com/embed/JkI5rg_VcQ4',
+    default: 'https://www.youtube.com/embed/AdSZJzb-aX8',
   },
 
   x_axis_label: {
@@ -1021,7 +1021,7 @@ export const controls = {
     description: 'Overlay a timeseries from a ' +
                  'relative time period. Expects relative time delta ' +
                  'in natural language (example:  24 hours, 7 days, ' +
-                 '56 weeks, 365 days',
+                 '56 weeks, 365 days)',
   },
 
   subheader: {
@@ -1039,7 +1039,7 @@ export const controls = {
                  'Numerical columns will be aggregated with the aggregator. ' +
                  'Non-numerical columns will be used to label points. ' +
                  'Leave empty to get a count of points in each cluster.',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.all_cols : [],
     }),
   },
@@ -1087,7 +1087,7 @@ export const controls = {
     description: 'The radius of individual points (ones that are not in a cluster). ' +
                  'Either a numerical column or `Auto`, which scales the point based ' +
                  'on the largest cluster',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: [].concat([['Auto', 'Auto']], state.datasource.all_cols),
     }),
   },
@@ -1206,8 +1206,7 @@ export const controls = {
     label: '',
     default: [],
     description: '',
-    mapStateToProps: (state) => ({
-      choices: (state.datasource) ? state.datasource.filterable_cols : [],
+    mapStateToProps: state => ({
       datasource: state.datasource,
     }),
   },
@@ -1217,7 +1216,7 @@ export const controls = {
     label: '',
     default: [],
     description: '',
-    mapStateToProps: (state) => ({
+    mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo
         .concat(state.datasource.filterable_cols) : [],
       datasource: state.datasource,
@@ -1231,11 +1230,18 @@ export const controls = {
     description: 'The id of the active slice',
   },
 
+  cache_timeout: {
+    type: 'HiddenControl',
+    label: 'Cache Timeout (seconds)',
+    hidden: true,
+    description: 'The number of seconds before expiring the cache',
+  },
+
   styling: {
     type: 'ColorPickerControl',
     label: 'Add colors',
     default: [],
-    description: 'Colors are added based on theirs order. Drag and drop to rearrange the order'
+    description: 'Colors are added based on theirs order. Drag and drop to rearrange the order',
   },
 };
 export default controls;
