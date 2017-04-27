@@ -307,6 +307,8 @@ JINJA_CONTEXT_ADDONS = {}
 # Roles that are controlled by the API / Superset and should not be changes
 # by humans.
 ROBOT_PERMISSION_ROLES = ['Public', 'Gamma', 'Alpha', 'Admin', 'sql_lab']
+# For CREATE TABLE USES
+ROLE_CREATE_TABLE_GLOBAL = ['Admin']
 
 CONFIG_PATH_ENV_VAR = 'SUPERSET_CONFIG_PATH'
 

@@ -184,7 +184,6 @@ class SqlaTable(Model, BaseDatasource):
     sql = Column(Text)
     params = Column(Text)
     perm = Column(String(1000))
-    parquet_path = Column(String(1000))
 
     baselink = "tablemodelview"
     column_cls = TableColumn

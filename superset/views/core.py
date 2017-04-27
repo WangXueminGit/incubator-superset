@@ -236,13 +236,14 @@ def generate_download_headers(extension):
 class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
     datamodel = SQLAInterface(models.Database)
     list_columns = [
-        'verbose_name', 'backend', 'allow_run_sync', 'allow_run_async',
-        'allow_dml', 'creator', 'changed_on_', 'database_name', 'allow_parquet_table']
+        'database_name', 'backend',
+        'allow_create_table', 'allow_hdfs_table', 'allow_management', 'beautified_roles']
     add_columns = [
         'database_name', 'sqlalchemy_uri', 'cache_timeout', 'extra',
         'expose_in_sqllab', 'allow_run_sync', 'allow_run_async',
-        'allow_ctas', 'allow_dml', 'force_ctas_schema', 'allow_parquet_table',
-        'user_management_view']
+        'allow_ctas', 'allow_dml', 'force_ctas_schema',
+        'allow_create_table', 'allow_hdfs_table',
+        'user_management_view', 'roles']
     search_exclude_columns = ('password',)
     edit_columns = add_columns
     show_columns = [
@@ -252,12 +253,14 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
         'database_name',
         'sqlalchemy_uri',
         'perm',
-        'allow_parquet_table',
+        'allow_create_table',
+        'allow_hdfs_table',
         'user_management_view',
         'created_by',
         'created_on',
         'changed_by',
         'changed_on',
+        'roles',
     ]
     add_template = "superset/models/database/add.html"
     edit_template = "superset/models/database/edit.html"
@@ -295,9 +298,10 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
             "gets unpacked into the [sqlalchemy.MetaData]"
             "(http://docs.sqlalchemy.org/en/rel_1_0/core/metadata.html"
             "#sqlalchemy.schema.MetaData) call. ", True),
-        'allow_parquet_table': _(
-            "Allow users to create table in database based on parquet file path given. "
-            "This option is only applicable to ThriftServer"),
+        'allow_create_table': _(
+            "Allow users to create table in database with SQL"),
+        'allow_hdfs_table': _(
+            "Allow users to create table in database with HDFS file"),
         'user_management_view': utils.markdown(
             "Manage user for Redshift DB with admin roles"
             "      CREATE OR REPLACE VIEW lumos_user_management_view AS"
@@ -324,8 +328,12 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
         'sqlalchemy_uri': _("SQLAlchemy URI"),
         'cache_timeout': _("Cache Timeout"),
         'extra': _("Extra"),
-        'allow_parquet_table': _("Allow create table from Parquet"),
+        'allow_create_table': _("Allow create table with SQL"),
+        'allow_hdfs_table': _("Allow create table with HDFS file"),
         'user_management_view': _("Table or view name for display"),
+        'beautified_roles': _("Attach to groups"),
+        'roles': _("Attach to groups"),
+        'allow_management': _("Allow manage users"),
     }
 
     def pre_add(self, db):

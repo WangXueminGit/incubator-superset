@@ -75,7 +75,7 @@ input[type="checkbox"] {
   display: inline-block;
   width: 16px;
   height: 16px;
-  float: right;
+  float: left;
 }
 
 .widget-is-cached {
