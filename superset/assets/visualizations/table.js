@@ -2,9 +2,10 @@ import d3 from 'd3';
 import { fixDataTableBodyHeight } from '../javascripts/modules/utils';
 import { timeFormatFactory, formatDate } from '../javascripts/modules/dates';
 
-require('./table.css');
-require('./table.scss');
-const $ = require('jquery');
+import './table.css';
+import './table.scss';
+
+import $ from 'jquery';
 
 require('datatables-bootstrap3-plugin/media/css/datatables-bootstrap3.css');
 import 'datatables.net';
