@@ -497,6 +497,14 @@ class Dashboard(Model, AuditMixinNullable, ImportMixin):
         })
 
 
+role_database = Table(
+    'role_database', Model.metadata,
+    Column('id', Integer, primary_key=True),
+    Column('role_id', Integer, ForeignKey('ab_role.id')),
+    Column('database_id', Integer, ForeignKey('dbs.id'))
+)
+
+
 class Database(Model, AuditMixinNullable):
 
     """An ORM object that stores Database related information"""
@@ -525,10 +533,19 @@ class Database(Model, AuditMixinNullable):
     }
     """))
     perm = Column(String(1000))
-    allow_parquet_table = Column(Boolean, default=False)
+    allow_create_table = Column(Boolean, default=False)
+    allow_hdfs_table = Column(Boolean, default=False)
+    user_management_view = Column(String(1000))
+    roles = relationship('Role', secondary=role_database, backref='ab_role')
+
 
     def __repr__(self):
         return self.verbose_name if self.verbose_name else self.database_name
+
+    @property
+    def username(self):
+        url = make_url(self.sqlalchemy_uri_decrypted)
+        return url.username
 
     @property
     def name(self):
@@ -542,6 +559,14 @@ class Database(Model, AuditMixinNullable):
     def backend(self):
         url = make_url(self.sqlalchemy_uri_decrypted)
         return url.get_backend_name()
+
+    @property
+    def allow_management(self):
+        return self.user_management_view is not None
+
+    @property
+    def beautified_roles(self):
+        return "<br />".join([role.name for role in self.roles])
 
     def set_sqlalchemy_uri(self, uri):
         password_mask = "X" * 10

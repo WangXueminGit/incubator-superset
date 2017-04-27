@@ -96,6 +96,7 @@ class BaseViz(object):
         if not query_obj:
             query_obj = self.query_obj()
 
+
         self.error_msg = ""
         self.results = None
 
@@ -139,6 +140,10 @@ class BaseViz(object):
         extra_filters = self.form_data.get('extra_filters', [])
         return {f['col']: f['val'] for f in extra_filters}
 
+    def get_extra_groupby(self):
+        extra_groupby = self.form_data.get('extra_groupby', [])
+        return extra_groupby
+
     def query_obj(self):
         """Building a query object"""
         form_data = self.form_data
@@ -149,6 +154,7 @@ class BaseViz(object):
         # to the slice definition. We use those for dynamic interactive
         # filters like the ones emitted by the "Filter Box" visualization
         extra_filters = self.get_extra_filters()
+        extra_groupby = self.get_extra_groupby()
         granularity = (
             form_data.get("granularity") or form_data.get("granularity_sqla")
         )
@@ -202,7 +208,7 @@ class BaseViz(object):
             'from_dttm': from_dttm,
             'to_dttm': to_dttm,
             'is_timeseries': self.is_timeseries,
-            'groupby': groupby,
+            'groupby': groupby + extra_groupby,
             'metrics': metrics,
             'row_limit': row_limit,
             'filter': filters,
@@ -976,6 +982,82 @@ class NVD3TimeSeriesViz(NVD3Viz):
         return chart_data
 
 
+class NVD3SimpleLineViz(NVD3Viz):
+    """A rich line chart component with tons of options"""
+
+    viz_type = "simpleline"
+    verbose_name = _("Simple Line Chart")
+    sort_series = False
+    is_timeseries = False
+
+    def query_obj(self):
+        form_data = self.form_data
+        d = super(NVD3SimpleLineViz, self).query_obj()
+        d['groupby'] = form_data.get("groupby") or []
+        metrics = form_data.get("metrics") or ['count']
+        metric_x = form_data.get('x', None)
+        if metric_x is not None and metric_x not in d['groupby']:
+            metrics.append(form_data.get('x'))
+
+        d['metrics'] = set(metrics)
+        if not all(d['metrics']):
+            raise Exception("Pick a metric for x, y and size")
+        return d
+
+    def to_series(self, df, classed='', title_suffix=''):
+        cols = []
+        print(df)
+        for col in df.columns:
+            if col == '':
+                cols.append('N/A')
+            elif col is None:
+                cols.append('NULL')
+            else:
+                cols.append(col)
+        df.columns = cols
+        series = df.to_dict('series')
+        chart_data = []
+        for name in df.T.index.tolist():
+            ys = series[name]
+            if df[name].dtype.kind not in "biufc":
+                continue
+            if isinstance(name, string_types):
+                series_title = name
+            else:
+                name = ["{}".format(s) for s in name]
+                if len(self.form_data.get('metrics')) > 1:
+                    series_title = ", ".join(name)
+                else:
+                    series_title = ", ".join(name[1:])
+            if title_suffix:
+                series_title += title_suffix
+
+            d = {
+                "key": series_title,
+                "classed": classed,
+                "values": [
+                    {'x': ds, 'y': ys[ds] if ds in ys else None}
+                    for ds in df.index
+                ],
+            }
+            chart_data.append(d)
+        return chart_data
+
+    def get_data(self, df):
+        fd = self.form_data
+        df = df.fillna(0)
+        if fd.get("granularity") == "all":
+            raise Exception("Pick a time granularity for your time series")
+        print(df)
+        df = df.pivot_table(
+            index=fd.get('x'),
+            columns=[],
+            values=fd.get('metric'))
+
+        chart_data = self.to_series(df)
+        return chart_data
+
+
 class NVD3DualLineViz(NVD3Viz):
 
     """A rich line chart with dual axis"""
@@ -1351,15 +1433,17 @@ class FilterBoxViz(BaseViz):
     def query_obj(self):
         qry = super(FilterBoxViz, self).query_obj()
         groupby = self.form_data.get('groupby')
-        if len(groupby) < 1 and not self.form_data.get('date_filter'):
+        filterby = self.form_data.get('filterby')
+        if len(groupby) < 1 and len(filterby) < 1 and not self.form_data.get('date_filter'):
             raise Exception("Pick at least one filter field")
         qry['metrics'] = [
             self.form_data['metric']]
+        # qry['groupby'] = groupby
         return qry
 
     def get_data(self, df):
         qry = self.query_obj()
-        filters = [g for g in self.form_data['groupby']]
+        filters = [g for g in self.form_data['filterby']]
         d = {}
         for flt in filters:
             qry['groupby'] = [flt]
@@ -1584,6 +1668,7 @@ viz_types_list = [
     TableViz,
     PivotTableViz,
     NVD3TimeSeriesViz,
+    NVD3SimpleLineViz,
     NVD3DualLineViz,
     NVD3CompareTimeSeriesViz,
     NVD3TimeSeriesStackedViz,

@@ -147,6 +147,21 @@ const visTypes = {
     ],
   },
 
+  simpleline: {
+    label: 'Simple Line Chart',
+    requiresTime: false,
+    controlPanelSections: [
+      {
+        label: null,
+        controlSetRows: [
+          ['x', 'metrics'],
+          ['groupby'],
+          ['limit']
+        ],
+      }
+    ],
+  },
+
   dual_line: {
     label: 'Time Series - Dual Axis Line Chart',
     requiresTime: true,
@@ -616,14 +631,15 @@ const visTypes = {
         controlSetRows: [
           ['date_filter', 'instant_filtering'],
           ['groupby'],
+          ['filterby'],
           ['metric'],
         ],
       },
     ],
     controlOverrides: {
-      groupby: {
+      filterby: {
         label: 'Filter controls',
-        description: 'The controls you want to filter on',
+        description: 'The controls you want to filter on its value',
         default: [],
       },
     },

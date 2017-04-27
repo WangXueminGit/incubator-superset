@@ -91,10 +91,14 @@ const px = function () {
       endpoint(endpointType = 'json') {
         const formDataExtra = Object.assign({}, formData);
         const flts = controller.effectiveExtraFilters(sliceId);
+        const groupBy = controller.effectiveExtraGroupBy(sliceId);
         if (flts) {
           formDataExtra.extra_filters = flts;
         }
-        let endpoint = getExploreUrl(formDataExtra, endpointType, this.force);
+        if (groupBy) {
+          formDataExtra.extra_groupby = groupBy;
+        }
+        let endpoint = getExploreUrl(formDataExtra, endpointType, this.force, true);
         if (endpoint.charAt(0) !== '/') {
           // Known issue for IE <= 11:
           // https://connect.microsoft.com/IE/feedbackdetail/view/1002846/pathname-incorrect-for-out-of-document-elements
@@ -233,6 +237,9 @@ const px = function () {
       },
       addFilter(col, vals, merge = true, refresh = true) {
         controller.addFilter(sliceId, col, vals, merge, refresh);
+      },
+      addGroupByFilter(vals, refresh = true) {
+        controller.addGroupByFilter(sliceId, vals, refresh);
       },
       setFilter(col, vals, refresh = true) {
         controller.setFilter(sliceId, col, vals, refresh);

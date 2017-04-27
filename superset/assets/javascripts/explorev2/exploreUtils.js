@@ -1,5 +1,5 @@
 /* eslint camelcase: 0 */
-export function getExploreUrl(form_data, endpoint = 'base', force = false) {
+export function getExploreUrl(form_data, endpoint = 'base', force = false, secure = false) {
   if (!form_data.datasource) {
     return null;
   }
@@ -9,18 +9,36 @@ export function getExploreUrl(form_data, endpoint = 'base', force = false) {
   if (force) {
     params += '&force=true';
   }
-  switch (endpoint) {
-    case 'base':
-      return `/superset/explore/${params}`;
-    case 'json':
-      return `/superset/explore_json/${params}`;
-    case 'csv':
-      return `/superset/explore_json/${params}&csv=true`;
-    case 'standalone':
-      return `/superset/explore/${params}&standalone=true`;
-    case 'query':
-      return `/superset/explore_json/${params}&query=true`;
-    default:
-      return `/superset/explore/${params}`;
+  if (secure) {
+    switch (endpoint) {
+      case 'base':
+        return `/superset/explore/${params}`;
+      case 'json':
+        return `/superset/explore_json/secure/${params}`;
+      case 'csv':
+        return `/superset/explore_json/secure/${params}&csv=true`;
+      case 'standalone':
+        return `/superset/explore/${params}&standalone=true`;
+      case 'query':
+        return `/superset/explore_json/secure/${params}&query=true`;
+      default:
+        return `/superset/explore/${params}`;
+    }
+  }
+  else {
+    switch (endpoint) {
+      case 'base':
+        return `/superset/explore/${params}`;
+      case 'json':
+        return `/superset/explore_json/${params}`;
+      case 'csv':
+        return `/superset/explore_json/${params}&csv=true`;
+      case 'standalone':
+        return `/superset/explore/${params}&standalone=true`;
+      case 'query':
+        return `/superset/explore_json/${params}&query=true`;
+      default:
+        return `/superset/explore/${params}`;
+    }
   }
 }

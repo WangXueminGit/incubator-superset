@@ -13,9 +13,12 @@ import { TIME_CHOICES } from './constants.js';
 
 const propTypes = {
   origSelectedValues: React.PropTypes.object,
+  origSelectedGroupByValues: React.PropTypes.array,
   instantFiltering: React.PropTypes.bool,
   filtersChoices: React.PropTypes.object,
+  groupByChoices: React.PropTypes.array,
   onChange: React.PropTypes.func,
+  onGroupByChange: React.PropTypes.func,
   showDateFilter: React.PropTypes.bool,
 };
 
@@ -31,6 +34,7 @@ class FilterBox extends React.Component {
     super(props);
     this.state = {
       selectedValues: props.origSelectedValues,
+      selectedGroupByValues: props.origSelectedGroupByValues,
       hasChanged: false,
     };
   }
@@ -51,6 +55,11 @@ class FilterBox extends React.Component {
     selectedValues[filter] = vals;
     this.setState({ selectedValues, hasChanged: true });
     this.props.onChange(filter, vals, false, this.props.instantFiltering);
+  }
+  changeGroupBy(options) {
+    const selectedGroupByValues = options;
+    this.setState({ selectedGroupByValues, hasChanged: true });
+    this.props.onGroupByChange(options, this.props.instantFiltering);
   }
   render() {
     let dateFilter;
@@ -105,10 +114,26 @@ class FilterBox extends React.Component {
         </div>
       );
     });
+    const groupby = (
+      <div key="groupBy" className="m-b-5">
+        Group By
+        <Select
+          placeholder={`Select Group By Fields`}
+          key='groupBy'
+          multi
+          value={this.state.selectedGroupByValues}
+          options={this.props.groupByChoices.map((opt) => {
+            return { value: opt, label: opt };
+          })}
+          onChange={this.changeGroupBy.bind(this)}
+        />
+      </div>
+    );
     return (
       <div>
         {dateFilter}
         {filters}
+        {groupby}
         {!this.props.instantFiltering &&
           <Button
             bsSize="small"
@@ -134,15 +159,18 @@ function filterBox(slice, payload) {
   // const url = slice.jsonEndpoint({ extraFilters: false });
   const fd = slice.formData;
   const filtersChoices = {};
+  const groupByChoices = fd.groupby;
   // Making sure the ordering of the fields matches the setting in the
   // dropdown as it may have been shuffled while serialized to json
-  fd.groupby.forEach((f) => {
+  fd.filterby.forEach((f) => {
     filtersChoices[f] = payload.data[f];
   });
   ReactDOM.render(
     <FilterBox
       filtersChoices={filtersChoices}
+      groupByChoices={groupByChoices}
       onChange={slice.addFilter}
+      onGroupByChange={slice.addGroupByFilter}
       showDateFilter={fd.date_filter}
       origSelectedValues={slice.getFilters() || {}}
       instantFiltering={fd.instant_filtering}

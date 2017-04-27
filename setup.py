@@ -61,6 +61,7 @@ setup(
         'pydruid==0.3.1',
         # 'PyHive>=0.2.1', # Use the master branch of PyHive and not v0.2.1 # Uncomment when new version of PyHive is available
         'python-dateutil==2.6.0',
+        'python-slugify==1.2.4',
         'requests==2.13.0',
         'simplejson==3.10.0',
         'six==1.10.0',

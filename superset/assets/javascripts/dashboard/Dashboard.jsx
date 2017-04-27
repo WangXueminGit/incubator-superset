@@ -102,6 +102,7 @@ export function dashboardContainer(dashboard) {
   return Object.assign({}, dashboard, {
     type: 'dashboard',
     filters: {},
+    groupBy: [],
     slicesDone: [],
     init() {
       this.sliceObjects = [];
@@ -210,6 +211,31 @@ export function dashboardContainer(dashboard) {
       }
       return f;
     },
+    effectiveExtraGroupBy(sliceId) {
+      const f = [];
+      const immuneSlices = this.metadata.filter_immune_slices || [];
+      if (sliceId && immuneSlices.includes(sliceId)) {
+        // The slice is immune to dashboard fiterls
+        return f;
+      }
+
+      // Building a list of fields the slice is immune to filters on
+      let immuneToFields = [];
+      if (
+            sliceId &&
+            this.metadata.filter_immune_slice_fields &&
+            this.metadata.filter_immune_slice_fields[sliceId]) {
+        immuneToFields = this.metadata.filter_immune_slice_fields[sliceId];
+      }
+      for (const groupBySliceId in this.groupBy) {
+        for (const field in this.groupBy[groupBySliceId]) {
+          if (!immuneToFields.includes(field)) {
+            f.push(this.groupBy[groupBySliceId][field]['value']);
+          }
+        }
+      }
+      return f;
+    },
     addFilter(sliceId, col, vals, merge = true, refresh = true) {
       if (!(sliceId in this.filters)) {
         this.filters[sliceId] = {};
@@ -218,9 +244,16 @@ export function dashboardContainer(dashboard) {
         if (!merge) {
           this.filters[sliceId][col] = vals;
         } else {
-          this.filters[sliceId][col] = d3.merge([this.filters[sliceId][col], vals]);
+          this.filters[sliceId][col] = d3.merge([this.filters[sliceId][col] || [], vals]);
         }
       }
+      if (refresh) {
+        this.refreshExcept(sliceId);
+      }
+      this.updateFilterParamsInUrl();
+    },
+    addGroupByFilter(sliceId, vals, refresh = true) {
+      this.groupBy[sliceId] = vals || [];
       if (refresh) {
         this.refreshExcept(sliceId);
       }

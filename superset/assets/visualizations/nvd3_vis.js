@@ -143,6 +143,24 @@ function nvd3Vis(slice, payload) {
         .staggerLabels(false);
         break;
 
+      case 'simpleline':
+        if (fd.show_brush) {
+          chart = nv.models.lineWithFocusChart();
+          // chart.focus.xScale(d3.time.scale.utc());
+          chart.x2Axis
+          .showMaxMin(fd.x_axis_showminmax)
+          .staggerLabels(false);
+        } else {
+          chart = nv.models.lineChart();
+        }
+        // To alter the tooltip header
+        chart.interpolate(fd.line_interpolation);
+        chart.xAxis
+        .showMaxMin(true)
+        .staggerLabels(false);
+        chart.forceX([50])
+        break;
+
       case 'dual_line':
         chart = nv.models.multiChart();
         chart.interpolate('linear');
@@ -307,7 +325,7 @@ function nvd3Vis(slice, payload) {
       chart.xScale(d3.scale.log());
     }
     let xAxisFormatter;
-    if (vizType === 'bubble') {
+    if (vizType === 'bubble' || vizType === 'simpleline') {
       xAxisFormatter = d3.format('.3s');
     } else if (fd.x_axis_format === 'smart_date') {
       xAxisFormatter = formatDate;
@@ -328,7 +346,7 @@ function nvd3Vis(slice, payload) {
       height += 30;
     }
 
-    if (vizType === 'bubble') {
+    if (vizType === 'bubble' || vizType === 'simpleline') {
       chart.xAxis.tickFormat(d3.format('.3s'));
     } else if (fd.x_axis_format === 'smart_date') {
       chart.xAxis.tickFormat(formatDate);
