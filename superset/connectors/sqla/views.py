@@ -7,7 +7,7 @@ from past.builtins import basestring
 from flask import Markup, flash, redirect, request
 from flask_login import current_user
 from flask_appbuilder import CompactCRUDMixin, expose
-from flask_appbuilder.actions import action=
+from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 import sqlalchemy as sa
 
