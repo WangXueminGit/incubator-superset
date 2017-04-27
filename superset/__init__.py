@@ -9,7 +9,7 @@ import os
 import json
 from logging.handlers import TimedRotatingFileHandler
 
-from flask import Flask, redirect
+from flask import Flask, redirect, request
 from flask_appbuilder import SQLA, AppBuilder, IndexView
 from flask_appbuilder.baseviews import expose
 from flask_appbuilder.security.sqla.manager import SecurityManager
@@ -31,6 +31,13 @@ app = Flask(__name__)
 app.config.from_object(CONFIG_MODULE)
 conf = app.config
 
+@app.before_request
+def before_request():
+    # When you import jinja2 macros, they get cached which is annoying for local
+    # development, so wipe the cache every request.
+    if 'localhost' in request.host_url or '0.0.0.0' in request.host_url:
+        app.jinja_env.cache = {}
+
 for bp in conf.get('BLUEPRINTS'):
     try:
         print("Registering blueprint: '{}'".format(bp.name))
@@ -46,6 +53,8 @@ if not app.debug:
     # In production mode, add log handler to sys.stderr.
     app.logger.addHandler(logging.StreamHandler())
     app.logger.setLevel(logging.INFO)
+else:
+    app.jinja_env.auto_reload = True
 logging.getLogger('pyhive.presto').setLevel(logging.INFO)
 
 db = SQLA(app)
@@ -94,7 +103,6 @@ class MyIndexView(IndexView):
 
 
 class AuthOAuthView(DefaultAuthOAuthView):
-
     # Forced redirect to Google Login
     @expose('/login/')
     def auto_login(self):

@@ -11,13 +11,16 @@ import sqlalchemy as sa
 from flask_babel import lazy_gettext as _
 from flask_babel import gettext as __
 
-from superset import appbuilder, db, utils, security, sm
+from flask_appbuilder.urltools import get_filter_args
+
+from superset import appbuilder, db, utils, security, sm, config
 from superset.utils import has_access
 from superset.views.base import (
     SupersetModelView, ListWidgetWithCheckboxes, DeleteMixin, DatasourceFilter,
     get_datasource_exist_error_mgs,
 )
 from superset.models.core import Database
+from superset.widgets import CustomFormWidget
 
 from . import models
 
@@ -148,22 +151,23 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         'changed_by_', 'changed_on_']
     order_columns = [
         'link', 'database', 'is_featured', 'changed_on_']
-    add_columns = ['database', 'schema', 'table_name', 'parquet_path']
+    add_columns = ['database', 'schema', 'table_name']
     edit_columns = [
         'table_name', 'sql', 'is_featured', 'filter_select_enabled',
         'database', 'schema',
         'description', 'owner',
         'main_dttm_col', 'default_endpoint', 'offset', 'cache_timeout']
-    show_columns = edit_columns + ['perm'] + ['parquet_path']
+    show_columns = edit_columns + ['perm']
     related_views = [TableColumnInlineView, SqlMetricInlineView]
     base_order = ('changed_on', 'desc')
     description_columns = {
         'offset': _("Timezone offset (in hours) for this datasource"),
-        'table_name': _(
-            "Name of the table that exists in the source database"),
-        'schema': _(
-            "Schema, as used only in some databases like Postgres, Redshift "
-            "and DB2"),
+        'table_name': utils.markdown(
+            "For `admin`, you can add existing tables in the datasource. "
+            "For `others`, you can create new table by using the additional field below. ", True),
+        'schema': utils.markdown(
+            "Schema, `public` as used only in some databases like Postgres, `Redshift` "
+            "and DB2", True),
         'description': Markup(
             "Supports <a href='https://daringfireball.net/projects/markdown/'>"
             "markdown</a>"),
@@ -171,11 +175,6 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
             "This fields acts a Superset view, meaning that Superset will "
             "run a query against this string as a subquery."
         ),
-        'parquet_path': utils.markdown(
-            "Add a Parquet file path to create a table in database. "
-            "Leave blank if table exists. "
-            "It is only applicable for **Shopee Playground** database. ", True
-        )
     }
     base_filters = [['id', DatasourceFilter, lambda: []]]
     label_columns = {
@@ -189,14 +188,106 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         'default_endpoint': _("Default Endpoint"),
         'offset': _("Offset"),
         'cache_timeout': _("Cache Timeout"),
-        'parquet_path': _("Path of Parquet file"),
     }
+    add_widget = CustomFormWidget
+    custom_fields = [
+        {
+            "identifier": "create_global_table",
+            "title": "Create table without user postfix",
+            "input": "checkbox",
+            "description": utils.markdown("Checked to create table without username as postfix. "
+                             "For `non-Admin`, username or group name will be added by default. ", True),
+            "required": False,
+        },
+        {
+            "identifier": "create_table_sql",
+            "title": "Create table with SQL",
+            "input": "sql",
+            "placeholder": _("Paste a complete and error-free CREATE TABLE sql"),
+            "description": utils.markdown(
+                "Create table with SQL is only applicable to `Redshift`."
+                , True),
+            "required": False,
+        },
+        {
+            "identifier": "hdfs_path",
+            "title": "Create table from HDFS",
+            "input": "text",
+            "placeholder": _("Enter the full path of file from HDFS"),
+            "description": utils.markdown(
+                "Create table and load data FROM HDFS is only applicable to `Spark Playground`."
+                , True),
+            "required": False,
+        },
+        {
+            "identifier": "hdfs_file_type",
+            "title": "HDFS File type",
+            "input": "select",
+            "options": [
+                {
+                    "label": "Parquet",
+                    "value": "parquet",
+                },
+                {
+                    "label": "JSON",
+                    "value": "json",
+                },
+            ],
+            "description": utils.markdown(
+                "Required if `Create table from HDFS` option is chosen."
+                , True),
+            "required": False,
+        },
+    ]
+
+    def _get_add_widget(self, form, exclude_cols=None, widgets=None):
+        exclude_cols = exclude_cols or []
+        widgets = widgets or {}
+        widgets['add'] = self.add_widget(form=form,
+                                         include_cols=self.add_columns,
+                                         exclude_cols=exclude_cols,
+                                         fieldsets=self.add_fieldsets,
+                                         custom_fields=self.custom_fields,
+                                         )
+        return widgets
 
     def pre_add(self, table):
+        form = request.form
+
+        hdfs_path = form.get('hdfs_path', None)
+        hdfs_file_type = form.get('hdfs_file_type', None)
+        hdfs_options = {
+            "parquet": "org.apache.spark.sql.parquet",
+            "json": "org.apache.spark.sql.json",
+        }
+
+        original_table_name = table.table_name.lower()
+
+        create_table_sql = form.get('create_table_sql', None)
         database = db.session.query(Database).get(table.database.id)
-        if database.allow_parquet_table and table.table_name is not None and len(table.parquet_path) > 0:
-            username = re.sub('[^a-zA-Z0-9]', '_', current_user.username)
-            table.table_name = table.table_name + '__' + username
+
+        roles = [role.name for role in current_user.roles]
+        # decide create table without username/email account
+        create_global_table = len([role for role in roles if role in config.ROLE_CREATE_TABLE_GLOBAL]) > 0
+        create_global_table_submit = form.get('create_global_table', None) is not None
+
+        private_roles = [role for role in roles if role not in config.ROBOT_PERMISSION_ROLES]
+        private_roles.sort()
+
+        if (database.allow_create_table or database.allow_hdfs_table) and table.table_name is not None and \
+            ((hdfs_path is not None and hdfs_file_type is not None) or (create_table_sql is not None)):
+            if not create_global_table or not create_global_table_submit:
+                if database.allow_create_table:
+                    try:
+                        table.table_name = "{}__{}".format(table.table_name, private_roles[0].lower())
+                    except:
+                        raise Exception(_("Insufficient information of user group"))
+                elif database.allow_hdfs_table:
+                    username = re.sub('[^a-zA-Z0-9]', '_', current_user.username)
+                    table.table_name = "{}__{}".format(table.table_name, username)
+                else:
+                    raise Exception(_("Invalid operation"))
+            table.table_name = re.sub(r"[^A-Za-z0-9_]", "", table.table_name)
 
         number_of_existing_tables = db.session.query(
             sa.func.count('*')).filter(
@@ -208,26 +299,54 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         if number_of_existing_tables > 1:
             raise Exception(get_datasource_exist_error_mgs(table.full_name))
 
-        # Create Table based on Parquet path
-        if database.allow_parquet_table and table.table_name is not None and len(table.parquet_path) > 0:
+        # Create Table based on HDFS path
+        if database.allow_hdfs_table and table.table_name is not None and \
+                    hdfs_path is not None and hdfs_file_type is not None:
             engine = database.get_sqla_engine()
             connection = engine.connect()
             transaction = connection.begin()
             try:
-                connection.execute('CREATE TABLE ' + table.table_name +
-                               ' USING org.apache.spark.sql.parquet OPTIONS (path "' + table.parquet_path + '")')
+                connection.execute("CREATE TABLE {} USING {} OPTIONS (path \"{}\")".format(table.table_name, hdfs_options[hdfs_file_type], hdfs_path))
                 transaction.commit()
-
             except Exception as e:
                 transaction.rollback()
                 logging.exception(e)
                 raise Exception(
-                    "Parquet file [{}] could not be found, "
+                    "HDFS file [{}] could not be found, "
                     "please double check your "
-                    "database connection, and parquet file path ".format(table.parquet_path))
+                    "database connection, and parquet file path".format(hdfs_path))
             finally:
                 connection.close()
                 engine.dispose()
+
+        elif database.allow_create_table and table.table_name is not None and create_table_sql is not None:
+            engine = database.get_sqla_engine()
+            connection = engine.connect()
+            transaction = connection.begin()
+
+            clean_sql = utils.clean_sql(create_table_sql, ["CREATE_TABLE"])
+            if clean_sql is None:
+                raise Exception("Invalid SQL {}".format(create_table_sql))
+
+            if original_table_name not in clean_sql:
+                raise Exception("Table name in SQL does not match table name entered in form. {}".format(create_table_sql))
+            clean_sql = clean_sql.replace(original_table_name, table.table_name)
+
+            try:
+                connection.execute(clean_sql)
+                transaction.commit()
+            except Exception as e:
+                transaction.rollback()
+                logging.exception(e)
+                raise Exception(
+                    "Failed to create table in database. "
+                    "Please double check your database connection")
+            finally:
+                connection.close()
+                engine.dispose()
+
+        elif not create_global_table:
+            raise Exception("Insufficient permission to use table in database")
 
         # Fail before adding if the table can't be found
         try:
@@ -241,10 +360,49 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                 "table name".format(table.name))
 
     def post_add(self, table):
+        form = request.form
+        database = db.session.query(Database).get(table.database.id)
         table.fetch_metadata()
+
         security.merge_perm(sm, 'datasource_access', table.get_perm())
         if table.schema:
             security.merge_perm(sm, 'schema_access', table.schema_perm)
+
+        # Grant user permission to use this table in Lumos
+        permission = sm.find_permission('datasource_access')
+        view_menu = sm.find_view_menu(table.get_perm())
+        pv = sm.get_session.query(sm.permissionview_model).filter_by(
+                permission=permission, view_menu=view_menu).first()
+        private_roles = [role for role in current_user.roles if role.name not in config.ROBOT_PERMISSION_ROLES]
+        for role in private_roles:
+            role.permissions.append(pv)
+        db.session.commit()
+
+        create_table_sql = form.get('create_table_sql', None)
+        if database.backend == 'postgresql' and database.allow_create_table and create_table_sql is not None:
+            db_users = []
+            for database in db.session.query(Database).all():
+                for role in private_roles:
+                    if role in database.roles:
+                        db_users += [database.username]
+
+            engine = database.get_sqla_engine()
+            connection = engine.connect()
+            transaction = connection.begin()
+            try:
+                for db_user in db_users:
+                    connection.execute("GRANT SELECT ON {} TO {}".format(table.table_name, db_user))
+                transaction.commit()
+
+            except Exception as e:
+                transaction.rollback()
+                logging.exception(e)
+                raise Exception(
+                    "Error in granting permission from Redshift. "
+                    "Please check with administrator to access to Redshift from your database account. ")
+            finally:
+                connection.close()
+                engine.dispose()
 
         flash(_(
             "The table was created. As part of this two phase configuration "

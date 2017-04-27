@@ -1,0 +1,88 @@
+{% extends "appbuilder/base.html" %}
+{% import 'appbuilder/general/lib.html' as lib %}
+
+{% block content %}
+{{ lib.panel_begin(title) }}
+
+    {% block list_list scoped %}
+      <div class="btn-group">
+        <button class="btn btn-primary" id="table_dropdown" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Filter by table
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="table_dropdown">
+          <li><a href="/managedb/db/{{ database_id }}/">No filter</a></li>
+          {% for table in tables %}
+            <li><a href="/managedb/dbtable/{{ database_id }}/{{ table }}/">{{ table }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" id="user_dropdown" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Filter by user
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="user_dropdown">
+          <li><a href="/managedb/db/{{ database_id }}/">No filter</a></li>
+          {% for user in users %}
+            <li><a href="/managedb/dbuser/{{ database_id }}/{{ user }}/">{{ user }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <div class="table-responsive">
+          <form method="POST" action="/managedb/db/{{ database_id }}/">
+            <input type="hidden" name="path" value="{{ path }}" />
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Table</th>
+                  <th>SELECT <input id="check_all_select" class="action_check_all" name="check_all" type="checkbox"></th>
+                  <th>INSERT <input id="check_all_insert" class="action_check_all" name="check_all" type="checkbox"></th>
+                  <th>UPDATE <input id="check_all_update" class="action_check_all" name="check_all" type="checkbox"></th>
+                  <th>DELETE <input id="check_all_delete" class="action_check_all" name="check_all" type="checkbox"></th>
+                  <th>REFERENCE <input id="check_all_references" class="action_check_all" name="check_all" type="checkbox"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for result in results %}
+                  <tr>
+                    <td>{{ result.username }}</td>
+                    <td>{{ result.tablename }}<input type="hidden" name="{{ result.username }}__{{ result.tablename }}" value="1"></td>
+                    <td><input type="checkbox" class="check_select" name="{{ result.username }}__{{ result.tablename }}__select" value="1" {% if result['select'] %} checked{% endif %} /></td>
+                    <td><input type="checkbox" class="check_insert" name="{{ result.username }}__{{ result.tablename }}__insert" value="1" {% if result['insert'] %} checked{% endif %} /></td>
+                    <td><input type="checkbox" class="check_update" name="{{ result.username }}__{{ result.tablename }}__update" value="1" {% if result['update'] %} checked{% endif %} /></td>
+                    <td><input type="checkbox" class="check_delete" name="{{ result.username }}__{{ result.tablename }}__delete" value="1" {% if result['delete'] %} checked{% endif %} /></td>
+                    <td><input type="checkbox" class="check_references" name="{{ result.username }}__{{ result.tablename }}__references" value="1" {% if result['references'] %} checked{% endif %} /></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <button class="btn btn-primary">Save changes</button>
+          </form>
+        </div>
+      </div>
+      <script>
+      $(document).ready(function(){
+        $('#check_all_select').on('change', function(e) {
+          $('.check_select').prop("checked", $('#check_all_select').prop('checked'));
+        });
+        $('#check_all_insert').on('change', function(e) {
+          $('.check_insert').prop("checked", $('#check_all_insert').prop('checked'));
+        });
+        $('#check_all_update').on('change', function(e) {
+          $('.check_update').prop("checked", $('#check_all_update').prop('checked'));
+        });
+        $('#check_all_delete').on('change', function(e) {
+          $('.check_delete').prop("checked", $('#check_all_delete').prop('checked'));
+        });
+        $('#check_all_references').on('change', function(e) {
+          $('.check_references').prop("checked", $('#check_all_references').prop('checked'));
+        });
+      })
+      </script>
+    {% endblock %}
+{{ lib.panel_end() }}
+
+{% endblock %}

@@ -40,6 +40,7 @@ from superset.legacy import cast_form_data
 from superset.utils import has_access, has_access_api, SupersetSecurityException
 from superset.connectors.connector_registry import ConnectorRegistry
 import superset.models.core as models
+from superset.models.core import Database
 from superset.sql_parse import SupersetQuery
 
 from .base import (
@@ -79,7 +80,7 @@ def my_user_info_getter(sm, provider, response=None):
             'ved.com.vn',
             'garena.co.in',
             'shopee.vn',
-            'garena.co.id'
+            'garena.co.id',
         ]
         if domain not in authorized_email_extensions:
             raise SupersetSecurityException('Email domain is not allowed.')
@@ -235,12 +236,14 @@ def generate_download_headers(extension):
 class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
     datamodel = SQLAInterface(models.Database)
     list_columns = [
-        'verbose_name', 'backend', 'allow_run_sync', 'allow_run_async',
-        'allow_dml', 'creator', 'changed_on_', 'database_name', 'allow_parquet_table']
+        'database_name', 'backend',
+        'allow_create_table', 'allow_hdfs_table', 'allow_management', 'beautified_roles']
     add_columns = [
         'database_name', 'sqlalchemy_uri', 'cache_timeout', 'extra',
         'expose_in_sqllab', 'allow_run_sync', 'allow_run_async',
-        'allow_ctas', 'allow_dml', 'force_ctas_schema', 'allow_parquet_table']
+        'allow_ctas', 'allow_dml', 'force_ctas_schema',
+        'allow_create_table', 'allow_hdfs_table',
+        'user_management_view', 'roles']
     search_exclude_columns = ('password',)
     edit_columns = add_columns
     show_columns = [
@@ -250,11 +253,14 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
         'database_name',
         'sqlalchemy_uri',
         'perm',
-        'allow_parquet_table',
+        'allow_create_table',
+        'allow_hdfs_table',
+        'user_management_view',
         'created_by',
         'created_on',
         'changed_by',
         'changed_on',
+        'roles',
     ]
     add_template = "superset/models/database/add.html"
     edit_template = "superset/models/database/edit.html"
@@ -292,9 +298,24 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
             "gets unpacked into the [sqlalchemy.MetaData]"
             "(http://docs.sqlalchemy.org/en/rel_1_0/core/metadata.html"
             "#sqlalchemy.schema.MetaData) call. ", True),
-        'allow_parquet_table': _(
-            "Allow users to create table in database based on parquet file path given. "
-            "This option is only applicable to ThriftServer"),
+        'allow_create_table': _(
+            "Allow users to create table in database with SQL"),
+        'allow_hdfs_table': _(
+            "Allow users to create table in database with HDFS file"),
+        'user_management_view': utils.markdown(
+            "Manage user for Redshift DB with admin roles"
+            "      CREATE OR REPLACE VIEW lumos_user_management_view AS"
+            "        WITH"
+            "          users AS"
+            "          (select usename AS username from pg_user WHERE username NOT IN ('admin', 'insight_web', 'insightweb', 'insight_test', 'test_performance'))"
+            "        SELECT username, tablename,"
+            "           HAS_TABLE_PRIVILEGE(users.username, tablename, 'select') AS select,"
+            "           HAS_TABLE_PRIVILEGE(users.username, tablename, 'insert') AS insert,"
+            "           HAS_TABLE_PRIVILEGE(users.username, tablename, 'update') AS update,"
+            "           HAS_TABLE_PRIVILEGE(users.username, tablename, 'delete') AS delete,"
+            "           HAS_TABLE_PRIVILEGE(users.username, tablename, 'references') AS references"
+            "        FROM pg_tables, users WHERE schemaname='public' ORDER BY username, tablename;"
+        , True),
     }
     label_columns = {
         'expose_in_sqllab': _("Expose in SQL Lab"),
@@ -307,7 +328,12 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
         'sqlalchemy_uri': _("SQLAlchemy URI"),
         'cache_timeout': _("Cache Timeout"),
         'extra': _("Extra"),
-        'allow_parquet_table': _("Allow create table from Parquet"),
+        'allow_create_table': _("Allow create table with SQL"),
+        'allow_hdfs_table': _("Allow create table with HDFS file"),
+        'user_management_view': _("Table or view name for display"),
+        'beautified_roles': _("Attach to groups"),
+        'roles': _("Attach to groups"),
+        'allow_management': _("Allow manage users"),
     }
 
     def pre_add(self, db):
@@ -320,6 +346,14 @@ class DatabaseView(SupersetModelView, DeleteMixin):  # noqa
     def pre_update(self, db):
         self.pre_add(db)
 
+    @has_access
+    @action("manage_db", "Manage user privileges", "Manage user privileges? Choose one datasource at a time.",
+            "fa-cog")
+    def manage_user_privileges(self, dbs):
+        if isinstance(dbs, list):
+            return redirect('/managedb/db/{}/'.format(dbs[0].id))
+        else:
+            return redirect('/managedb/db/{}/'.format(dbs.id))
 
 appbuilder.add_link(
     'Import Dashboards',
@@ -686,6 +720,144 @@ class R(BaseSupersetView):
 
 appbuilder.add_view_no_menu(R)
 
+
+class Managedb(BaseSupersetView):
+    @log_this
+    @has_access
+    @expose("/db/<database_id>/", methods=["GET", "POST"])
+    def list_user_table(self, database_id):
+        database = db.session.query(Database).get(database_id)
+        results = []
+        tables = []
+        users = []
+        if database.user_management_view is not None:
+            engine = database.get_sqla_engine()
+            try:
+                query = 'SELECT * FROM {}'.format(database.user_management_view)
+                records = pd.read_sql_query(query, engine)
+                results = records.T.to_dict().values()
+                tables = records.tablename.unique()
+                users = records.username.unique()
+
+                if request.method == 'POST':
+                    submit_user_table = []
+                    submit_form = dict()
+                    for field, value in request.form.iteritems():
+                        if len(field.split('__')) == 3:
+                            submit_form[field] = value
+                        elif len(field.split('__')) == 2:
+                            submit_user_table.append(field)
+                    connection = engine.connect()
+                    trans = connection.begin()
+
+                    def key_value_string(record, permission):
+                        return '{}__{}__{}'.format(record.username, record.tablename, permission)
+
+                    def grant_or_revoke_permission(username, tablename, permission, grant):
+                        if grant:
+                            connection.execute('GRANT {} ON {} TO {}'.format(permission, tablename, username))
+                        else:
+                            connection.execute('REVOKE {} ON {} FROM {}'.format(permission, tablename, username))
+
+                    for index, record in records.iterrows():
+                        if '{}__{}'.format(record.username, record.tablename) not in submit_user_table:
+                            continue
+                        if ((not record['select'] and key_value_string(record, 'select') in submit_form) or
+                        (record['select'] and key_value_string(record, 'select') not in submit_form)):
+                            grant_or_revoke_permission(record['username'], record['tablename'], 'select', key_value_string(record, 'select') in submit_form)
+
+                        if ((not record['insert'] and key_value_string(record, 'insert') in submit_form) or
+                        (record['insert'] and key_value_string(record, 'insert') not in submit_form)):
+                            grant_or_revoke_permission(record['username'], record['tablename'], 'insert', key_value_string(record, 'insert') in submit_form)
+
+                        if ((not record['update'] and key_value_string(record, 'update') in submit_form) or
+                        (record['update'] and key_value_string(record, 'update') not in submit_form)):
+                            grant_or_revoke_permission(record['username'], record['tablename'], 'update', key_value_string(record, 'update') in submit_form)
+
+                        if ((not record['delete'] and key_value_string(record, 'delete') in submit_form) or
+                        (record['delete'] and key_value_string(record, 'delete') not in submit_form)):
+                            grant_or_revoke_permission(record['username'], record['tablename'], 'delete', key_value_string(record, 'delete') in submit_form)
+
+                        if ((not record['references'] and key_value_string(record, 'references') in submit_form) or
+                        (record['references'] and key_value_string(record, 'references') not in submit_form)):
+                            grant_or_revoke_permission(record['username'], record['tablename'], 'references', key_value_string(record, 'references') in submit_form)
+                    trans.commit()
+                    connection.close()
+                    engine.dispose()
+                    flash(__("User privileges updated"), "success")
+                    return redirect(request.form.get('path', '/managedb/db/{}/'.format(database_id)))
+            except Exception as e:
+                logging.error(e)
+                flash(__("User management view does not exist in database {}:{}".format(database.name, e)), "danger")
+            finally:
+                engine.dispose()
+
+        return self.render_template(
+            'superset/database_user_management.html',
+            title="Database User Management",
+            database_id=database_id,
+            results=results,
+            tables=tables,
+            users=users,
+            path='/managedb/db/{}/'.format(database_id),
+        )
+
+    @has_access
+    @expose("/dbtable/<database_id>/<table>/")
+    def list_user_table_table(self, database_id, table):
+        database = db.session.query(Database).get(database_id)
+        results = []
+        tables = []
+        users = []
+        if database.user_management_view is not None:
+            engine = database.get_sqla_engine()
+            try:
+                query = 'SELECT * FROM {}'.format(database.user_management_view)
+                records = pd.read_sql_query(query, engine)
+                results = records[records['tablename'] == table].T.to_dict().values()
+                tables = records.tablename.unique()
+                users = records.username.unique()
+            except:
+                flash(__("User management view does not exist in database " + database.name), "danger")
+        return self.render_template(
+            'superset/database_user_management.html',
+            title="Database User Management",
+            database_id=database_id,
+            results=results,
+            tables=tables,
+            users=users,
+            path='/managedb/dbtable/{}/{}/'.format(database_id, table),
+        )
+
+    @has_access
+    @expose("/dbuser/<database_id>/<user>/")
+    def list_user_table_user(self, database_id, user):
+        database = db.session.query(Database).get(database_id)
+        results = []
+        tables = []
+        users = []
+        if database.user_management_view is not None:
+            engine = database.get_sqla_engine()
+            try:
+                query = 'SELECT * FROM {}'.format(database.user_management_view)
+                records = pd.read_sql_query(query, engine)
+                results = records[records['username'] == user].T.to_dict().values()
+                tables = records.tablename.unique()
+                users = records.username.unique()
+            except:
+                flash(__("User management view does not exist in database " + database.name), "danger")
+        return self.render_template(
+            'superset/database_user_management.html',
+            title="Database User Management",
+            database_id=database_id,
+            results=results,
+            tables=tables,
+            users=users,
+            path='/managedb/dbuser/{}/{}/'.format(database_id, user),
+        )
+
+
+appbuilder.add_view_no_menu(Managedb)
 
 class Superset(BaseSupersetView):
     """The base views for Superset!"""

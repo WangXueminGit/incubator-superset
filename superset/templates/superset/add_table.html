@@ -1,0 +1,99 @@
+
+{% import 'appbuilder/general/lib.html' as lib %}
+
+{% set begin_sep_label = '<td class="col-lg-2">' %}
+{% set end_sep_label = '</td>' %}
+{% set begin_sep_field = '<td>' %}
+{% set end_sep_field = '</td>' %}
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/codemirror.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/mode/sql/sql.min.js"></script>
+{% if form_action %}
+    <form action="{{form_action}}" method="post" enctype="multipart/form-data">
+{% else %}
+    <form id="model_form" action="" method="post" enctype="multipart/form-data">
+{% endif %}
+    {{form.hidden_tag()}}
+
+    {% if fieldsets %}
+        {% for fieldset_item in fieldsets %}
+            {% if fieldset_item[1].get('expanded') == None %}
+                {% set expanded = True %}
+            {% else %}
+                {% set expanded = fieldset_item[1].get('expanded') %}
+            {% endif %}
+            {% call lib.accordion_tag(loop.index,fieldset_item[0], expanded) %}
+            <div class="table-responsive">
+                <table class="table table-responsive table-bordered">
+                    {% for item in fieldset_item[1].get('fields') %}
+                        {% if item not in exclude_cols %}
+                            <tr>
+                                {{ lib.render_field(form[item], begin_sep_label, end_sep_label, begin_sep_field, end_sep_field) }}
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+            {% endcall %}
+        {% endfor %}
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                {% for col in include_cols %}
+                    {% set field = form[col] %}
+                    {% if field.name not in exclude_cols %}
+                        <tr>
+                            {{ lib.render_field(field, begin_sep_label, end_sep_label, begin_sep_field, end_sep_field) }}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                {% for col in custom_fields %}
+                <tr>
+                    <td class="col-lg-2">
+                        <label for="{{ col.get('identifier') }}" control-label="{{ col.get('identifier') }}">
+                            {{ col.get('title') }}
+                            {% if col.get('required', False) %}<strong style="color: red">*</strong>{% endif %}
+                        </label>
+                    </td>
+                    <td>
+                        {% if col.get('input') == 'text' %}
+                        <input type="text" class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" placeholder="{{ col.get('placeholder', '') }}"{% if col.get('required', False) %} required{% endif %}>
+                        {% elif col.get('input') == 'longtext' %}
+                        <textarea class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" rows="3" placeholder="{{ col.get('placeholder', '') }}"{% if col.get('required', False) %} required{% endif %}></textarea>
+                        {% elif col.get('input') == 'sql' %}
+                        <textarea class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" rows="3" placeholder="{{ col.get('placeholder', '') }}"{% if col.get('required', False) %} required{% endif %}></textarea>
+                        <script>
+                        window.onload = function() {
+                          window.editor_{{ col.get('identifier') }} = CodeMirror.fromTextArea(document.getElementById('{{ col.get('identifier') }}'), {
+                            mode: 'text/x-sql',
+                            indentWithTabs: true,
+                            smartIndent: true,
+                            lineNumbers: true,
+                            matchBrackets: true,
+                            autofocus: true
+                          });
+                        };
+                        </script>
+                        {% elif col.get('input') == 'checkbox' %}
+                        <input type="checkbox" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" value="1" />
+                        {% elif col.get('input') == 'select' %}
+                        <select class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}">
+                            {% for option in col.get('options', []) %}
+                            <option value="{{ option.get('value') }}">{{ option.get('label') }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                        {% if 'description' in col %}
+                        <span class="help-block">{{ col.get('description') }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endif %}
+    {{ lib.render_form_controls() }}
+</form>

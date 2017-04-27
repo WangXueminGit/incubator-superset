@@ -12,6 +12,7 @@ import numpy
 import os
 import parsedatetime
 import pytz
+import re
 import smtplib
 import sqlalchemy as sa
 import signal
@@ -628,3 +629,65 @@ def setup_cache(app, cache_config):
     """Setup the flask-cache on a flask app"""
     if cache_config and cache_config.get('CACHE_TYPE') != 'null':
         return Cache(app, config=cache_config)
+
+def clean_sql(sql, allow_methods=[]):
+    try:
+        dirty_sql = sql.lower()
+    except:
+        return None
+    replace_keywords = {"if\s+exists": "", ";": ""}
+    for replace_keyword, replaced_substitute in replace_keywords.iteritems():
+        r = re.compile(replace_keyword)
+        dirty_sql = r.sub(replaced_substitute, dirty_sql)
+
+    # Replace IF EXISTS
+    command_groups = {
+        "CREATE_TABLE": [
+            "^\s*create\s+table\s+",
+            "^\s*create\s+view\s+"
+        ],
+        "SELECT": [
+            "^\s*select\s+",
+            "^\s*select\s+into\s+",
+            "^\s*fetch\s+",
+        ],
+        "INSERT": [
+            "^\s*insert\s+",
+            "^\s*unload\s+",
+        ],
+        "UPDATE": [
+            "^\s*update\s+"
+        ],
+        "GRANT": [
+            "^\s*grant\s+"
+        ],
+        "DROP": [
+            "^\s*drop\s+"
+        ],
+        "DELETE": [
+            "^\s*delete\s+",
+            "^\s*truncate\s+",
+        ],
+        "CREATE_USERGROUP": [
+            "^\s*create\s+user\s+",
+            "^\s*create\s+group\s+"
+        ],
+        "CREATE_DATABASE": [
+            "^\s*create\s+database\s+"
+        ],
+        "ALTER": [
+            "^\s*alter\s+"
+        ],
+        "ADVANCED": [
+            "^\s*abort\s+",
+            "^\s*analyze\s+"
+        ]
+    }
+
+    denied_commands = [com for command_group, commands in command_groups.iteritems() if command_group not in allow_methods for com in commands]
+
+    for denied_command in denied_commands:
+        r = re.compile(denied_command)
+        if r.match(dirty_sql):
+            return None
+    return dirty_sql
