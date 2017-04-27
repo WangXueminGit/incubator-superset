@@ -611,7 +611,7 @@ def has_access_api(f):
         if self.appbuilder.sm.has_access(permission_str, self.__class__.__name__):
             return f(self, *args, **kwargs)
         else:
-            log.warning(LOGMSG_ERR_SEC_ACCESS_DENIED.format(permission_str, self.__class__.__name__))
+            logging.warning(LOGMSG_ERR_SEC_ACCESS_DENIED.format(permission_str, self.__class__.__name__))
             response = make_response(jsonify({'message': str(FLAMSG_ERR_SEC_ACCESS_DENIED),
                                               'severity': 'danger'}), 401)
             response.headers['Content-Type'] = "application/json"

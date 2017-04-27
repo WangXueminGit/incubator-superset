@@ -98,7 +98,7 @@ const px = function () {
         if (groupBy) {
           formDataExtra.extra_groupby = groupBy;
         }
-        let endpoint = getExploreUrl(formDataExtra, endpointType, this.force);
+        let endpoint = getExploreUrl(formDataExtra, endpointType, this.force, true);
         if (endpoint.charAt(0) !== '/') {
           // Known issue for IE <= 11:
           // https://connect.microsoft.com/IE/feedbackdetail/view/1002846/pathname-incorrect-for-out-of-document-elements

@@ -127,7 +127,7 @@ OAUTH_PROVIDERS = [
 AUTH_ROLE_ADMIN = 'Admin'
 
 # Uncomment to setup Public role name, no authentication needed
-AUTH_ROLE_PUBLIC = 'Public'
+# AUTH_ROLE_PUBLIC = 'Public'
 
 # Will allow user self registration
 # AUTH_USER_REGISTRATION = True
@@ -314,7 +314,7 @@ CONFIG_PATH_ENV_VAR = 'SUPERSET_CONFIG_PATH'
 
 
 # smtp server configuration
-EMAIL_NOTIFICATIONS = False  # all the emails are sent using dryrun
+EMAIL_NOTIFICATIONS = True
 SMTP_HOST = 'localhost'
 SMTP_STARTTLS = True
 SMTP_SSL = False

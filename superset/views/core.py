@@ -4,6 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
+import hashlib
 import json
 import logging
 import pandas as pd
@@ -15,6 +16,8 @@ import time
 import traceback
 import zlib
 
+from slugify import slugify
+
 import functools
 import sqlalchemy as sqla
 
@@ -25,9 +28,12 @@ from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 # from flask_appbuilder.security.decorators import has_access_api
 from flask_appbuilder.security.sqla import models as ab_models
+from flask_appbuilder.security.sqla.models import User, Role
 
 from flask_babel import gettext as __
 from flask_babel import lazy_gettext as _
+
+from flask_login import current_user, login_user
 
 from sqlalchemy import create_engine
 from werkzeug.routing import BaseConverter
@@ -563,6 +569,10 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
         if obj.slug:
             obj.slug = obj.slug.replace(" ", "-")
             obj.slug = re.sub(r'\W+', '', obj.slug)
+        else:
+            obj.slug = slugify(obj.dashboard_title)
+        if '__' not in obj.slug:
+            obj.slug = '{}__{}'.format(obj.slug, hashlib.sha256(str(time.time())).hexdigest())
         if g.user not in obj.owners:
             obj.owners.append(g.user)
         utils.validate_json(obj.json_metadata)
@@ -570,6 +580,12 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
 
     def pre_update(self, obj):
         check_ownership(obj)
+
+        if not obj.slug:
+            obj.slug = slugify(obj.dashboard_title)
+        if '__' not in obj.slug:
+            obj.slug = '{}__{}'.format(obj.slug, hashlib.sha256(obj.slug).hexdigest())
+
         self.pre_add(obj)
 
     def pre_delete(self, obj):
@@ -1162,8 +1178,8 @@ class Superset(BaseSupersetView):
 
     @log_this
     @has_access_api
-    @expose("/explore_json/<datasource_type>/<datasource_id>/")
-    def explore_json(self, datasource_type, datasource_id):
+    @expose("/explore_json/<mode>/<datasource_type>/<datasource_id>/")
+    def explore_json_advanced(self, mode, datasource_type, datasource_id):
         try:
             viz_obj = self.get_viz(
                 datasource_type=datasource_type,
@@ -1175,7 +1191,7 @@ class Superset(BaseSupersetView):
                 utils.error_msg_from_exception(e),
                 stacktrace=traceback.format_exc())
 
-        if not self.datasource_access(viz_obj.datasource):
+        if mode != 'secure' and not self.datasource_access(viz_obj.datasource):
             return json_error_response(DATASOURCE_ACCESS_ERR, status=404)
 
         if request.args.get("csv") == "true":
@@ -1219,6 +1235,12 @@ class Superset(BaseSupersetView):
             status = 400
 
         return json_success(viz_obj.json_dumps(payload), status=status)
+
+    @log_this
+    @has_access_api
+    @expose("/explore_json/<datasource_type>/<datasource_id>/")
+    def explore_json(self, datasource_type, datasource_id):
+        return self.explore_json_advanced('default', datasource_type, datasource_id)
 
     @expose("/import_dashboards", methods=['GET', 'POST'])
     @log_this
@@ -1884,22 +1906,25 @@ class Superset(BaseSupersetView):
         """Server side rendering for a dashboard"""
         session = db.session()
         qry = session.query(models.Dashboard)
-        if dashboard_id.isdigit():
-            qry = qry.filter_by(id=int(dashboard_id))
-        else:
-            qry = qry.filter_by(slug=dashboard_id)
+        # Disable getting dashboard by ID
+        # if dashboard_id.isdigit():
+        #     qry = qry.filter_by(id=int(dashboard_id))
+        # else:
+        qry = qry.filter_by(slug=dashboard_id)
 
         dash = qry.one()
-        datasources = {slc.datasource for slc in dash.slices}
-        for datasource in datasources:
-            if not self.datasource_access(datasource):
-                flash(
-                    __(get_datasource_access_error_msg(datasource.name)),
-                    "danger")
-                return redirect(
-                    'superset/request_access/?'
-                    'dashboard_id={dash.id}&'
-                    ''.format(**locals()))
+
+        # Disable check to enable public view on Dashboard
+        # datasources = {slc.datasource for slc in dash.slices}
+        # for datasource in datasources:
+        #     if not self.datasource_access(datasource):
+        #         flash(
+        #             __(get_datasource_access_error_msg(datasource.name)),
+        #             "danger")
+        #         return redirect(
+        #             'superset/request_access/?'
+        #             'dashboard_id={dash.id}&'
+        #             ''.format(**locals()))
 
         # Hack to log the dashboard_id properly, even when getting a slug
         @log_this
