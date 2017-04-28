@@ -5,9 +5,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
-import os
-import json
 from logging.handlers import TimedRotatingFileHandler
+
+import json
+import os
 
 from flask import Flask, redirect, request
 from flask_appbuilder import SQLA, AppBuilder, IndexView
@@ -15,8 +16,10 @@ from flask_appbuilder.baseviews import expose
 from flask_appbuilder.security.sqla.manager import SecurityManager
 from flask_appbuilder.security.views import AuthOAuthView as DefaultAuthOAuthView
 from flask_migrate import Migrate
-from superset.connectors.connector_registry import ConnectorRegistry
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.contrib.fixers import ProxyFix
+
+from superset.connectors.connector_registry import ConnectorRegistry
 from superset import utils, config  # noqa
 
 
@@ -59,6 +62,8 @@ logging.getLogger('pyhive.presto').setLevel(logging.INFO)
 
 db = SQLA(app)
 
+if conf.get('WTF_CSRF_ENABLED'):
+    csrf = CSRFProtect(app)
 
 utils.pessimistic_connection_handling(db.engine.pool)
 

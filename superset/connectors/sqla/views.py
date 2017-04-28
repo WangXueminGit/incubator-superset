@@ -1,7 +1,10 @@
+"""Views used by the SqlAlchemy connector"""
 import logging
 import re
 
-from flask import Markup, flash, request, redirect
+from past.builtins import basestring
+
+from flask import Markup, flash, redirect, request
 from flask_login import current_user
 from flask_appbuilder import CompactCRUDMixin, expose
 from flask_appbuilder.actions import action
@@ -44,6 +47,9 @@ class TableColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
             "Whether to make this column available as a "
             "[Time Granularity] option, column has to be DATETIME or "
             "DATETIME-like"),
+        'filterable': _(
+            "Whether this column is exposed in the `Filters` section "
+            "of the explore view."),
         'type': _(
             "The data type that was inferred by the database. "
             "It may be necessary to input a type manually for "
@@ -147,20 +153,28 @@ appbuilder.add_view_no_menu(SqlMetricInlineView)
 class TableModelView(SupersetModelView, DeleteMixin):  # noqa
     datamodel = SQLAInterface(models.SqlaTable)
     list_columns = [
-        'link', 'database', 'is_featured',
+        'link', 'database',
         'changed_by_', 'changed_on_']
     order_columns = [
-        'link', 'database', 'is_featured', 'changed_on_']
+        'link', 'database', 'changed_on_']
     add_columns = ['database', 'schema', 'table_name']
     edit_columns = [
-        'table_name', 'sql', 'is_featured', 'filter_select_enabled',
-        'database', 'schema',
+        'table_name', 'sql', 'filter_select_enabled', 'slices',
+        'fetch_values_predicate', 'database', 'schema',
         'description', 'owner',
         'main_dttm_col', 'default_endpoint', 'offset', 'cache_timeout']
     show_columns = edit_columns + ['perm']
     related_views = [TableColumnInlineView, SqlMetricInlineView]
     base_order = ('changed_on', 'desc')
     description_columns = {
+        'slices': _(
+            "The list of slices associated with this table. By "
+            "altering this datasource, you may change how these associated "
+            "slices behave. "
+            "Also note that slices need to point to a datasource, so "
+            "this form will fail at saving if removing slices from a "
+            "datasource. If you want to change the datasource for a slice, "
+            "overwrite the slice from the 'explore view'"),
         'offset': _("Timezone offset (in hours) for this datasource"),
         'table_name': utils.markdown(
             "For `admin`, you can add existing tables in the datasource. "
@@ -175,17 +189,32 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
             "This fields acts a Superset view, meaning that Superset will "
             "run a query against this string as a subquery."
         ),
+        'fetch_values_predicate': _(
+            "Predicate applied when fetching distinct value to "
+            "populate the filter control component. Supports "
+            "jinja template syntax. Applies only when "
+            "`Enable Filter Select` is on."
+        ),
+        'default_endpoint': _(
+            "Redirects to this endpoint when clicking on the table "
+            "from the table list"),
+        'filter_select_enabled': _(
+            "Whether to populate the filter's dropdown in the explore "
+            "view's filter section with a list of distinct values fetched "
+            "from the backend on the fly"),
     }
     base_filters = [['id', DatasourceFilter, lambda: []]]
     label_columns = {
+        'slices': _("Associated Slices"),
         'link': _("Table"),
         'changed_by_': _("Changed By"),
         'database': _("Database"),
         'changed_on_': _("Last Changed"),
-        'is_featured': _("Is Featured"),
         'filter_select_enabled': _("Enable Filter Select"),
         'schema': _("Schema"),
-        'default_endpoint': _("Default Endpoint"),
+        'default_endpoint': _(
+            "Redirects to this endpoint when clicking on the datasource "
+            "from the datasource list"),
         'offset': _("Offset"),
         'cache_timeout': _("Cache Timeout"),
     }
@@ -359,7 +388,8 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                 "database connection, schema, and "
                 "table name".format(table.name))
 
-    def post_add(self, table):
+
+    def post_add(self, table, flash_message=True):
         form = request.form
         database = db.session.query(Database).get(table.database.id)
         table.fetch_metadata()
@@ -410,8 +440,24 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
             "the new table to configure it."),
             "info")
 
+        if flash_message:
+            flash(_(
+                "The table was created. "
+                "As part of this two phase configuration "
+                "process, you should now click the edit button by "
+                "the new table to configure it."), "info")
+
     def post_update(self, table):
-        self.post_add(table)
+        self.post_add(table, flash_message=False)
+
+    @expose('/edit/<pk>', methods=['GET', 'POST'])
+    @has_access
+    def edit(self, pk):
+        """Simple hack to redirect to explore view after saving"""
+        resp = super(TableModelView, self).edit(pk)
+        if isinstance(resp, basestring):
+            return resp
+        return redirect('/superset/explore/table/{}/'.format(pk))
 
     @has_access
     @action("refresh_table_fields", "Refresh table columns", "Fetch changes and add columns/metrics to table?", "fa-refresh")
