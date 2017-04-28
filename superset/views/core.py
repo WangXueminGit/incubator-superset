@@ -1422,9 +1422,13 @@ class Superset(BaseSupersetView):
                     dash.dashboard_title),
                 "info")
         elif request.args.get('add_to_dash') == 'new':
+            slug = '{}__{}'.format(slugify(request.args.get('new_dashboard_name')),
+                                   hashlib.sha256(str(time.time())).hexdigest())
             dash = models.Dashboard(
                 dashboard_title=request.args.get('new_dashboard_name'),
-                owners=[g.user] if g.user else [])
+                owners=[g.user] if g.user else [],
+                slug=slug
+            )
             flash(
                 "Dashboard [{}] just got created and slice [{}] was added "
                 "to it".format(
