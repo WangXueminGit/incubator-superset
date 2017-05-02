@@ -65,13 +65,27 @@ const config = {
       /* for require('*.scss') */
       {
         test: /\.scss$/,
-        loader: 'style!css!sass'
+        include: APP_DIR,
+        use: [
+          {
+            loader: "style-loader" // creates style nodes from JS strings
+          },
+          {
+            loader: "css-loader" // translates CSS into CommonJS
+          },
+          {
+            loader: "sass-loader" // compiles Sass to CSS
+          }
+        ]
       },
       /* for require('*.css') */
       {
         test: /\.css$/,
         include: APP_DIR,
-        loader: 'style-loader!css-loader',
+        use: [
+          { loader: "style-loader" },
+          { loader: "css-loader" }
+        ]
       },
       /* for css linking images */
       {

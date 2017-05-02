@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import Select, { Creatable } from 'react-select';
 import { SwatchesPicker } from 'react-color';
 import { WithContext as ReactTags } from 'react-tag-input';

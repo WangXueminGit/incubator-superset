@@ -6,8 +6,6 @@ import dt from 'datatables.net-bs';
 import { fixDataTableBodyHeight } from '../javascripts/modules/utils';
 import { timeFormatFactory, formatDate } from '../javascripts/modules/dates';
 import './table.css';
-
-import './table.css';
 import './table.scss';
 
 import $ from 'jquery';

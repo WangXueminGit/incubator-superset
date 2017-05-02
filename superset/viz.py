@@ -846,7 +846,7 @@ class NVD3TimeSeriesViz(NVD3Viz):
 
         df = df.pivot_table(
             index=DTTM_ALIAS,
-            columns=fd.get('groupby'),
+            columns=fd.get('groupby')+fd.get('extra_groupby', []),
             values=fd.get('metrics'))
 
         fm = fd.get("resample_fillmethod")
@@ -909,7 +909,7 @@ class NVD3TimeSeriesViz(NVD3Viz):
             df2[DTTM_ALIAS] += delta
             df2 = df2.pivot_table(
                 index=DTTM_ALIAS,
-                columns=fd.get('groupby'),
+                columns=fd.get('groupby')+fd.get('extra_groupby', []),
                 values=fd.get('metrics'))
             chart_data += self.to_series(
                 df2, classed='superset', title_suffix="---")

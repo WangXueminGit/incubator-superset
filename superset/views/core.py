@@ -1861,8 +1861,8 @@ class Superset(BaseSupersetView):
         qry = qry.filter_by(slug=dashboard_id)
 
         dash = qry.one()
+        datasources = {slc.datasource for slc in dash.slices}
         # Disable check to enable public view on Dashboard
-        # datasources = {slc.datasource for slc in dash.slices}
         # for datasource in datasources:
         #     if datasource and not self.datasource_access(datasource):
         #         flash(
