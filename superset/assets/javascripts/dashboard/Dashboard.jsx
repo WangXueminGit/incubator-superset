@@ -118,7 +118,9 @@ export function dashboardContainer(dashboard, datasources, userid) {
         }
       });
       this.loadPreSelectFilters();
+      // if (typeof window.callPhantom !== "function") {
       this.startPeriodicRender(0);
+      // }
       this.bindResizeToWindowResize();
       this.initialReload = true;
     },

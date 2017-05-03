@@ -222,7 +222,7 @@ class SqlaTable(Model, BaseDatasource):
     def name(self):
         if not self.schema:
             return self.table_name
-        return "{}.{}".format(self.schema, self.table_name)
+        return "{}.{} ({})".format(self.schema, self.table_name, self.database)
 
     @property
     def full_name(self):

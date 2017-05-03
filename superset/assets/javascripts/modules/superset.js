@@ -219,6 +219,7 @@ const px = function () {
           }
         }).fail((err) => {
           this.error(err.responseText, err);
+          this.done({});
         });
       },
       resize() {
