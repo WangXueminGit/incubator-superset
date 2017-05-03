@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import re
 import sqlparse
 from past.builtins import basestring
 
@@ -20,7 +21,7 @@ from flask import escape, Markup
 from flask_appbuilder import Model
 from flask_babel import lazy_gettext as _
 
-from superset import db, utils, import_util
+from superset import db, utils, import_util, tables_cache
 from superset.connectors.base import BaseDatasource, BaseColumn, BaseMetric
 from superset.utils import DTTM_ALIAS, QueryStatus
 from superset.models.helpers import QueryResult
@@ -558,14 +559,18 @@ class SqlaTable(Model, BaseDatasource):
         sql = self.get_query_str(query_obj)
         status = QueryStatus.SUCCESS
         error_message = None
-        df = None
-        try:
-            df = pd.read_sql_query(qry, con=engine)
-        except Exception as e:
-            status = QueryStatus.FAILED
-            logging.exception(e)
-            error_message = (
-                self.database.db_engine_spec.extract_error_message(e))
+        # Remove non-alphanumeric character as key of cache
+        query_string = 'DB_{}__{}'.format(self.database.id, re.sub('[^0-9a-zA-Z]+', '_', self.get_query_str(query_obj)))
+        df = tables_cache.get(query_string)
+        if df is None:
+            try:
+                df = pd.read_sql_query(qry, con=engine)
+                tables_cache.set(query_string, df, timeout=10 * 60)
+            except Exception as e:
+                status = QueryStatus.FAILED
+                logging.exception(e)
+                error_message = (
+                    self.database.db_engine_spec.extract_error_message(e))
 
         return QueryResult(
             status=status,
