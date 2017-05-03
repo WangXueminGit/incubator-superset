@@ -31,7 +31,3 @@ text.nv-axislabel {
 .bar svg.nvd3-svg {
   width: auto;
 }
-
-.nvd3 text {
-  fill: rgb(0,0,0);
-}

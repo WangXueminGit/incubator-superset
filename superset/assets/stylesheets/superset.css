@@ -209,3 +209,7 @@ div.widget .slice_container {
 .navbar-brand {
     padding: 5px 15px !important;
 }
+
+.nvd3 text {
+  fill: rgb(0,0,0);
+}
