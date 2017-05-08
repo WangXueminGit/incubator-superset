@@ -23,13 +23,8 @@ const BREAKPOINTS = {
   small: 340,
 };
 
-<<<<<<< HEAD
-const addTotalBarValues = function (svg, chart, data, stacked) {
-  const format = d3.format('.3s');
-=======
 const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
   const format = d3.format(axisFormat || '.3s');
->>>>>>> 55d3b012e504f788732488bf11a1ec7ef223a821
   const countSeriesDisplayed = data.length;
 
   const totalStackedValues = stacked && data.length !== 0 ?
@@ -131,10 +126,6 @@ function nvd3Vis(slice, payload) {
     if (svg.empty()) {
       svg = d3.select(slice.selector).append('svg');
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> 55d3b012e504f788732488bf11a1ec7ef223a821
     switch (vizType) {
       case 'line':
         if (fd.show_brush) {
@@ -198,11 +189,7 @@ function nvd3Vis(slice, payload) {
 
         if (fd.show_bar_value) {
           setTimeout(function () {
-<<<<<<< HEAD
-            addTotalBarValues(svg, chart, payload.data, stacked);
-=======
             addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
->>>>>>> 55d3b012e504f788732488bf11a1ec7ef223a821
           }, animationTime);
         }
         break;
@@ -232,11 +219,7 @@ function nvd3Vis(slice, payload) {
         }
         if (fd.show_bar_value) {
           setTimeout(function () {
-<<<<<<< HEAD
-            addTotalBarValues(svg, chart, payload.data, stacked);
-=======
             addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
->>>>>>> 55d3b012e504f788732488bf11a1ec7ef223a821
           }, animationTime);
         }
         if (!reduceXTicks) {
