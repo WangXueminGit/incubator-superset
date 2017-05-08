@@ -342,6 +342,7 @@ function nvd3Vis(slice, payload) {
     let xAxisFormatter;
     if (vizType === 'bubble' || vizType === 'simpleline') {
       xAxisFormatter = d3.format('.3s');
+      chart.xAxis.tickFormat(xAxisFormatter);
     } else if (fd.x_axis_format === 'smart_date') {
       xAxisFormatter = formatDate;
       chart.xAxis.tickFormat(xAxisFormatter);
@@ -362,11 +363,14 @@ function nvd3Vis(slice, payload) {
     }
 
     if (vizType === 'bubble' || vizType === 'simpleline') {
-      chart.xAxis.tickFormat(d3.format('.3s'));
+      xAxisFormatter = d3.format('.3s');
+      chart.xAxis.tickFormat(xAxisFormatter);
     } else if (fd.x_axis_format === 'smart_date') {
-      chart.xAxis.tickFormat(formatDate);
+      xAxisFormatter = formatDate;
+      chart.xAxis.tickFormat(xAxisFormatter);
     } else if (fd.x_axis_format !== undefined) {
-      chart.xAxis.tickFormat(timeFormatFactory(fd.x_axis_format));
+      xAxisFormatter = timeFormatFactory(fd.x_axis_format);
+      chart.xAxis.tickFormat(xAxisFormatter);
     }
     if (chart.yAxis !== undefined) {
       chart.yAxis.tickFormat(d3.format('.3s'));
@@ -414,6 +418,45 @@ function nvd3Vis(slice, payload) {
       customizeToolTip(chart, xAxisFormatter, [yAxisFormatter1, yAxisFormatter2]);
       chart.showLegend(width > BREAKPOINTS.small);
     }
+
+
+    if (fd.x_axis_class_range) {
+      const lowerBoundary = fd.x_axis_lower_bound || null;
+      const xValues = payload.data[0].values.map((value) => value.x);
+      if (xValues.reduce((acc, value) => isNaN(value) && isNaN(Date.parse(value)) ? acc + 1 : 0) === 0) {
+        let xLabels = [];
+        for (let i = 0; i < xValues.length; i++) {
+          xLabels.push(xValues[i]);
+        }
+        if (xValues.length > 1) {
+          let predictFirstValue = '';
+          if (lowerBoundary) {
+            predictFirstValue = lowerBoundary;
+          }
+          else if (!isNaN(xValues[0])) {
+            predictFirstValue = xValues[0] - (xValues[1] - xValues[0]);
+          }
+          else if (!isNaN(Date.parse(xValues[0]))) {
+            const date1 = new Date(xValues[0]);
+            const date2 = new Date(xValues[1]);
+            predictFirstValue = new Date(date1.getTime() - (date2.getTime() - date1.getTime())).toISOString().slice(0, 10);
+          }
+          xLabels.unshift(predictFirstValue);
+        }
+        else if (lowerBoundary) {
+          xLabels.unshift(lowerBoundary);
+        }
+        else {
+          xLabels = xValues;
+        }
+        chart.xAxis.tickFormat(function(d, i) {
+          return xAxisFormatter ?
+              (xAxisFormatter(xLabels[i]) + ' - ' + xAxisFormatter(xLabels[i] + 1)) :
+              (xLabels[i] + '-' + xLabels[i + 1]);
+        });
+      }
+    }
+
     svg
     .datum(payload.data)
     .transition().duration(500)
@@ -425,6 +468,23 @@ function nvd3Vis(slice, payload) {
       svg.selectAll('.nv-point')
       .style('stroke-opacity', 1)
       .style('fill-opacity', 1);
+    }
+
+    if (fd.show_point_value) {
+      chart.dispatch.on('renderEnd', function () {
+        d3.selectAll('.nv-point-label').remove();
+        svg.select('.nv-scatterWrap').attr('clip-path', null);
+        svg.select('.nv-line > g').attr('clip-path', null);
+        svg.selectAll('path.nv-point').each(function (d, i) {
+          d3.select(this.parentNode).append('text')
+              .classed('nv-point-label nv-point-label-' + i, true)
+              .attr('dy', '-.35em')
+              .attr('transform', d3.select(this).attr('transform'))
+              .attr('dx', '.2em')
+              .text(d[0].y)
+              .style({stroke: 'initial'});
+        });
+      });
     }
 
     // Hack to adjust margins to accommodate long axis tick labels.

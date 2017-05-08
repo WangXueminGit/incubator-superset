@@ -94,6 +94,7 @@ const visTypes = {
           ['bar_stacked', 'order_bars'],
           ['y_axis_format', 'bottom_margin'],
           ['x_axis_label', 'y_axis_label'],
+          ['x_axis_class_range', 'x_axis_lower_bound'],
           ['reduce_x_ticks', 'contribution'],
           ['show_controls'],
         ],
@@ -141,6 +142,7 @@ const visTypes = {
           ['line_interpolation'],
           ['x_axis_format', 'y_axis_format'],
           ['x_axis_label', 'y_axis_label'],
+          ['show_point_value'],
         ],
       },
       sections.NVD3TimeSeries[1],
@@ -157,6 +159,7 @@ const visTypes = {
           ['x', 'metrics'],
           ['groupby'],
           ['limit']
+          ['show_point_value'],
         ],
       }
     ],
