@@ -1,8 +1,7 @@
-const $ = window.$ = require('jquery');
-
 import React from 'react';
-
+import PropTypes from 'prop-types';
 import { ButtonGroup } from 'react-bootstrap';
+
 import Button from '../../components/Button';
 import CssEditor from './CssEditor';
 import RefreshIntervalModal from './RefreshIntervalModal';
@@ -11,8 +10,10 @@ import ExportMailModal from './ExportMailModal';
 import CodeModal from './CodeModal';
 import SliceAdder from './SliceAdder';
 
+const $ = window.$ = require('jquery');
+
 const propTypes = {
-  dashboard: React.PropTypes.object.isRequired,
+  dashboard: PropTypes.object.isRequired,
 };
 
 class Controls extends React.PureComponent {
@@ -24,19 +25,19 @@ class Controls extends React.PureComponent {
       refreshInterval: props.dashboard.metadata.refreshInterval || 0,
     };
   }
-  refresh() {
-    this.props.dashboard.sliceObjects.forEach((slice) => {
-      slice.render(true);
-    });
-  }
   componentWillMount() {
     $.get('/csstemplateasyncmodelview/api/read', (data) => {
-      const cssTemplates = data.result.map((row) => ({
+      const cssTemplates = data.result.map(row => ({
         value: row.template_name,
         css: row.css,
         label: row.template_name,
       }));
       this.setState({ cssTemplates });
+    });
+  }
+  refresh() {
+    this.props.dashboard.sliceObjects.forEach((slice) => {
+      slice.render(true);
     });
   }
   changeCss(css) {
@@ -49,7 +50,6 @@ class Controls extends React.PureComponent {
   }
   render() {
     const dashboard = this.props.dashboard;
-    const canSave = dashboard.context.dash_save_perm;
     const emailBody = `Checkout this dashboard: ${window.location.href}`;
     const emailLink = 'mailto:?Subject=Superset%20Dashboard%20'
       + `${dashboard.dashboard_title}&Body=${emailBody}`;
@@ -89,11 +89,16 @@ class Controls extends React.PureComponent {
           onChange={this.changeCss.bind(this)}
         />
         <Button
-          disabled={!canSave}
+          onClick={() => { window.location = emailLink; }}
+        >
+          <i className="fa fa-envelope" />
+        </Button>
+        <Button
+          disabled={!dashboard.dash_edit_perm}
           onClick={() => {
             window.location = `/dashboardmodelview/edit/${dashboard.id}`;
           }}
-          tooltip="Edit this dashboard's property"
+          tooltip="Edit this dashboard's properties"
         >
           <i className="fa fa-edit" />
         </Button>
@@ -102,14 +107,11 @@ class Controls extends React.PureComponent {
           css={this.state.css}
           refreshInterval={this.state.refreshInterval}
           triggerNode={
-            <i className="fa fa-save" />
+            <Button disabled={!dashboard.dash_save_perm}>
+              <i className="fa fa-save" />
+            </Button>
           }
         />
-        <Button
-          onClick={() => { window.location = emailLink; }}
-        >
-          <i className="fa fa-envelope"></i>
-        </Button>
         <ExportMailModal
           dashboard={dashboard}
           css={this.state.css}

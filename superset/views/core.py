@@ -11,14 +11,10 @@ import pandas as pd
 import pickle
 import re
 import requests
-import sys
 import time
 import traceback
-import zlib
 
 from slugify import slugify
-
-import functools
 import sqlalchemy as sqla
 
 from flask import (
@@ -26,7 +22,7 @@ from flask import (
 from flask_appbuilder import expose
 from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
-# from flask_appbuilder.security.decorators import has_access_api
+from flask_appbuilder.security.decorators import has_access_api
 from flask_appbuilder.security.sqla import models as ab_models
 from flask_appbuilder.security.sqla.models import User, Role
 
@@ -43,21 +39,20 @@ from superset import (
     sm, sql_lab, results_backend, security,
 )
 from superset.legacy import cast_form_data
-from superset.utils import has_access, has_access_api, SupersetSecurityException
+from superset.utils import has_access, QueryStatus, SupersetSecurityException
 from superset.connectors.connector_registry import ConnectorRegistry
 import superset.models.core as models
-from superset.models.core import Database
+from superset.models.sql_lab import Query
 from superset.sql_parse import SupersetQuery
 
 from .base import (
-    SupersetModelView, BaseSupersetView, DeleteMixin,
-    SupersetFilter, get_user_roles
+    api, SupersetModelView, BaseSupersetView, DeleteMixin,
+    SupersetFilter, get_user_roles, json_error_response, get_error_msg
 )
 
 config = app.config
 log_this = models.Log.log_this
 can_access = utils.can_access
-QueryStatus = models.QueryStatus
 DAR = models.DatasourceAccessRequest
 
 
@@ -107,44 +102,8 @@ def get_datasource_access_error_msg(datasource_name):
               "`all_datasource_access` permission", name=datasource_name)
 
 
-def get_error_msg():
-    if config.get("SHOW_STACKTRACE"):
-        error_msg = traceback.format_exc()
-    else:
-        error_msg = "FATAL ERROR \n"
-        error_msg += (
-            "Stacktrace is hidden. Change the SHOW_STACKTRACE "
-            "configuration setting to enable it")
-    return error_msg
-
-
-def json_error_response(msg, status=None, stacktrace=None):
-    data = {'error': msg}
-    if stacktrace:
-        data['stacktrace'] = stacktrace
-    status = status if status else 500
-    return Response(
-        json.dumps(data),
-        status=status, mimetype="application/json")
-
-
 def json_success(json_msg, status=200):
     return Response(json_msg, status=status, mimetype="application/json")
-
-
-def api(f):
-    """
-    A decorator to label an endpoint as an API. Catches uncaught exceptions and
-    return the response in the JSON format
-    """
-    def wraps(self, *args, **kwargs):
-        try:
-            return f(self, *args, **kwargs)
-        except Exception as e:
-            logging.exception(e)
-            return json_error_response(get_error_msg())
-
-    return functools.update_wrapper(wraps, f)
 
 
 def is_owner(obj, user):
@@ -165,7 +124,7 @@ def check_ownership(obj, raise_if_false=True):
         return False
 
     security_exception = utils.SupersetSecurityException(
-              "You don't have the rights to alter [{}]".format(obj))
+        "You don't have the rights to alter [{}]".format(obj))
 
     if g.user.is_anonymous():
         if raise_if_false:
@@ -474,20 +433,11 @@ class SliceModelView(SupersetModelView, DeleteMixin):  # noqa
     @expose('/add', methods=['GET', 'POST'])
     @has_access
     def add(self):
-        widget = self._add()
-        if not widget:
-            return redirect(self.get_redirect())
-
-        sources = ConnectorRegistry.sources
-        for source in sources:
-            ds = db.session.query(ConnectorRegistry.sources[source]).first()
-            if ds is not None:
-                url = "/{}/list/".format(ds.baselink)
-                msg = _("Click on a {} link to create a Slice".format(source))
-                break
-
-        redirect_url = "/r/msg/?url={}&msg={}".format(url, msg)
-        return redirect(redirect_url)
+        flash(__(
+            "To create a new slice, you can open a data source "
+            "through the `Sources` menu, or alter an existing slice "
+            "from the `Slices` menu"), "info")
+        return redirect('/superset/welcome')
 
 appbuilder.add_view(
     SliceModelView,
@@ -577,6 +527,9 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
             obj.owners.append(g.user)
         utils.validate_json(obj.json_metadata)
         utils.validate_json(obj.position_json)
+        owners = [o for o in obj.owners]
+        for slc in obj.slices:
+            slc.owners = list(set(owners) | set(slc.owners))
 
     def pre_update(self, obj):
         check_ownership(obj)
@@ -591,7 +544,7 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
     def pre_delete(self, obj):
         check_ownership(obj)
 
-    @action("mulexport", "Export", "Export dashboards?", "fa-database")
+    @action("mulexport", __("Export"), __("Export dashboards?"), "fa-database")
     def mulexport(self, items):
         ids = ''.join('&id={}'.format(d.id) for d in items)
         return redirect(
@@ -623,7 +576,10 @@ appbuilder.add_view(
 class DashboardModelViewAsync(DashboardModelView):  # noqa
     list_columns = ['dashboard_link', 'creator', 'modified', 'dashboard_title']
     label_columns = {
-        'dashboard_link': 'Dashboard',
+        'dashboard_link': _('Dashboard'),
+        'dashboard_title': _('Title'),
+        'creator': _('Creator'),
+        'modified': _('Modified'),
     }
 
 appbuilder.add_view_no_menu(DashboardModelViewAsync)
@@ -648,19 +604,6 @@ appbuilder.add_view(
     category="Security",
     category_label=__("Security"),
     icon="fa-list-ol")
-
-
-class QueryView(SupersetModelView):
-    datamodel = SQLAInterface(models.Query)
-    list_columns = ['user', 'database', 'status', 'start_time', 'end_time']
-
-appbuilder.add_view(
-    QueryView,
-    "Queries",
-    label=__("Queries"),
-    category="Manage",
-    category_label=__("Manage"),
-    icon="fa-search")
 
 
 @app.route('/health')
@@ -983,8 +926,8 @@ class Superset(BaseSupersetView):
         granted_perms = []
         for datasource in datasources:
             view_menu_perm = sm.find_permission_view_menu(
-                    view_menu_name=datasource.perm,
-                    permission_name='datasource_access')
+                view_menu_name=datasource.perm,
+                permission_name='datasource_access')
             # prevent creating empty permissions
             if view_menu_perm and view_menu_perm.view_menu:
                 role.permissions.append(view_menu_perm)
@@ -1204,14 +1147,7 @@ class Superset(BaseSupersetView):
         if request.args.get("query") == "true":
             try:
                 query_obj = viz_obj.query_obj()
-                engine = viz_obj.datasource.database.get_sqla_engine() \
-                    if datasource_type == 'table' \
-                    else viz_obj.datasource.cluster.get_pydruid_client()
-                if datasource_type == 'druid':
-                    # only retrive first phase query for druid
-                    query_obj['phase'] = 1
-                query = viz_obj.datasource.get_query_str(
-                    engine, datetime.now(), **query_obj)
+                query = viz_obj.datasource.get_query_str(query_obj)
             except Exception as e:
                 return json_error_response(e)
             return Response(
@@ -1355,33 +1291,20 @@ class Superset(BaseSupersetView):
         :return:
         """
         # TODO: Cache endpoint by user, datasource and column
-        error_redirect = '/slicemodelview/list/'
         datasource_class = ConnectorRegistry.sources[datasource_type]
-
-        datasource = db.session.query(
-            datasource_class).filter_by(id=datasource_id).first()
+        datasource = (
+            db.session.query(datasource_class)
+            .filter_by(id=datasource_id)
+            .first()
+        )
 
         if not datasource:
-            flash(DATASOURCE_MISSING_ERR, "alert")
             return json_error_response(DATASOURCE_MISSING_ERR)
         if not self.datasource_access(datasource):
-            flash(get_datasource_access_error_msg(datasource.name), "danger")
             return json_error_response(DATASOURCE_ACCESS_ERR)
 
-        viz_type = request.args.get("viz_type")
-        if not viz_type and datasource.default_endpoint:
-            return redirect(datasource.default_endpoint)
-        if not viz_type:
-            viz_type = "table"
-        try:
-            obj = viz.viz_types[viz_type](
-                datasource,
-                form_data=request.args,
-                slice_=None)
-        except Exception as e:
-            flash(str(e), "danger")
-            return redirect(error_redirect)
-        return json_success(obj.get_values_for_column(column))
+        payload = json.dumps(datasource.values_for_column(column))
+        return json_success(payload)
 
     def save_or_overwrite_slice(
             self, args, slc, slice_add_perm, slice_overwrite_perm,
@@ -1422,9 +1345,13 @@ class Superset(BaseSupersetView):
                     dash.dashboard_title),
                 "info")
         elif request.args.get('add_to_dash') == 'new':
+            slug = '{}__{}'.format(slugify(request.args.get('new_dashboard_name')),
+                                   hashlib.sha256(str(time.time())).hexdigest())
             dash = models.Dashboard(
                 dashboard_title=request.args.get('new_dashboard_name'),
-                owners=[g.user] if g.user else [])
+                owners=[g.user] if g.user else [],
+                slug=slug
+            )
             flash(
                 "Dashboard [{}] just got created and slice [{}] was added "
                 "to it".format(
@@ -1460,10 +1387,11 @@ class Superset(BaseSupersetView):
     @expose("/checkbox/<model_view>/<id_>/<attr>/<value>", methods=['GET'])
     def checkbox(self, model_view, id_, attr, value):
         """endpoint for checking/unchecking any boolean in a sqla model"""
-        views = sys.modules[__name__]
-        model_view_cls = getattr(views, model_view)
-        model = model_view_cls.datamodel.obj
-
+        modelview_to_model = {
+            'TableColumnInlineView':
+                ConnectorRegistry.sources['table'].column_class,
+        }
+        model = modelview_to_model[model_view]
         obj = db.session.query(model).filter_by(id=id_).first()
         if obj:
             setattr(obj, attr, value == 'true')
@@ -1492,6 +1420,7 @@ class Superset(BaseSupersetView):
     @has_access_api
     @expose("/schemas/<db_id>/")
     def schemas(self, db_id):
+        db_id = int(db_id)
         database = (
             db.session
             .query(models.Database)
@@ -1507,6 +1436,7 @@ class Superset(BaseSupersetView):
     @expose("/tables/<db_id>/<schema>/<substr>/")
     def tables(self, db_id, schema, substr):
         """Endpoint to fetch the list of tables for given database"""
+        db_id = int(db_id)
         schema = utils.js_string_to_python(schema)
         substr = utils.js_string_to_python(substr)
         database = db.session.query(models.Database).filter_by(id=db_id).one()
@@ -1557,7 +1487,7 @@ class Superset(BaseSupersetView):
         self._set_dash_metadata(dash, data)
         session.add(dash)
         session.commit()
-        dash_json = dash.json_data
+        dash_json = json.dumps(dash.data)
         session.close()
         return json_success(dash_json)
 
@@ -1644,6 +1574,7 @@ class Superset(BaseSupersetView):
             table_names = engine.table_names()
             return json.dumps(table_names, indent=4)
         except Exception as e:
+            logging.exception(e)
             return json_error_response((
                 "Connection failed!\n\n"
                 "The error message returned was:\n{}").format(e))
@@ -1692,6 +1623,23 @@ class Superset(BaseSupersetView):
             })
         return json_success(
             json.dumps(payload, default=utils.json_int_dttm_ser))
+
+    @api
+    @has_access_api
+    @expose("/csrf_token/", methods=['GET'])
+    def csrf_token(self):
+        return Response(
+            self.render_template('superset/csrf_token.json'),
+            mimetype='text/json',
+        )
+
+    @api
+    @has_access_api
+    @expose("/fave_dashboards_by_username/<username>/", methods=['GET'])
+    def fave_dashboards_by_username(self, username):
+        """This lets us use a user's username to pull favourite dashboards"""
+        user = sm.find_user(username=username)
+        return self.fave_dashboards(user.get_id())
 
     @api
     @has_access_api
@@ -1913,39 +1861,44 @@ class Superset(BaseSupersetView):
         qry = qry.filter_by(slug=dashboard_id)
 
         dash = qry.one()
-
+        datasources = {slc.datasource for slc in dash.slices}
         # Disable check to enable public view on Dashboard
-        # datasources = {slc.datasource for slc in dash.slices}
         # for datasource in datasources:
-        #     if not self.datasource_access(datasource):
+        #     if datasource and not self.datasource_access(datasource):
         #         flash(
         #             __(get_datasource_access_error_msg(datasource.name)),
         #             "danger")
         #         return redirect(
         #             'superset/request_access/?'
-        #             'dashboard_id={dash.id}&'
-        #             ''.format(**locals()))
+        #             'dashboard_id={dash.id}&'.format(**locals()))
 
         # Hack to log the dashboard_id properly, even when getting a slug
         @log_this
         def dashboard(**kwargs):  # noqa
             pass
         dashboard(dashboard_id=dash.id)
+
         dash_edit_perm = check_ownership(dash, raise_if_false=False)
         dash_save_perm = \
             dash_edit_perm and self.can_access('can_save_dash', 'Superset')
-        standalone = request.args.get("standalone") == "true"
-        context = dict(
-            user_id=g.user.get_id(),
-            dash_save_perm=dash_save_perm,
-            dash_edit_perm=dash_edit_perm,
-            standalone_mode=standalone,
-        )
+
+        dashboard_data = dash.data
+        dashboard_data.update({
+            'standalone_mode': request.args.get("standalone") == "true",
+            'dash_save_perm': dash_save_perm,
+            'dash_edit_perm': dash_edit_perm,
+        })
+
+        bootstrap_data = {
+            'user_id': g.user.get_id(),
+            'dashboard_data': dashboard_data,
+            'datasources': {ds.uid: ds.data for ds in datasources},
+        }
+
         return self.render_template(
             "superset/dashboard.html",
-            dashboard=dash,
-            context=json.dumps(context),
-            standalone_mode=standalone,
+            dashboard_title=dash.dashboard_title,
+            bootstrap_data=json.dumps(bootstrap_data),
         )
 
     @has_access
@@ -2004,9 +1957,9 @@ class Superset(BaseSupersetView):
     @expose("/sqllab_viz/", methods=['POST'])
     @log_this
     def sqllab_viz(self):
+        SqlaTable = ConnectorRegistry.sources['table']
         data = json.loads(request.form.get('data'))
         table_name = data.get('datasourceName')
-        viz_type = data.get('chartType')
         SqlaTable = ConnectorRegistry.sources['table']
         table = (
             db.session.query(SqlaTable)
@@ -2025,13 +1978,14 @@ class Superset(BaseSupersetView):
         for column_name, config in data.get('columns').items():
             is_dim = config.get('is_dim', False)
             SqlaTable = ConnectorRegistry.sources['table']
-            TableColumn = SqlaTable.column_cls
-            SqlMetric = SqlaTable.metric_cls
+            TableColumn = SqlaTable.column_class
+            SqlMetric = SqlaTable.metric_class
             col = TableColumn(
                 column_name=column_name,
                 filterable=is_dim,
                 groupby=is_dim,
                 is_dttm=config.get('is_date', False),
+                type=config.get('type', False),
             )
             cols.append(col)
             if is_dim:
@@ -2057,16 +2011,9 @@ class Superset(BaseSupersetView):
         table.columns = cols
         table.metrics = metrics
         db.session.commit()
-        params = {
-            'viz_type': viz_type,
-            'groupby': dims[0].column_name if dims else None,
-            'metrics': metrics[0].metric_name if metrics else None,
-            'metric': metrics[0].metric_name if metrics else None,
-            'since': '100 years ago',
-            'limit': '0',
-        }
-        params = "&".join([k + '=' + v for k, v in params.items() if v])
-        return '/superset/explore/table/{table.id}/?{params}'.format(**locals())
+        return self.json_response(json.dumps({
+            'table_id': table.id,
+        }))
 
     @has_access
     @expose("/table/<database_id>/<table_name>/<schema>/")
@@ -2174,14 +2121,14 @@ class Superset(BaseSupersetView):
                 status=410
             )
 
-        query = db.session.query(models.Query).filter_by(results_key=key).one()
+        query = db.session.query(Query).filter_by(results_key=key).one()
         rejected_tables = self.rejected_datasources(
             query.sql, query.database, query.schema)
         if rejected_tables:
             return json_error_response(get_datasource_access_error_msg(
                 '{}'.format(rejected_tables)))
 
-        payload = zlib.decompress(blob)
+        payload = utils.zlib_decompress_to_string(blob)
         display_limit = app.config.get('DISPLAY_SQL_MAX_ROW', None)
         if display_limit:
             payload_json = json.loads(payload)
@@ -2194,14 +2141,16 @@ class Superset(BaseSupersetView):
     @log_this
     def stop_query(self):
         client_id = request.form.get('client_id')
-        query = db.session.query(models.Query).filter_by(
-            client_id=client_id).one()
-        if query.user_id != g.user.id:
-            return json_error_response(
-                "Only original author can stop the query.")
-        query.status = utils.QueryStatus.STOPPED
-        db.session.commit()
-        return Response(201)
+        try:
+            query = (
+                db.session.query(Query)
+                .filter_by(client_id=client_id).one()
+            )
+            query.status = utils.QueryStatus.STOPPED
+            db.session.commit()
+        except Exception as e:
+            pass
+        return self.json_response('OK')
 
     @has_access_api
     @expose("/sql_json/", methods=['POST', 'GET'])
@@ -2234,7 +2183,7 @@ class Superset(BaseSupersetView):
                 tmp_table_name
             )
 
-        query = models.Query(
+        query = Query(
             database_id=int(database_id),
             limit=int(app.config.get('SQL_MAX_ROW', None)),
             sql=sql,
@@ -2249,18 +2198,37 @@ class Superset(BaseSupersetView):
             client_id=request.form.get('client_id'),
         )
         session.add(query)
-        session.commit()
+        session.flush()
         query_id = query.id
+        session.commit()  # shouldn't be necessary
+        if not query_id:
+            raise Exception("Query record was not created as expected.")
+        logging.info("Triggering query_id: {}".format(query_id))
 
         # Async request.
         if async:
             # Ignore the celery future object and the request may time out.
-            sql_lab.get_sql_results.delay(
-                query_id, return_results=False,
-                store_results=not query.select_as_cta)
-            return json_success(json.dumps(
+            try:
+                sql_lab.get_sql_results.delay(
+                    query_id=query_id, return_results=False,
+                    store_results=not query.select_as_cta)
+            except Exception as e:
+                logging.exception(e)
+                msg = (
+                    "Failed to start remote query on worker. "
+                    "Tell your administrator to verify the availability of "
+                    "the message queue."
+                )
+                query.status = QueryStatus.FAILED
+                query.error_message = msg
+                session.commit()
+                return json_error_response("{}".format(msg))
+
+            resp = json_success(json.dumps(
                 {'query': query.to_dict()}, default=utils.json_int_dttm_ser,
                 allow_nan=False), status=202)
+            session.commit()
+            return resp
 
         # Sync request.
         try:
@@ -2272,7 +2240,9 @@ class Superset(BaseSupersetView):
                         "timeout. You may want to run your query as a "
                         "`CREATE TABLE AS` to prevent timeouts."
                     ).format(**locals())):
-                data = sql_lab.get_sql_results(query_id, return_results=True)
+                # pylint: disable=no-value-for-parameter
+                data = sql_lab.get_sql_results(
+                    query_id=query_id, return_results=True)
         except Exception as e:
             logging.exception(e)
             return json_error_response("{}".format(e))
@@ -2284,7 +2254,7 @@ class Superset(BaseSupersetView):
     def csv(self, client_id):
         """Download the query results as csv."""
         query = (
-            db.session.query(models.Query)
+            db.session.query(Query)
             .filter_by(client_id=client_id)
             .one()
         )
@@ -2298,7 +2268,7 @@ class Superset(BaseSupersetView):
         if results_backend and query.results_key:
             blob = results_backend.get(query.results_key)
         if blob:
-            json_payload = zlib.decompress(blob)
+            json_payload = utils.zlib_decompress_to_string(blob)
             obj = json.loads(json_payload)
             columns = [c['name'] for c in obj['columns']]
             df = pd.DataFrame.from_records(obj['data'], columns=columns)
@@ -2335,7 +2305,6 @@ class Superset(BaseSupersetView):
             return json_error_response(DATASOURCE_ACCESS_ERR)
         return json_success(json.dumps(datasource.data))
 
-    @has_access
     @expose("/queries/<last_updated_ms>")
     def queries(self, last_updated_ms):
         """Get the updated queries."""
@@ -2350,10 +2319,10 @@ class Superset(BaseSupersetView):
         last_updated_dt = utils.EPOCH + timedelta(seconds=last_updated_ms_int / 1000)
 
         sql_queries = (
-            db.session.query(models.Query)
+            db.session.query(Query)
             .filter(
-                models.Query.user_id == g.user.get_id(),
-                models.Query.changed_on >= last_updated_dt,
+                Query.user_id == g.user.get_id(),
+                Query.changed_on >= last_updated_dt,
             )
             .all()
         )
@@ -2366,7 +2335,7 @@ class Superset(BaseSupersetView):
     @log_this
     def search_queries(self):
         """Search for queries."""
-        query = db.session.query(models.Query)
+        query = db.session.query(Query)
         search_user_id = request.args.get('user_id')
         database_id = request.args.get('database_id')
         search_text = request.args.get('search_text')
@@ -2377,30 +2346,30 @@ class Superset(BaseSupersetView):
 
         if search_user_id:
             # Filter on db Id
-            query = query.filter(models.Query.user_id == search_user_id)
+            query = query.filter(Query.user_id == search_user_id)
 
         if database_id:
             # Filter on db Id
-            query = query.filter(models.Query.database_id == database_id)
+            query = query.filter(Query.database_id == database_id)
 
         if status:
             # Filter on status
-            query = query.filter(models.Query.status == status)
+            query = query.filter(Query.status == status)
 
         if search_text:
             # Filter on search text
             query = query \
-                .filter(models.Query.sql.like('%{}%'.format(search_text)))
+                .filter(Query.sql.like('%{}%'.format(search_text)))
 
         if from_time:
-            query = query.filter(models.Query.start_time > int(from_time))
+            query = query.filter(Query.start_time > int(from_time))
 
         if to_time:
-            query = query.filter(models.Query.start_time < int(to_time))
+            query = query.filter(Query.start_time < int(to_time))
 
         query_limit = config.get('QUERY_SEARCH_LIMIT', 1000)
         sql_queries = (
-            query.order_by(models.Query.start_time.asc())
+            query.order_by(Query.start_time.asc())
             .limit(query_limit)
             .all()
         )
@@ -2411,32 +2380,6 @@ class Superset(BaseSupersetView):
             json.dumps(dict_queries, default=utils.json_int_dttm_ser),
             status=200,
             mimetype="application/json")
-
-    @has_access
-    @expose("/refresh_datasources/")
-    def refresh_datasources(self):
-        """endpoint that refreshes druid datasources metadata"""
-        session = db.session()
-        DruidDatasource = ConnectorRegistry.sources['druid']
-        DruidCluster = DruidDatasource.cluster_class
-        for cluster in session.query(DruidCluster).all():
-            cluster_name = cluster.cluster_name
-            try:
-                cluster.refresh_datasources()
-            except Exception as e:
-                flash(
-                    "Error while processing cluster '{}'\n{}".format(
-                        cluster_name, utils.error_msg_from_exception(e)),
-                    "danger")
-                logging.exception(e)
-                return redirect('/druidclustermodelview/list/')
-            cluster.metadata_last_refreshed = datetime.now()
-            flash(
-                "Refreshed metadata from cluster "
-                "[" + cluster.cluster_name + "]",
-                'info')
-        session.commit()
-        return redirect("/druiddatasourcemodelview/list/")
 
     @app.errorhandler(500)
     def show_traceback(self):
@@ -2521,16 +2464,6 @@ class Superset(BaseSupersetView):
 
 appbuilder.add_view_no_menu(Superset)
 
-if config['DRUID_IS_ACTIVE']:
-    appbuilder.add_link(
-        "Refresh Druid Metadata",
-        label=__("Refresh Druid Metadata"),
-        href='/superset/refresh_datasources/',
-        category='Sources',
-        category_label=__("Sources"),
-        category_icon='fa-database',
-        icon="fa-cog")
-
 
 class CssTemplateModelView(SupersetModelView, DeleteMixin):
     datamodel = SQLAInterface(models.CssTemplate)
@@ -2556,16 +2489,22 @@ appbuilder.add_view_no_menu(CssTemplateAsyncModelView)
 
 appbuilder.add_link(
     'SQL Editor',
+    label=_("SQL Editor"),
     href='/superset/sqllab',
     category_icon="fa-flask",
     icon="fa-flask",
-    category='SQL Lab')
+    category='SQL Lab',
+    category_label=__("SQL Lab"),
+)
 appbuilder.add_link(
     'Query Search',
+    label=_("Query Search"),
     href='/superset/sqllab#search',
     icon="fa-search",
     category_icon="fa-flask",
-    category='SQL Lab')
+    category='SQL Lab',
+    category_label=__("SQL Lab"),
+)
 
 
 @app.after_request

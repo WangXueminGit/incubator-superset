@@ -1,15 +1,13 @@
 // JS
 import d3 from 'd3';
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-
 import Select from 'react-select';
-import '../stylesheets/react-select/select.less';
 import { Button } from 'react-bootstrap';
 
+import '../stylesheets/react-select/select.less';
+import { TIME_CHOICES } from './constants';
 import './filter_box.css';
-import { TIME_CHOICES } from './constants.js';
 
 const propTypes = {
   origSelectedValues: React.PropTypes.object,
@@ -46,7 +44,7 @@ class FilterBox extends React.Component {
     let vals = null;
     if (options) {
       if (Array.isArray(options)) {
-        vals = options.map((opt) => opt.value);
+        vals = options.map(opt => opt.value);
       } else {
         vals = options.value;
       }
@@ -70,7 +68,7 @@ class FilterBox extends React.Component {
         if (!choices.includes(val)) {
           choices.push(val);
         }
-        const options = choices.map((s) => ({ value: s, label: s }));
+        const options = choices.map(s => ({ value: s, label: s }));
         return (
           <div className="m-b-5" key={field}>
             {field.replace('__', '')}
@@ -175,7 +173,7 @@ function filterBox(slice, payload) {
       origSelectedValues={slice.getFilters() || {}}
       instantFiltering={fd.instant_filtering}
     />,
-    document.getElementById(slice.containerId)
+    document.getElementById(slice.containerId),
   );
 }
 

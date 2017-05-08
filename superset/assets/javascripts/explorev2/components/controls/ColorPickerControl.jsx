@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import Select, { Creatable } from 'react-select';
 import { SwatchesPicker } from 'react-color';
 import { WithContext as ReactTags } from 'react-tag-input';
@@ -30,7 +31,7 @@ const defaultProps = {
   onChange: () => {},
 };
 
-export default class ColorPickerControl extends React.PureComponent {
+export default class ColorPickerControl extends React.Component {
   constructor(props) {
     super(props);
     const value = props.value ? props.value : [];
@@ -46,19 +47,19 @@ export default class ColorPickerControl extends React.PureComponent {
   handleDelete(i) {
     let value = this.state.value;
     value.splice(i, 1);
-    this.setState({ value: value });
+    this.setState({ value });
     this.getTagArray();
     this.props.onChange(value);
   }
   handleColorAddition(color) {
-    let colorString = color.rgb.r + ', ' + color.rgb.g + ', ' + color.rgb.b;
+    const colorString = color.rgb.r + ', ' + color.rgb.g + ', ' + color.rgb.b;
     this.handleAddition(colorString);
     this.getTagArray();
   }
   handleAddition(tag) {
     let value = this.state.value;
     value.push(tag);
-    this.setState({ value: value });
+    this.setState({ value });
     this.props.onChange(value);
   }
   handleDrag(tag, currPos, newPos) {
@@ -68,16 +69,16 @@ export default class ColorPickerControl extends React.PureComponent {
     value.splice(newPos, 0, value.splice(currPos, 1)[0]);
 
     // re-render
-    this.setState({ value: value });
+    this.setState({ value });
     this.getTagArray();
     this.props.onChange(value);
   }
   renderColorTag(value) {
     const style = {
-      width: "12px",
-      height: "12px",
-      display: "inline-block",
-      background: "rgb(" + value.text + ")",
+      width: '12px',
+      height: '12px',
+      display: 'inline-block',
+      background: 'rgb(' + value.text + ')',
     };
     return (<div style={{display: "inline-block"}}><span style={Object.assign({}, style)}></span></div>);
   }

@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import ControlHeader from './ControlHeader';
 
 import CheckboxControl from './controls/CheckboxControl';
@@ -24,6 +25,7 @@ const propTypes = {
   actions: PropTypes.object.isRequired,
   name: PropTypes.string.isRequired,
   type: PropTypes.oneOf(controlTypes).isRequired,
+  hidden: PropTypes.bool,
   label: PropTypes.string.isRequired,
   choices: PropTypes.arrayOf(PropTypes.array),
   description: PropTypes.string,
@@ -42,6 +44,7 @@ const propTypes = {
 const defaultProps = {
   renderTrigger: false,
   validators: [],
+  hidden: false,
   validationErrors: [],
 };
 
@@ -50,8 +53,12 @@ export default class Control extends React.PureComponent {
     super(props);
     this.validate = this.validate.bind(this);
     this.onChange = this.onChange.bind(this);
+    this.validateAndSetValue(props.value, []);
   }
   onChange(value, errors) {
+    this.validateAndSetValue(value, errors);
+  }
+  validateAndSetValue(value, errors) {
     let validationErrors = this.validate(value);
     if (errors && errors.length > 0) {
       validationErrors = validationErrors.concat(errors);
@@ -62,7 +69,7 @@ export default class Control extends React.PureComponent {
     const validators = this.props.validators;
     const validationErrors = [];
     if (validators && validators.length > 0) {
-      validators.forEach(f => {
+      validators.forEach((f) => {
         const v = f(value);
         if (v) {
           validationErrors.push(v);

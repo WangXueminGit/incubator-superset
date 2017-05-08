@@ -1,13 +1,15 @@
 // JS
 import $ from 'jquery';
+import throttle from 'lodash.throttle';
+import d3 from 'd3';
+
 import { category21 } from '../javascripts/modules/colors';
 import { timeFormatFactory, formatDate } from '../javascripts/modules/dates';
 import { customizeToolTip } from '../javascripts/modules/utils';
-import throttle from 'lodash.throttle';
 
-const d3 = require('d3');
-const nv = require('nvd3');
 import { TIME_STAMP_OPTIONS } from '../javascripts/explorev2/stores/controls';
+
+const nv = require('nvd3');
 
 // CSS
 require('../node_modules/nvd3/build/nv.d3.min.css');
@@ -17,8 +19,11 @@ const timeStampFormats = TIME_STAMP_OPTIONS.map(opt => opt[0]);
 const minBarWidth = 15;
 const animationTime = 1000;
 
+const BREAKPOINTS = {
+  small: 340,
+};
+
 const addTotalBarValues = function (svg, chart, data, stacked) {
-  // const svg = d3.select('svg');
   const format = d3.format('.3s');
   const countSeriesDisplayed = data.length;
 
@@ -63,13 +68,12 @@ function hideTooltips() {
   $('.nvtooltip').css({ opacity: 0 });
 }
 
-function getMaxLabelSize(container, axisClass, widthOrHeight) {
+function getMaxLabelSize(container, axisClass) {
   // axis class = .nv-y2  // second y axis on dual line chart
   // axis class = .nv-x  // x axis on time series line chart
-  const labelEls = container.find(`.${axisClass} .tick text`);
-  const labelDimensions = labelEls.map(i => labelEls[i].getBoundingClientRect()[widthOrHeight]);
-  const max = Math.max.apply(Math, labelDimensions);
-  return max;
+  const labelEls = container.find(`.${axisClass} text`);
+  const labelDimensions = labelEls.map(i => labelEls[i].getComputedTextLength());
+  return Math.max(...labelDimensions);
 }
 
 function nvd3Vis(slice, payload) {
@@ -210,7 +214,7 @@ function nvd3Vis(slice, payload) {
                 if (a.x < b.x) return -1;
                 if (a.x > b.x) return 1;
                 return 0;
-              }
+              },
             );
           });
         }
@@ -236,6 +240,13 @@ function nvd3Vis(slice, payload) {
         chart.labelThreshold(0.05)  // Configure the minimum slice size for labels to show up
           .labelType(fd.pie_label_type);
         chart.cornerRadius(true);
+
+        if (fd.pie_label_type === 'percent') {
+          let total = 0;
+          payload.data.forEach((d) => { total += d.y; });
+          chart.tooltip.valueFormatter(d => `${((d / total) * 100).toFixed()}%`);
+        }
+
         break;
 
       case 'column':
@@ -302,7 +313,11 @@ function nvd3Vis(slice, payload) {
     }
 
     if ('showLegend' in chart && typeof fd.show_legend !== 'undefined') {
-      chart.showLegend(fd.show_legend);
+      if (width < BREAKPOINTS.small && vizType !== 'pie') {
+        chart.showLegend(false);
+      } else {
+        chart.showLegend(fd.show_legend);
+      }
     }
 
     let height = slice.height() - 15;
@@ -327,6 +342,7 @@ function nvd3Vis(slice, payload) {
     let xAxisFormatter;
     if (vizType === 'bubble' || vizType === 'simpleline') {
       xAxisFormatter = d3.format('.3s');
+      chart.xAxis.tickFormat(xAxisFormatter);
     } else if (fd.x_axis_format === 'smart_date') {
       xAxisFormatter = formatDate;
       chart.xAxis.tickFormat(xAxisFormatter);
@@ -347,11 +363,14 @@ function nvd3Vis(slice, payload) {
     }
 
     if (vizType === 'bubble' || vizType === 'simpleline') {
-      chart.xAxis.tickFormat(d3.format('.3s'));
+      xAxisFormatter = d3.format('.3s');
+      chart.xAxis.tickFormat(xAxisFormatter);
     } else if (fd.x_axis_format === 'smart_date') {
-      chart.xAxis.tickFormat(formatDate);
+      xAxisFormatter = formatDate;
+      chart.xAxis.tickFormat(xAxisFormatter);
     } else if (fd.x_axis_format !== undefined) {
-      chart.xAxis.tickFormat(timeFormatFactory(fd.x_axis_format));
+      xAxisFormatter = timeFormatFactory(fd.x_axis_format);
+      chart.xAxis.tickFormat(xAxisFormatter);
     }
     if (chart.yAxis !== undefined) {
       chart.yAxis.tickFormat(d3.format('.3s'));
@@ -364,7 +383,7 @@ function nvd3Vis(slice, payload) {
       }
     }
     if (vizType !== 'bullet') {
-      chart.color((d) => category21(d[colorKey]));
+      chart.color(d => category21(d[colorKey]));
     }
 
     if (fd.x_axis_label && fd.x_axis_label !== '' && chart.xAxis) {
@@ -397,8 +416,47 @@ function nvd3Vis(slice, payload) {
       chart.yAxis1.tickFormat(yAxisFormatter1);
       chart.yAxis2.tickFormat(yAxisFormatter2);
       customizeToolTip(chart, xAxisFormatter, [yAxisFormatter1, yAxisFormatter2]);
-      chart.showLegend(true);
+      chart.showLegend(width > BREAKPOINTS.small);
     }
+
+
+    if (fd.x_axis_class_range) {
+      const lowerBoundary = fd.x_axis_lower_bound || null;
+      const xValues = payload.data[0].values.map((value) => value.x);
+      if (xValues.reduce((acc, value) => isNaN(value) && isNaN(Date.parse(value)) ? acc + 1 : 0) === 0) {
+        let xLabels = [];
+        for (let i = 0; i < xValues.length; i++) {
+          xLabels.push(xValues[i]);
+        }
+        if (xValues.length > 1) {
+          let predictFirstValue = '';
+          if (lowerBoundary) {
+            predictFirstValue = lowerBoundary;
+          }
+          else if (!isNaN(xValues[0])) {
+            predictFirstValue = xValues[0] - (xValues[1] - xValues[0]);
+          }
+          else if (!isNaN(Date.parse(xValues[0]))) {
+            const date1 = new Date(xValues[0]);
+            const date2 = new Date(xValues[1]);
+            predictFirstValue = new Date(date1.getTime() - (date2.getTime() - date1.getTime())).toISOString().slice(0, 10);
+          }
+          xLabels.unshift(predictFirstValue);
+        }
+        else if (lowerBoundary) {
+          xLabels.unshift(lowerBoundary);
+        }
+        else {
+          xLabels = xValues;
+        }
+        chart.xAxis.tickFormat(function(d, i) {
+          return xAxisFormatter ?
+              (xAxisFormatter(xLabels[i]) + ' - ' + xAxisFormatter(xLabels[i] + 1)) :
+              (xLabels[i] + '-' + xLabels[i + 1]);
+        });
+      }
+    }
+
     svg
     .datum(payload.data)
     .transition().duration(500)
@@ -412,13 +470,30 @@ function nvd3Vis(slice, payload) {
       .style('fill-opacity', 1);
     }
 
+    if (fd.show_point_value) {
+      chart.dispatch.on('renderEnd', function () {
+        d3.selectAll('.nv-point-label').remove();
+        svg.select('.nv-scatterWrap').attr('clip-path', null);
+        svg.select('.nv-line > g').attr('clip-path', null);
+        svg.selectAll('path.nv-point').each(function (d, i) {
+          d3.select(this.parentNode).append('text')
+              .classed('nv-point-label nv-point-label-' + i, true)
+              .attr('dy', '-.35em')
+              .attr('transform', d3.select(this).attr('transform'))
+              .attr('dx', '.2em')
+              .text(d[0].y)
+              .style({stroke: 'initial'});
+        });
+      });
+    }
+
     // Hack to adjust margins to accommodate long axis tick labels.
     // - has to be done only after the chart has been rendered once
     // - measure the width or height of the labels
     // ---- (x axis labels are rotated 45 degrees so we use height),
     // - adjust margins based on these measures and render again
     if (isTimeSeries) { // && vizType !== 'bar'
-      const maxXAxisLabelHeight = getMaxLabelSize(slice.container, 'nv-x', 'height');
+      const maxXAxisLabelHeight = getMaxLabelSize(slice.container, 'nv-x');
       const marginPad = isExplore ? width * 0.01 : width * 0.03;
       const chartMargins = {
         bottom: maxXAxisLabelHeight + marginPad,
@@ -426,7 +501,7 @@ function nvd3Vis(slice, payload) {
       };
 
       if (vizType === 'dual_line') {
-        const maxYAxis2LabelWidth = getMaxLabelSize(slice.container, 'nv-y2', 'width');
+        const maxYAxis2LabelWidth = getMaxLabelSize(slice.container, 'nv-y2');
         // use y axis width if it's wider than axis width/height
         if (maxYAxis2LabelWidth > maxXAxisLabelHeight) {
           chartMargins.right = maxYAxis2LabelWidth + marginPad;

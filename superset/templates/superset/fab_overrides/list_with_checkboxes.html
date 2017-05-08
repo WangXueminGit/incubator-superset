@@ -5,6 +5,7 @@
     {% block begin_content scoped %}
         <div class="table-responsive">
         <form method="POST" action="{{ request.path }}/update_columns/" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}"/>
         <table class="table table-bordered table-hover">
     {% endblock %}
 

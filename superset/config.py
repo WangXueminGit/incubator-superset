@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 import imp
 import json
 import os
+from collections import OrderedDict
 
 from dateutil import tz
 from flask_appbuilder.security.manager import AUTH_OAUTH
@@ -67,7 +68,7 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:Ap99B8hDPrmun6ZMtDUcLzPw@localh
 QUERY_SEARCH_LIMIT = 1000
 
 # Flask-WTF flag for CSRF
-CSRF_ENABLED = True
+WTF_CSRF_ENABLED = True
 
 # Whether to run the web server in debug mode or not
 DEBUG = False
@@ -127,7 +128,7 @@ OAUTH_PROVIDERS = [
 AUTH_ROLE_ADMIN = 'Admin'
 
 # Uncomment to setup Public role name, no authentication needed
-# AUTH_ROLE_PUBLIC = 'Public'
+AUTH_ROLE_PUBLIC = 'Public'
 
 # Will allow user self registration
 # AUTH_USER_REGISTRATION = True
@@ -211,10 +212,10 @@ DRUID_DATA_SOURCE_BLACKLIST = []
 # --------------------------------------------------
 # Modules, datasources and middleware to be registered
 # --------------------------------------------------
-DEFAULT_MODULE_DS_MAP = {
-    'superset.connectors.druid.models': ['DruidDatasource'],
-    'superset.connectors.sqla.models': ['SqlaTable'],
-}
+DEFAULT_MODULE_DS_MAP = OrderedDict([
+    ('superset.connectors.sqla.models', ['SqlaTable']),
+    ('superset.connectors.druid.models', ['DruidDatasource']),
+])
 ADDITIONAL_MODULE_DS_MAP = {}
 ADDITIONAL_MIDDLEWARE = []
 
@@ -346,7 +347,7 @@ try:
         # Explicitly import config module that is not in pythonpath; useful
         # for case where app is being executed via pex.
         print('Loaded your LOCAL configuration at [{}]'.format(
-             os.environ[CONFIG_PATH_ENV_VAR]))
+            os.environ[CONFIG_PATH_ENV_VAR]))
         imp.load_source('superset_config', os.environ[CONFIG_PATH_ENV_VAR])
     else:
         from superset_config import *  # noqa
