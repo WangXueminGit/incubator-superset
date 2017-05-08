@@ -9,6 +9,7 @@ import Header from './components/Header';
 import { appSetup } from '../common';
 
 import '../../stylesheets/dashboard.css';
+import '../../stylesheets/dashboard.scss';
 
 const px = require('../modules/superset');
 const urlLib = require('url');
