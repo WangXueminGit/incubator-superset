@@ -687,6 +687,29 @@ export const controls = {
     default: 'https://www.youtube.com/embed/AdSZJzb-aX8',
   },
 
+  show_point_value: {
+    type: 'CheckboxControl',
+    label: 'Show value at point',
+    renderTrigger: true,
+    default: false,
+    description: 'Show value of Y at point by default',
+  },
+
+  x_axis_class_range: {
+    type: 'CheckboxControl',
+    label: 'X Axis class value is upper bound?',
+    renderTrigger: true,
+    default: false,
+    description: 'Whether label the class a range from previous value to current value',
+  },
+
+  x_axis_lower_bound: {
+    type: 'TextControl',
+    label: 'X Axis First Class Lower Boundary',
+    renderTrigger: true,
+    default: '',
+  },
+
   x_axis_label: {
     type: 'TextControl',
     label: 'X Axis Label',
