@@ -5,7 +5,7 @@
     margin: 0px;
 }
 
-.horizon span {
+.horizon .horizon span {
     left: 5;
     position: absolute;
     color: black;
