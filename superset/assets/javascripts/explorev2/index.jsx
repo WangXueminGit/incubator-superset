@@ -5,6 +5,9 @@ import { createStore, applyMiddleware, compose } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 
+import HTML5Backend from 'react-dnd-html5-backend';
+import { DragDropContextProvider } from 'react-dnd';
+
 import { now } from '../modules/dates';
 import { initEnhancer } from '../reduxUtils';
 import AlertsWrapper from '../components/AlertsWrapper';
@@ -49,10 +52,12 @@ const store = createStore(exploreReducer, bootstrappedState,
 
 ReactDOM.render(
   <Provider store={store}>
-    <div>
-      <ExploreViewContainer />
-      <AlertsWrapper />
-    </div>
+    <DragDropContextProvider backend={HTML5Backend}>
+      <div>
+        <ExploreViewContainer />
+        <AlertsWrapper />
+      </div>
+    </DragDropContextProvider>
   </Provider>,
   exploreViewContainer,
 );
