@@ -109,25 +109,32 @@ class FilterBox extends React.Component {
       // });
       dateFilter = (
         <div className={'input-group input-daterange'} style={{ display: 'block' }}>
-          <DatePicker
-            selected={this.state.startDate}
-            selectsStart
-            placeholderText="From"
-            isClearable={true}
-            startDate={this.state.startDate}
-            endDate={this.state.endDate}
-            onChange={this.changeDateFilter.bind(this, '__from')}
-          />
-          ->
-          <DatePicker
-            selected={this.state.endDate}
-            selectsEnd
-            placeholderText="to"
-            isClearable={true}
-            startDate={this.state.startDate}
-            endDate={this.state.endDate}
-            onChange={this.changeDateFilter.bind(this, '__to')}
-          />
+          <div className="form-group">
+            <label style={{ display: 'block' }}>From</label>
+            <DatePicker
+              selected={this.state.startDate}
+              selectsStart
+              placeholderText="From"
+              isClearable={true}
+              startDate={this.state.startDate}
+              endDate={this.state.endDate}
+              onChange={this.changeDateFilter.bind(this, '__from')}
+              className="form-control"
+            />
+          </div>
+          <div className="form-group">
+            <label style={{ display: 'block' }}>To</label>
+            <DatePicker
+              selected={this.state.endDate}
+              selectsEnd
+              placeholderText="to"
+              isClearable={true}
+              startDate={this.state.startDate}
+              endDate={this.state.endDate}
+              onChange={this.changeDateFilter.bind(this, '__to')}
+              className="form-control"
+            />
+          </div>
         </div>
       );
     }
