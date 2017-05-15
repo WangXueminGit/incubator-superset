@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Select, { Creatable } from 'react-select';
 import { SwatchesPicker } from 'react-color';
-import { WithContext as ReactTags } from 'react-tag-input';
+import { WithOutContext as ReactTags } from 'react-tag-input';
 import '../../../../stylesheets/react-tag/react-tag.css';
 import '../../../../stylesheets/react-color/react-color.css';
 

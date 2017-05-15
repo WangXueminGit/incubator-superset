@@ -107,6 +107,7 @@ export function dashboardContainer(dashboard, datasources, userid) {
     init() {
       this.sliceObjects = [];
       dashboard.slices.forEach((data) => {
+        this.loadPreSelectFilters();
         if (data.error) {
           const html = `<div class="alert alert-danger">${data.error}</div>`;
           $(`#slice_${data.slice_id}`).find('.token').html(html);
@@ -118,7 +119,6 @@ export function dashboardContainer(dashboard, datasources, userid) {
           this.sliceObjects.push(slice);
         }
       });
-      this.loadPreSelectFilters();
       // if (typeof window.callPhantom !== "function") {
       this.startPeriodicRender(0);
       // }
@@ -244,12 +244,11 @@ export function dashboardContainer(dashboard, datasources, userid) {
       if (!(sliceId in this.filters)) {
         this.filters[sliceId] = {};
       }
-      if (!(col in this.filters[sliceId])) {
-        if (!merge) {
-          this.filters[sliceId][col] = vals;
-        } else {
-          this.filters[sliceId][col] = d3.merge([this.filters[sliceId][col] || [], vals]);
-        }
+      if (!merge || !(col in this.filters[sliceId])) {
+        this.filters[sliceId][col] = vals;
+      }
+      else {
+        this.filters[sliceId][col] = d3.merge([this.filters[sliceId][col] || [], vals]);
       }
       if (refresh) {
         this.refreshExcept(sliceId);
