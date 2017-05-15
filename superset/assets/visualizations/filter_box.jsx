@@ -5,10 +5,13 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import Select from 'react-select';
 import { Button } from 'react-bootstrap';
+import DatePicker from 'react-datepicker';
+import moment from 'moment';
 
 import '../stylesheets/react-select/select.less';
 import { TIME_CHOICES } from './constants';
 import './filter_box.css';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const propTypes = {
   origSelectedValues: PropTypes.object,
@@ -35,6 +38,8 @@ class FilterBox extends React.Component {
       selectedValues: props.origSelectedValues,
       selectedGroupByValues: props.origSelectedGroupByValues,
       hasChanged: false,
+      startDate: null,
+      endDate: null,
     };
   }
   clickApply() {
@@ -55,6 +60,27 @@ class FilterBox extends React.Component {
     this.setState({ selectedValues, hasChanged: true });
     this.props.onChange(filter, vals, false, this.props.instantFiltering);
   }
+  changeDateFilter(filter, option) {
+    let val = null,
+      mom = null;
+    if (option) {
+      val = option.format('YYYY-MM-DD');
+      if (filter === '__to') {
+        val = option.add(1, 'day').format('YYYY-MM-DD');
+      }
+      mom = option;
+    }
+    const selectedValues = Object.assign({}, this.state.selectedValues);
+    selectedValues[filter] = val;
+    this.setState({ selectedValues, hasChanged: true });
+    if (filter === '__from') {
+      this.setState({ startDate: mom});
+    }
+    else if (filter === '__to') {
+      this.setState({ endDate: mom});
+    }
+    this.props.onChange(filter, val, false, this.props.instantFiltering);
+  }
   changeGroupBy(options) {
     const selectedGroupByValues = options;
     this.setState({ selectedGroupByValues, hasChanged: true });
@@ -63,24 +89,47 @@ class FilterBox extends React.Component {
   render() {
     let dateFilter;
     if (this.props.showDateFilter) {
-      dateFilter = ['__from', '__to'].map((field) => {
-        const val = this.state.selectedValues[field];
-        const choices = TIME_CHOICES.slice();
-        if (!choices.includes(val)) {
-          choices.push(val);
-        }
-        const options = choices.map(s => ({ value: s, label: s }));
-        return (
-          <div className="m-b-5" key={field}>
-            {field.replace('__', '')}
-            <Select.Creatable
-              options={options}
-              value={this.state.selectedValues[field]}
-              onChange={this.changeFilter.bind(this, field)}
-            />
-          </div>
-        );
-      });
+      // dateFilter = ['__from', '__to'].map((field) => {
+      //   const val = this.state.selectedValues[field];
+      //   const choices = TIME_CHOICES.slice();
+      //   if (!choices.includes(val)) {
+      //     choices.push(val);
+      //   }
+      //   const options = choices.map(s => ({ value: s, label: s }));
+      //   return (
+      //     <div className="m-b-5" key={field}>
+      //       {field.replace('__', '')}
+      //       <Select.Creatable
+      //         options={options}
+      //         value={this.state.selectedValues[field]}
+      //         onChange={this.changeFilter.bind(this, field)}
+      //       />
+      //     </div>
+      //   );
+      // });
+      dateFilter = (
+        <div className={'input-group input-daterange'} style={{ display: 'block' }}>
+          <DatePicker
+            selected={this.state.startDate}
+            selectsStart
+            placeholderText="From"
+            isClearable={true}
+            startDate={this.state.startDate}
+            endDate={this.state.endDate}
+            onChange={this.changeDateFilter.bind(this, '__from')}
+          />
+          ->
+          <DatePicker
+            selected={this.state.endDate}
+            selectsEnd
+            placeholderText="to"
+            isClearable={true}
+            startDate={this.state.startDate}
+            endDate={this.state.endDate}
+            onChange={this.changeDateFilter.bind(this, '__to')}
+          />
+        </div>
+      );
     }
     const filters = Object.keys(this.props.filtersChoices).map((filter) => {
       const data = this.props.filtersChoices[filter];
@@ -113,21 +162,24 @@ class FilterBox extends React.Component {
         </div>
       );
     });
-    const groupby = (
-      <div key="groupBy" className="m-b-5">
-        Group By
-        <Select
-          placeholder={`Select Group By Fields`}
-          key='groupBy'
-          multi
-          value={this.state.selectedGroupByValues}
-          options={this.props.groupByChoices.map((opt) => {
-            return { value: opt, label: opt };
-          })}
-          onChange={this.changeGroupBy.bind(this)}
-        />
-      </div>
-    );
+    let groupby;
+    if (this.props.groupByChoices.length > 0) {
+      groupby = (
+        <div key="groupBy" className="m-b-5">
+          Group By
+          <Select
+              placeholder={`Select Group By Fields`}
+              key='groupBy'
+              multi
+              value={this.state.selectedGroupByValues}
+              options={this.props.groupByChoices.map((opt) => {
+                return { value: opt, label: opt };
+              })}
+              onChange={this.changeGroupBy.bind(this)}
+          />
+        </div>
+      );
+    }
     return (
       <div>
         {dateFilter}

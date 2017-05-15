@@ -74,6 +74,7 @@
     "react-bootstrap": "^0.31.0",
     "react-bootstrap-table": "^3.1.7",
     "react-color": "^2.11.4",
+    "react-datepicker": "^0.46.0",
     "react-dom": "^15.5.1",
     "react-draggable": "^2.1.2",
     "react-gravatar": "^2.6.1",
