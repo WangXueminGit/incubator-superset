@@ -710,6 +710,14 @@ export const controls = {
     default: '',
   },
 
+  epoch_date: {
+    type: 'CheckboxControl',
+    label: 'Value is Epoch Date',
+    renderTrigger: true,
+    default: false,
+    description: 'Convert Epoch date to date string',
+  },
+
   x_axis_label: {
     type: 'TextControl',
     label: 'X Axis Label',

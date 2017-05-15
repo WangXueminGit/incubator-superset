@@ -1,5 +1,6 @@
 import d3 from 'd3';
 import { formatDate } from '../javascripts/modules/dates';
+import moment from 'moment';
 
 require('./big_number.css');
 
@@ -70,7 +71,7 @@ function bigNumberVis(slice, payload) {
   .attr('id', 'bigNumber')
   .style('font-weight', 'bold')
   .style('cursor', 'pointer')
-  .text(f(v))
+  .text(fd.epoch_date ? moment(v).format('MMM D') : f(v))
   .style('font-size', d3.min([height, width]) / 3.5)
   .style('text-anchor', 'middle')
   .attr('fill', 'black');
