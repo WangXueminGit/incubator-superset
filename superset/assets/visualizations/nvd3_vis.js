@@ -471,7 +471,10 @@ function nvd3Vis(slice, payload) {
 
     if (fd.show_point_value) {
       chart.dispatch.on('renderEnd', function () {
-        d3.selectAll('.nv-point-label').remove();
+        if (svg.selectAll('path.nv-point').size() > 80) {
+          return;
+        }
+        svg.selectAll('.nv-point-label').remove();
         svg.select('.nv-scatterWrap').attr('clip-path', null);
         svg.select('.nv-line > g').attr('clip-path', null);
         svg.selectAll('path.nv-point').each(function (d, i) {
@@ -480,7 +483,7 @@ function nvd3Vis(slice, payload) {
               .attr('dy', '-.35em')
               .attr('transform', d3.select(this).attr('transform'))
               .attr('dx', '.2em')
-              .text(d[0].y)
+              .text(d3.format(fd.y_axis_format || '.3s')(d[0].y))
               .style({stroke: 'initial'});
         });
       });
