@@ -209,6 +209,8 @@ def parse_human_datetime(s):
     >>> year_ago_1 == year_ago_2
     True
     """
+    if isinstance(s, list):
+        s = ''.join(s)
     try:
         dttm = parse(s)
     except Exception:
