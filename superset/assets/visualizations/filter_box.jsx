@@ -147,7 +147,7 @@ class FilterBox extends React.Component {
       return (
         <div key={filter} className="m-b-5">
           {filter}
-          <Select
+          <Select.Creatable
             placeholder={`Select [${filter}]`}
             key={filter}
             multi

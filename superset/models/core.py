@@ -153,6 +153,13 @@ class Slice(Model, AuditMixinNullable, ImportMixin):
         return utils.markdown(self.description)
 
     @property
+    def dashboards_link(self):
+        dashboards_links = []
+        for dashboard in self.dashboards:
+            dashboards_links.append(Markup('<li><a href="{dashboard.url}">{dashboard.dashboard_title}</a></li>'.format(**locals())))
+        return '<ul>' + (''.join(dashboards_links)) + '</ul>'
+
+    @property
     def data(self):
         """Data used to render slice in templates"""
         d = {}
