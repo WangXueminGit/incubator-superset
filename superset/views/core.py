@@ -685,7 +685,7 @@ class Managedb(BaseSupersetView):
     @has_access
     @expose("/db/<database_id>/", methods=["GET", "POST"])
     def list_user_table(self, database_id):
-        database = db.session.query(Database).get(database_id)
+        database = db.session.query(models.Database).get(database_id)
         results = []
         tables = []
         users = []
@@ -764,7 +764,7 @@ class Managedb(BaseSupersetView):
     @has_access
     @expose("/dbtable/<database_id>/<table>/")
     def list_user_table_table(self, database_id, table):
-        database = db.session.query(Database).get(database_id)
+        database = db.session.query(models.Database).get(database_id)
         results = []
         tables = []
         users = []
@@ -791,7 +791,7 @@ class Managedb(BaseSupersetView):
     @has_access
     @expose("/dbuser/<database_id>/<user>/")
     def list_user_table_user(self, database_id, user):
-        database = db.session.query(Database).get(database_id)
+        database = db.session.query(models.Database).get(database_id)
         results = []
         tables = []
         users = []
