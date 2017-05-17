@@ -307,6 +307,8 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
 
         if len(schemas) > 0:
             table.schema = schemas[0]
+        else:
+            table.schema = 'public'
 
         roles = [role.name for role in current_user.roles]
         # decide create table without username/email account
