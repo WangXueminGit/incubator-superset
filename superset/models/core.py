@@ -577,7 +577,7 @@ class Database(Model, AuditMixinNullable):
 
     @property
     def allow_management(self):
-        return self.user_management_view is not None
+        return self.user_management_view is not None and len(self.user_management_view) > 0
 
     @property
     def beautified_roles(self):
