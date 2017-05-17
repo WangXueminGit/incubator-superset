@@ -295,27 +295,30 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         create_table_sql = form.get('create_table_sql', None)
         database = db.session.query(Database).get(table.database.id)
 
+        # Check default schema
+        schemas = []
+        private_roles = [role for role in current_user.roles if role.name not in config.ROBOT_PERMISSION_ROLES]
+        private_roles.sort()
+
+        for t_database in db.session.query(Database).all():
+            for role in private_roles:
+                if role in t_database.roles:
+                    schemas += [t_database.force_ctas_schema]
+
+        if len(schemas) > 0:
+            table.schema = schemas[0]
+
         roles = [role.name for role in current_user.roles]
         # decide create table without username/email account
         create_global_table = len([role for role in roles if role in config.ROLE_CREATE_TABLE_GLOBAL]) > 0
         create_global_table_submit = form.get('create_global_table', None) is not None
 
-        private_roles = [role for role in roles if role not in config.ROBOT_PERMISSION_ROLES]
-        private_roles.sort()
-
         if (database.allow_create_table or database.allow_hdfs_table) and table.table_name is not None and len(table.table_name) > 0 and \
             ((hdfs_path is not None and len(hdfs_path) > 0 and hdfs_file_type is not None and len(hdfs_file_type) > 0) or (create_table_sql is not None and len(create_table_sql) > 0)):
             if not create_global_table or not create_global_table_submit:
-                if database.allow_create_table:
-                    try:
-                        table.table_name = "{}__{}".format(table.table_name, private_roles[0].lower())
-                    except:
-                        raise Exception(_("Insufficient information of user group"))
-                elif database.allow_hdfs_table:
+                if database.allow_hdfs_table:
                     username = re.sub('[^a-zA-Z0-9]', '_', current_user.username)
                     table.table_name = "{}__{}".format(table.table_name, username)
-                else:
-                    raise Exception(_("Invalid operation"))
             table.table_name = re.sub(r"[^A-Za-z0-9_]", "", table.table_name)
 
         number_of_existing_tables = db.session.query(
@@ -359,7 +362,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
 
             if original_table_name not in clean_sql:
                 raise Exception("Table name in SQL does not match table name entered in form. {}".format(create_table_sql))
-            clean_sql = clean_sql.replace(original_table_name, table.table_name)
+            clean_sql = clean_sql.replace(original_table_name, '{}.{}'.format(table.schema, table.table_name))
 
             try:
                 connection.execute(clean_sql)
@@ -411,17 +414,17 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         create_table_sql = form.get('create_table_sql', None)
         if database.backend == 'postgresql' and database.allow_create_table and create_table_sql is not None and len(create_table_sql) > 0:
             db_users = []
-            for database in db.session.query(Database).all():
+            for t_database in db.session.query(Database).all():
                 for role in private_roles:
-                    if role in database.roles:
-                        db_users += [database.username]
+                    if role in t_database.roles:
+                        db_users += [t_database.username]
 
             engine = database.get_sqla_engine()
             connection = engine.connect()
             transaction = connection.begin()
             try:
                 for db_user in db_users:
-                    connection.execute("GRANT SELECT ON {} TO {}".format(table.table_name, db_user))
+                    connection.execute("GRANT SELECT ON {}.{} TO {}".format(table.schema, table.table_name, db_user))
                 transaction.commit()
 
             except Exception as e:
