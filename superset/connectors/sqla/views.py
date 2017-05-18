@@ -9,6 +9,7 @@ from flask_login import current_user
 from flask_appbuilder import CompactCRUDMixin, expose
 from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
+from numpy import genfromtxt
 import sqlalchemy as sa
 
 from flask_babel import lazy_gettext as _
@@ -221,12 +222,8 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
     add_widget = CustomFormWidget
     custom_fields = [
         {
-            "identifier": "create_global_table",
-            "title": "Create table without user postfix",
-            "input": "checkbox",
-            "description": utils.markdown("Checked to create table without username as postfix. "
-                             "For `non-Admin`, username or group name will be added by default. ", True),
-            "required": False,
+            "separator": True,
+            "message": utils.markdown("Optional: Create table in **Redshift**", True)
         },
         {
             "identifier": "create_table_sql",
@@ -237,6 +234,10 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                 "Create table with SQL is only applicable to `Redshift`."
                 , True),
             "required": False,
+        },
+        {
+            "separator": True,
+            "message": utils.markdown("Optional: Create table in **SparkSQL Playground**", True)
         },
         {
             "identifier": "hdfs_path",
@@ -265,6 +266,18 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
             "description": utils.markdown(
                 "Required if `Create table from HDFS` option is chosen."
                 , True),
+            "required": False,
+        },
+        {
+            "separator": True,
+            "message": utils.markdown("Optional: For **admin** only", True)
+        },
+        {
+            "identifier": "create_global_table",
+            "title": "Create table without user postfix",
+            "input": "checkbox",
+            "description": utils.markdown("Checked to create table without username as postfix. "
+                             "For `non-Admin`, username or group name will be added by default. ", True),
             "required": False,
         },
     ]
@@ -469,6 +482,77 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         else:
             tables.fetch_metadata()
         return redirect('/tablemodelview/list/')
+
+    @has_access
+    @action("upload_data", "Upload data", "Upload data to ONE table",
+            "fa-upload")
+    def upload_data_action(self, tables):
+        if isinstance(tables, list):
+            tables = tables[0]
+        return redirect('/tablemodelview/upload_data/{}/'.format(tables.id))
+
+    @expose('/upload_data/<pk>/', methods=['GET', 'POST'])
+    @has_access
+    def upload_data(self, pk):
+        table = self.datamodel.get(pk, self._base_filters)
+        pk = self.datamodel.get_pk_value(table)
+        database = db.session.query(Database).get(table.database.id)
+
+        # If post
+        # Check first row
+        if 'csv' in request.files:
+            f = request.files['csv']
+            data = genfromtxt(f, dtype=None, delimiter=',', skip_header=0, converters={0: lambda s: str(s)})
+
+            data_array = data.tolist()
+            available_columns = [column.column_name for column in table.columns]
+            input_columns = data_array.pop(0)
+            columns = []
+            for column in input_columns:
+                if column not in available_columns:
+                    flash(_(
+                        "Failed in importing data with error: "
+                        "Column %(column) not available in table", column=column),
+                        "danger")
+                    return redirect('/tablemodelview/upload_data/' + str(pk))
+                else:
+                    columns.append('"{}"'.format(column))
+
+            engine = database.get_sqla_engine()
+            connection = engine.connect()
+            transaction = connection.begin()
+
+            for row in data_array:
+                try:
+                    data_string = ','.join(["'{}'".format(column.replace("'", "''")) for column in row])
+                    sql = "INSERT INTO {}.{} ({}) VALUES ({})".format(table.schema, table.table_name, columns, data_string)
+                    connection.execute(sql)
+                except Exception as e:
+                    transaction.rollback()
+                    connection.close()
+                    engine.dispose()
+                    logging.exception(e)
+                    flash(
+                        "Failed in importing data with error: {}".format(e),
+                        "danger")
+                    return redirect('/tablemodelview/upload_data/' + str(pk))
+
+            transaction.commit()
+            connection.close()
+            engine.dispose()
+            flash(_(
+                "Data uploaded"),
+                "success")
+            return redirect('/tablemodelview/list/')
+
+        # If get
+        # Get table column name
+        # Render upload form
+        return self.render_template(
+            'superset/upload_data.html',
+            table=table,
+            columns=table.columns,
+        )
 
     @expose('/<path>/<pk>/update_columns/', methods=['POST'])
     @has_access

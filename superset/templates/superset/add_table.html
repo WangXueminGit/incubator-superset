@@ -52,6 +52,9 @@
                 {% endfor %}
                 {% for col in custom_fields %}
                 <tr>
+                    {% if col.get('separator') %}
+                    <td colspan="2">{{ col.get('message') }}</td>
+                    {% else %}
                     <td class="col-lg-2">
                         <label for="{{ col.get('identifier') }}" control-label="{{ col.get('identifier') }}">
                             {{ col.get('title') }}
@@ -90,6 +93,7 @@
                         <span class="help-block">{{ col.get('description') }}</span>
                         {% endif %}
                     </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </table>

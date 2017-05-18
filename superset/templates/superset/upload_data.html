@@ -1,0 +1,43 @@
+{% extends "superset/basic.html" %}
+{% block title %}{{ _("Upload data") }}{% endblock %}
+{% block body %}
+    <div class="container">
+    <div class="row">
+    {% include "superset/flash_wrapper.html" %}
+
+    <div class="table-responsive" style="background: #ffffff;">
+    <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}"/>
+    <table class="table table-bordered table-hover">
+    <thead>
+    <tr>
+        <td colspan="2">Uplaod data to table</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Table</td>
+        <td>{{ table.full_name }}</td>
+    </tr>
+    <tr>
+        <td>Available fields</td>
+        <td>
+            {% for column in columns %}
+            <span class="label label-primary">{{ column.column_name }}</span>
+            {% endfor %}
+            <br /><strong>Please ensure that first row of CSV are the columns name provided above</strong>
+        </td>
+    </tr>
+    <tr>
+        <td>Upload CSV</td>
+        <td>
+            <input type="file" name="csv" accept="text/csv" />
+        </td>
+    </tr>
+    </tbody>
+    </table>
+    <button type="submit" value="Submit" class="btn btn-primary">Upload data</button>
+    </form>
+    </div>
+    </div>
+{% endblock %}
