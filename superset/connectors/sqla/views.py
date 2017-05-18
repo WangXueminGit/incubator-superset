@@ -517,7 +517,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                     return redirect('/tablemodelview/upload_data/' + str(pk))
                 else:
                     columns.append('"{}"'.format(column))
-
+            columns = ','.join(columns)
             engine = database.get_sqla_engine()
             connection = engine.connect()
             transaction = connection.begin()
@@ -544,7 +544,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                 "Data uploaded"),
                 "success")
             return redirect('/tablemodelview/list/')
-
+        
         # If get
         # Get table column name
         # Render upload form
