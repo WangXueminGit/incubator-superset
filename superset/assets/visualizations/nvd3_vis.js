@@ -469,14 +469,17 @@ function nvd3Vis(slice, payload) {
       .style('fill-opacity', 1);
     }
 
+    chart.dispatch.on('renderEnd', function () {
+      svg.select('.nv-scatterWrap').attr('clip-path', null);
+      svg.select('.nv-line > g').attr('clip-path', null);
+    });
+
     if (fd.show_point_value) {
       chart.dispatch.on('renderEnd', function () {
         if (svg.selectAll('path.nv-point').size() > 80) {
           return;
         }
         svg.selectAll('.nv-point-label').remove();
-        svg.select('.nv-scatterWrap').attr('clip-path', null);
-        svg.select('.nv-line > g').attr('clip-path', null);
         svg.selectAll('path.nv-point').each(function (d, i) {
           d3.select(this.parentNode).append('text')
               .classed('nv-point-label nv-point-label-' + i, true)
