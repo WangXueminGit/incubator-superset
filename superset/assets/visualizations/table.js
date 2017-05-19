@@ -70,7 +70,7 @@ function tableVis(slice, payload) {
     .data(row => data.columns.map((c) => {
       const val = row[c];
       let html;
-      const isMetric = metrics.indexOf(c) >= 0;
+      const isMetric = metrics.indexOf(c.toLowerCase()) >= 0;
       const isPercentage = percentageMetrics.indexOf(c.toLowerCase()) >= 0;
 
       if (c === 'timestamp') {
