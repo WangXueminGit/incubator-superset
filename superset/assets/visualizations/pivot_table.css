@@ -2,3 +2,13 @@
 .widget.pivot_table tr > td {
   padding: 1px 5px;
 }
+
+td.pivot-table-hit {
+  background: #c6efce;
+  color: #000000;
+}
+
+td.pivot-table-not-hit {
+  background: #ffc7cd;
+  color: #000000;
+}

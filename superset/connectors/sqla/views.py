@@ -312,6 +312,10 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         schemas = []
         private_roles = [role for role in current_user.roles if role.name not in config.ROBOT_PERMISSION_ROLES]
         private_roles.sort()
+        is_admin = False
+        for role in current_user.roles:
+            if role.name in config.ROLE_CREATE_TABLE_GLOBAL:
+                is_admin = True
 
         for t_database in db.session.query(Database).all():
             for role in private_roles:
@@ -320,7 +324,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
 
         if len(schemas) > 0:
             table.schema = schemas[0]
-        else:
+        elif not is_admin:
             table.schema = 'public'
 
         roles = [role.name for role in current_user.roles]
