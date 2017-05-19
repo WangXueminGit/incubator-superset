@@ -111,6 +111,8 @@ class TableColumn(Model, BaseColumn):
             return str((dttm - datetime(1970, 1, 1)).total_seconds())
         elif tf == 'epoch_ms':
             return str((dttm - datetime(1970, 1, 1)).total_seconds() * 1000.0)
+        elif self.python_date_format and len(self.python_date_format) > 0:
+            return "'{}'".format(dttm.strftime(tf))
         else:
             s = self.table.database.db_engine_spec.convert_dttm(
                 self.type or '', dttm)
@@ -356,6 +358,8 @@ class SqlaTable(Model, BaseDatasource):
             columns=None,
             form_data=None):
         """Querying any sqla table from this common interface"""
+        from_dttm = from_dttm.date()
+        to_dttm = to_dttm.date()
 
         template_kwargs = {
             'from_dttm': from_dttm,
