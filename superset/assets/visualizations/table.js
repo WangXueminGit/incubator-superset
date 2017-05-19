@@ -71,7 +71,7 @@ function tableVis(slice, payload) {
       const val = row[c];
       let html;
       const isMetric = metrics.indexOf(c) >= 0;
-      const isPercentage = percentageMetrics.indexOf(c) >= 0;
+      const isPercentage = percentageMetrics.indexOf(c.toLowerCase()) >= 0;
 
       if (c === 'timestamp') {
         html = timestampFormatter(val);
@@ -80,7 +80,7 @@ function tableVis(slice, payload) {
         html = `<span class="like-pre">${val}</span>`;
       }
       if (isPercentage) {
-        html = `${val}%`;
+        html = d3.format('.2%')(val);
       }
       else if (isMetric) {
         html = slice.d3format(c, val);
@@ -88,17 +88,20 @@ function tableVis(slice, payload) {
       return {
         col: c,
         val,
-        html: html,
+        html,
         isMetric,
-        isPercentage
+        isPercentage,
       };
     }))
     .enter()
     .append('td')
     .style('font-weight', 900)
     .attr('class', function(d) {
+      if (d.isPercentage) {
+        return d.val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
+      }
       if (d.isMetric) {
-        let perc = Math.round((d.val / maxes[d.col]) * 100);
+        const perc = Math.round((d.val / maxes[d.col]) * 100);
         if (styling) {
           return `background-scale-reverse-${perc}`
         }
@@ -112,9 +115,12 @@ function tableVis(slice, payload) {
       if (styling === null || !d.isMetric) {
         return null;
       }
-      let perc = d.val / maxes[d.col] * 1.4;
-      let colorIndex = metrics.indexOf(d.col);
-      if (colorIndex >= 0 && styling.length >colorIndex) {
+      if (d.isPercentage) {
+        return null;
+      }
+      const perc = d.val / maxes[d.col] * 1.4;
+      const colorIndex = metrics.indexOf(d.col);
+      if (colorIndex >= 0 && styling.length > colorIndex) {
         return 'rgba(' + styling[colorIndex] + ', ' + perc + ')';
       }
       return 'lightgrey';

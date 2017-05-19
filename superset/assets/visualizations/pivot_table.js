@@ -13,7 +13,13 @@ module.exports = function (slice, payload) {
   const height = container.height();
 
   // payload data is a string of html with a single table element
-  container.html(payload.data);
+  container.html(payload.data.html);
+  let percentageIndex = [];
+  for (let j = 0; j < payload.data.isPercentage.length; j++) {
+    if (!!payload.data.isPercentage[j]) {
+      percentageIndex.push(j);
+    }
+  }
 
   if (fd.groupby.length === 1) {
     // When there is only 1 group by column,
@@ -28,6 +34,14 @@ module.exports = function (slice, payload) {
       scrollY: `${height}px`,
       scrollCollapse: true,
       scrollX: true,
+      colReorder: true,
+      rowCallback: (row, data, index) => {
+        if (percentageIndex.length > 0) {
+          for (let i = 0; i < percentageIndex.length; i++) {
+            $(row).find('td:nth-child(' + (percentageIndex[i] + 1) + ')').addClass(data[percentageIndex[i]] >= 100 ? 'pivot-table-hit' : 'pivot-table-not-hit');
+          }
+        }
+      },
     });
     table.column('-1').order('desc').draw();
     fixDataTableBodyHeight(container.find('.dataTables_wrapper'), height);
@@ -37,5 +51,17 @@ module.exports = function (slice, payload) {
     // In this case the header is not fixed.
     container.css('overflow', 'auto');
     container.css('height', `${height + 10}px`);
+    if (percentageIndex.length > 0) {
+      container.find('table tbody tr').each(function () {
+        $(this).find('td').each(function (index) {
+          if (percentageIndex.indexOf(index) >= 0) {
+            const val = $(this).data('originalvalue') || $(this).html();
+            $(this).data('originalvalue', val);
+            $(this).html(d3.format('.2%')(val));
+            $(this).addClass(val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit');
+          }
+        });
+      });
+    }
   }
 };
