@@ -401,6 +401,7 @@ class PivotTableViz(BaseViz):
             aggfunc=self.form_data.get('pandas_aggfunc'),
             margins=True,
         )
+        df = df[self.form_data.get('metrics')]
         return dict(
             columns=list(df.columns),
             isPercentage=['%' in column for column in df.columns],
