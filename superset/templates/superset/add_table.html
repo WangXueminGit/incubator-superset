@@ -6,15 +6,19 @@
 {% set begin_sep_field = '<td>' %}
 {% set end_sep_field = '</td>' %}
 
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/codemirror.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/codemirror.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/mode/sql/sql.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/mode/sql/sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/codemirror.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/mode/sql/sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.2/addon/display/placeholder.js"></script>
+<style>
+    .CodeMirror pre {
+        opacity: 0.5;
+    }
+</style>
 {% if form_action %}
-    <form action="{{form_action}}" method="post" enctype="multipart/form-data">
+<form action="{{form_action}}" method="post" enctype="multipart/form-data">
 {% else %}
-    <form id="model_form" action="" method="post" enctype="multipart/form-data">
+<form id="model_form" action="" method="post" enctype="multipart/form-data">
 {% endif %}
     {{form.hidden_tag()}}
 
@@ -42,62 +46,168 @@
     {% else %}
         <div class="table-responsive">
             <table class="table table-bordered">
+                {% for col in pre_include_cols %}
+                    {% if col.get('identifier') == 'database' %}
+                        <tr>
+                            <td>Database {% if col.get('required') %}<strong style="color: red">*</strong>{% endif %}</td>
+                            <td>
+                                <select class="select2-container my_select2 form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}">
+                                    {% for datasource in col.get('model') %}
+                                        <option value="{{ datasource.id }}"{% if datasource.id == 2 %} selected="selected"{% endif %}>{{ datasource.database_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                    {% elif col.get('identifier') == 'schema' %}
+                        <tr id="schema_row">
+                            <td>Schema {% if col.get('required') %}<strong style="color: red">*</strong>{% endif %}</td>
+                            <td>
+                                {% if is_admin and False %}
+                                <input type="text" id="schema" name="schema" placeholder="Schema" />
+                                {% else %}
+                                <select class="form-control" id="schema" name="schema"></select>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <script>
+                        window.databaseSchema = {{ col.get('model')|tojson|safe }};
+                        window.databaseGroups = {{ col.get('submodel')|tojson|safe }};
+                        window.databaseActions = {{ col.get('tertiarymodel')|tojson|safe }};
+                        $(document).ready(function() {
+                          $('select#database').change(function() {
+                            $('.db_group').hide();
+                            if (window.databaseGroups[this.value] in window.databaseActions) {
+                              for (var j = 0; j < window.databaseActions[window.databaseGroups[this.value]].length; j++) {
+                                $('.group_' + window.databaseActions[window.databaseGroups[this.value]][j]).show();
+                              }
+                            }
+                            $('input[name="create_option"]').change();
+                            if (window.editor_create_table_sql) {
+                              window.editor_create_table_sql.refresh();
+                            }
+                            {% if not is_admin or True %}
+                            $('select#schema').html('');
+                            var schemas = window.databaseSchema[window.databaseGroups[this.value]];
+                            if (schemas.length > 0) {
+                              for (var i = 0; i < schemas.length; i++) {
+                                $('select#schema').append('<option value="' + schemas[i] + '">' + schemas[i] + '</option>');
+                              }
+                              $('#schema_row').show();
+                            }
+                            else {
+                              $('#schema_row').hide();
+                            }
+                            {% endif %}
+                          });
+                          $('select#database').change();
+                        });
+                        </script>
+
+                    {% endif %}
+                {% endfor %}
                 {% for col in include_cols %}
                     {% set field = form[col] %}
-                    {% if field.name not in exclude_cols %}
+                    {% if field.name not in exclude_cols + ['database', 'schema'] %}
                         <tr>
                             {{ lib.render_field(field, begin_sep_label, end_sep_label, begin_sep_field, end_sep_field) }}
                         </tr>
                     {% endif %}
                 {% endfor %}
                 {% for col in custom_fields %}
-                <tr>
-                    {% if col.get('separator') %}
-                    <td colspan="2">{{ col.get('message') }}</td>
-                    {% else %}
-                    <td class="col-lg-2">
-                        <label for="{{ col.get('identifier') }}" control-label="{{ col.get('identifier') }}">
-                            {{ col.get('title') }}
-                            {% if col.get('required', False) %}<strong style="color: red">*</strong>{% endif %}
-                        </label>
-                    </td>
-                    <td>
-                        {% if col.get('input') == 'text' %}
-                        <input type="text" class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" placeholder="{{ col.get('placeholder', '') }}"{% if col.get('required', False) %} required{% endif %}>
-                        {% elif col.get('input') == 'longtext' %}
-                        <textarea class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" rows="3" placeholder="{{ col.get('placeholder', '') }}"{% if col.get('required', False) %} required{% endif %}></textarea>
-                        {% elif col.get('input') == 'sql' %}
-                        <textarea class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" rows="3" placeholder="{{ col.get('placeholder', '') }}"{% if col.get('required', False) %} required{% endif %}></textarea>
-                        <script>
-                        window.onload = function() {
-                          window.editor_{{ col.get('identifier') }} = CodeMirror.fromTextArea(document.getElementById('{{ col.get('identifier') }}'), {
-                            mode: 'text/x-sql',
-                            indentWithTabs: true,
-                            smartIndent: true,
-                            lineNumbers: true,
-                            matchBrackets: true,
-                            autofocus: true
-                          });
-                        };
-                        </script>
-                        {% elif col.get('input') == 'checkbox' %}
-                        <input type="checkbox" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" value="1" />
-                        {% elif col.get('input') == 'select' %}
-                        <select class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}">
-                            {% for option in col.get('options', []) %}
-                            <option value="{{ option.get('value') }}">{{ option.get('label') }}</option>
-                            {% endfor %}
-                        </select>
+                    {% if not col.get('isadmin') or is_admin %}
+                    <tr class="{{ col.get('externalclass') }}">
+                        {% if col.get('separator') %}
+                        <td colspan="2">{{ col.get('message') }}</td>
+                        {% else %}
+                        <td class="col-lg-2">
+                            <label for="{{ col.get('identifier') }}" control-label="{{ col.get('identifier') }}">
+                                {{ col.get('title') }}
+                                {% if col.get('required', False) %}<strong style="color: red">*</strong>{% endif %}
+                            </label>
+                        </td>
+                        <td>
+                            {% if col.get('input') == 'text' %}
+                            <input type="text" class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" placeholder="{{ col.get('placeholder', '') }}"{% if col.get('required', False) %} required{% endif %}>
+                            {% elif col.get('input') == 'longtext' %}
+                            <textarea class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" rows="3" placeholder="{{ col.get('placeholder', '') }}"{% if col.get('required', False) %} required{% endif %}></textarea>
+                            {% elif col.get('input') == 'sql' %}
+                            <textarea class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" rows="3" placeholder="{{ col.get('placeholder', '') }}"{% if col.get('required', False) %} required{% endif %}></textarea>
+                            <script>
+                            $(document).ready(function() {
+                              window.editor_{{ col.get('identifier') }} = CodeMirror.fromTextArea(document.getElementById('{{ col.get('identifier') }}'), {
+                                mode: 'text/x-sql',
+                                indentWithTabs: true,
+                                smartIndent: true,
+                                lineNumbers: true,
+                                matchBrackets: true,
+                                autofocus: true
+                              });
+                            });
+                            </script>
+                            {% elif col.get('input') == 'checkbox' %}
+                            <input type="checkbox" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}" value="1" />
+                            {% elif col.get('input') == 'select' %}
+                            <select class="form-control" id="{{ col.get('identifier') }}" name="{{ col.get('identifier') }}">
+                                {% for option in col.get('options', []) %}
+                                <option value="{{ option.get('value') }}">{{ option.get('label') }}</option>
+                                {% endfor %}
+                            </select>
+                            {% elif col.get('input') == 'radio' %}
+                                {% for option in col.get('options', []) %}
+                                <label class="radio-inline">
+                                    <input type="radio" id="{{ col.get('identifier') }}_{{ option.get('value') }}" name="{{ col.get('identifier') }}" value="{{ option.get('value') }}"> {{ option.get('label') }}
+                                </label>
+                                {% endfor %}
+                                {% if col.get('identifier') == 'create_option' %}
+                                <script>
+                                $(document).ready(function() {
+                                  $('input[name="create_option"]').change(function() {
+                                    var query;
+                                    if ($('input[name="create_option"]:checked').val() === 'table') {
+                                      query = 'CREATE TABLE your_table_name\r\n' +
+                                              '(\r\n' +
+                                              '    date_id DATE DISTKEY,\r\n' +
+                                              '    main_name VARCHAR(65535) ENCODE LZO,\r\n' +
+                                              '    sub_name VARCHAR(65535) ENCODE LZO,\r\n' +
+                                              '    level3_name VARCHAR(65535) ENCODE LZO,\r\n' +
+                                              '    gmv_usd BIGINT,\r\n' +
+                                              '    gmv_running_rate FLOAT8\r\n' +
+                                              ')\r\n' +
+                                              'interleaved sortkey (date_id, main_name, sub_name, level3_name);';
+                                    }
+                                    else if ($('input[name="create_option"]:checked').val() === 'view') {
+                                      query = 'CREATE VIEW your_view_name AS (\r\n' +
+                                              '    SELECT date_id, \r\n' +
+                                              '           COUNT(orderid) AS number_of_orders, \r\n' +
+                                              '           SUM(total_price_usd) AS sum_gmv_usd \r\n' +
+                                              '    FROM public.fact_placeorder \r\n' +
+                                              '    GROUP BY date_id\r\n' +
+                                              ');'
+                                    }
+                                    $('textarea[name="create_table_sql"]').attr('placeholder', query);
+                                    if (window.editor_create_table_sql) {
+                                      window.editor_create_table_sql.setOption('placeholder', query);
+                                      window.editor_create_table_sql.refresh();
+                                    }
+                                  });
+                                  $('input[type="radio"][name="create_option"][value="view"]').prop('checked', true);
+                                  $('input[name="create_option"]').change();
+                                });
+                                </script>
+                                {% endif %}
+                            {% endif %}
+                            {% if 'description' in col %}
+                            <span class="help-block">{{ col.get('description') }}</span>
+                            {% endif %}
+                        </td>
                         {% endif %}
-                        {% if 'description' in col %}
-                        <span class="help-block">{{ col.get('description') }}</span>
-                        {% endif %}
-                    </td>
+                    </tr>
                     {% endif %}
-                </tr>
                 {% endfor %}
             </table>
         </div>
     {% endif %}
     {{ lib.render_form_controls() }}
 </form>
+

@@ -551,6 +551,9 @@ class Database(Model, AuditMixinNullable):
     allow_create_table = Column(Boolean, default=False)
     allow_hdfs_table = Column(Boolean, default=False)
     user_management_view = Column(String(1000))
+    database_type = Column(String(1000))
+    database_group = Column(String(1000))
+    hidden = Column(Boolean, default=False)
     roles = relationship('Role', secondary=role_database, backref='ab_role')
 
 
