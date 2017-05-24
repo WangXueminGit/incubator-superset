@@ -1273,5 +1273,11 @@ export const controls = {
     default: [],
     description: 'Colors are added based on theirs order. Drag and drop to rearrange the order',
   },
+
+  mtd_column: {
+    type: 'ColumnControl',
+    label: 'MTD Columns',
+    description: 'Select columns to calculate MTD metrics.',
+  },
 };
 export default controls;

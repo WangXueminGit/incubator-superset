@@ -64,6 +64,17 @@ class BaseViz(object):
         if not query_obj:
             query_obj = self.query_obj()
 
+        mtd_metrics = []
+        mtd_column = self.form_data.get('mtd_column', [])
+        mtd_column_metrics = mtd_column['mtd'] or []
+        mtd_column_keep = mtd_column['keep'] or []
+        for metric in mtd_column_metrics:
+            mtd_metrics.append(dict(metric=metric, keep=metric in mtd_column_keep))
+
+        ori_from_dttm = query_obj['from_dttm']
+        granularity = self.form_data.get("granularity") or self.form_data.get("granularity_sqla")
+        if len(mtd_metrics) > 0:
+            query_obj['from_dttm'] = ori_from_dttm.replace(day=1)
 
         self.error_msg = ""
         self.results = None
@@ -102,6 +113,14 @@ class BaseViz(object):
                     df[DTTM_ALIAS] += timedelta(hours=self.datasource.offset)
             df.replace([np.inf, -np.inf], np.nan)
             df = df.fillna(0)
+
+        df = self.calculate_mtd_metrics(df, mtd_metrics, granularity)
+
+        if len(mtd_metrics) > 0:
+            df['__granularity_datetime'] = pd.to_datetime(df[granularity])
+            df = df[df['__granularity_datetime'] >= ori_from_dttm]
+            del df['__granularity_datetime']
+
         return df
 
     def get_extra_filters(self):
@@ -305,6 +324,35 @@ class BaseViz(object):
     def json_data(self):
         return json.dumps(self.data)
 
+    def calculate_mtd_metrics(self, df, raw_mtd_metrics, date_column):
+        if date_column not in df.columns:
+            return df
+
+        # Process metrics
+        mtd_metrics = {}
+        rm_metrics = ['__fdom', '__tomorrow']
+
+        for mtd_metric in raw_mtd_metrics:
+            mtd_metrics[mtd_metric['metric']] = []
+            if not mtd_metric['keep']:
+                rm_metrics.append(mtd_metric['metric'])
+
+        # Get first day of the month and first day of next month
+        df['__fdom'] = df[date_column].apply(lambda x: x.replace(day=1))
+        df['__tomorrow'] = df[date_column].apply(lambda x: x+timedelta(days=1))
+
+        for index, row in df.iterrows():
+            result = df[(df[date_column] >= row['__fdom']) & (df['date_id'] < row['__tomorrow'])][mtd_metrics.keys()].sum()
+            for mtd_metric in mtd_metrics:
+                mtd_metrics[mtd_metric].append(result[mtd_metric])
+
+        for mtd_metric in mtd_metrics:
+            df['MTD {}'.format(mtd_metric)] = pd.Series(mtd_metrics[mtd_metric])
+
+        for mtd_metric in rm_metrics:
+            del df[mtd_metric]
+
+        return df
 
 class TableViz(BaseViz):
 
