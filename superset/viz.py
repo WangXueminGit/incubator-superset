@@ -65,9 +65,9 @@ class BaseViz(object):
             query_obj = self.query_obj()
 
         mtd_metrics = []
-        mtd_column = self.form_data.get('mtd_column', [])
-        mtd_column_metrics = mtd_column['mtd'] or []
-        mtd_column_keep = mtd_column['keep'] or []
+        mtd_column = self.form_data.get('mtd_column', {})
+        mtd_column_metrics = mtd_column.get('mtd', [])
+        mtd_column_keep = mtd_column.get('keep', [])
         for metric in mtd_column_metrics:
             mtd_metrics.append(dict(metric=metric, keep=metric in mtd_column_keep))
 
