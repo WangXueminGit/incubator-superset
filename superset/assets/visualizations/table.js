@@ -19,10 +19,26 @@ function tableVis(slice, payload) {
 
   const data = payload.data;
   const fd = slice.formData;
-  const styling = fd['styling'] ? fd['styling'] : null;
+  const styling = fd.styling ? fd.styling : null;
+  const columnConfiguration = fd.column_configuration ? fd.column_configuration : {};
+  const formatting = {}
+  const reverseColoring = [];
+  let metric,
+    mode;
+  for (metric in columnConfiguration) {
+    for (mode in columnConfiguration[metric]) {
+      if (columnConfiguration[metric][mode].reverseColoring) {
+        reverseColoring.push(mode === 'Default' ? metric : mode + ' ' +metric);
+      }
+      if (columnConfiguration[metric][mode].formatting) {
+        const columnName = mode === 'Default' ? metric : mode + ' ' +metric;
+        formatting[columnName] = columnConfiguration[metric][mode].formatting;
+      }
+    }
+  }
 
   // Removing metrics (aggregates) that are strings
-  const tempMetrics = fd.metrics.map(m => m.toLowerCase()) || [];
+  const tempMetrics = data.columns.map(m => m.toLowerCase()) || [];
   const metrics = tempMetrics.filter(m => !isNaN(data.records[0][m]));
   const percentageMetrics = tempMetrics.filter(m => /%/.test(m));
 
@@ -85,12 +101,16 @@ function tableVis(slice, payload) {
       else if (isMetric) {
         html = slice.d3format(c, val);
       }
+      if (formatting[c]) {
+        html = d3.format(formatting[c])(val);
+      }
       return {
         col: c,
         val,
         html,
         isMetric,
         isPercentage,
+        reverseColoring: reverseColoring.indexOf(c) >= 0,
       };
     }))
     .enter()
@@ -98,7 +118,10 @@ function tableVis(slice, payload) {
     .style('font-weight', 900)
     .attr('class', function(d) {
       if (d.isPercentage) {
-        return d.val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
+        if (!d.reverseColoring) {
+          return d.val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
+        }
+        return d.val <= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
       }
       if (d.isMetric) {
         const perc = Math.round((d.val / maxes[d.col]) * 100);

@@ -1274,10 +1274,10 @@ export const controls = {
     description: 'Colors are added based on theirs order. Drag and drop to rearrange the order',
   },
 
-  mtd_column: {
+  column_configuration: {
     type: 'ColumnControl',
-    label: 'MTD Columns',
-    description: 'Select columns to calculate MTD metrics.',
+    label: 'Metrics',
+    description: 'Advanced configuration on columns',
   },
 };
 export default controls;
