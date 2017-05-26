@@ -54,11 +54,11 @@ export const sections = {
       ],
     },
   ],
-  mtd: [
+  column_configuration: [
     {
-      label: 'MTD Configuration',
-      description: 'Calculate MTD metrics',
-      controlSetRows: [['mtd_column']]
+      label: 'Column Configuration',
+      description: 'Advanced configuration on columns',
+      controlSetRows: [['column_configuration']]
     }
   ],
   filters: [
@@ -800,7 +800,7 @@ export function sectionsToRender(vizType, datasourceType) {
     sections.datasourceAndVizType,
     datasourceType === 'table' ? sections.sqlaTimeSeries : sections.druidTimeSeries,
     viz.controlPanelSections,
-    sections.mtd,
+    sections.column_configuration,
     datasourceType === 'table' ? sections.sqlClause : [],
     datasourceType === 'table' ? sections.filters[0] : sections.filters,
     sections.styling,

@@ -59,22 +59,34 @@ class BaseViz(object):
         self.status = None
         self.error_message = None
 
+    def get_manipulate_time_metrics(self, fields=[]):
+        advanced_configuration = self.form_data.get('column_configuration', {})
+        manipulate_time_marker = ['MTD']
+        return [metric
+                for metric in advanced_configuration
+                for mode in advanced_configuration[metric]
+                if mode in manipulate_time_marker and
+                ('remove' not in advanced_configuration[metric][mode] or
+                 not advanced_configuration[metric][mode]['remove']) or
+                ((len(fields) > 0 and mode in fields) or
+                (len(fields) == 0))]
+
+    def has_manipulate_time_metrics(self):
+        return len(self.get_manipulate_time_metrics()) > 0
+
+    def manipulate_time_first_day(self, start_datetime):
+        # For MTD
+        return start_datetime.replace(day=1)
+
     def get_df(self, query_obj=None):
         """Returns a pandas dataframe based on the query object"""
         if not query_obj:
             query_obj = self.query_obj()
 
-        mtd_metrics = []
-        mtd_column = self.form_data.get('mtd_column', [])
-        mtd_column_metrics = mtd_column['mtd'] or []
-        mtd_column_keep = mtd_column['keep'] or []
-        for metric in mtd_column_metrics:
-            mtd_metrics.append(dict(metric=metric, keep=metric in mtd_column_keep))
-
         ori_from_dttm = query_obj['from_dttm']
         granularity = self.form_data.get("granularity") or self.form_data.get("granularity_sqla")
-        if len(mtd_metrics) > 0:
-            query_obj['from_dttm'] = ori_from_dttm.replace(day=1)
+        if self.has_manipulate_time_metrics():
+            query_obj['from_dttm'] = self.manipulate_time_first_day(ori_from_dttm)
 
         self.error_msg = ""
         self.results = None
@@ -114,9 +126,9 @@ class BaseViz(object):
             df.replace([np.inf, -np.inf], np.nan)
             df = df.fillna(0)
 
-        df = self.calculate_mtd_metrics(df, mtd_metrics, granularity)
+        df = self.calculate_mtd_metrics(df, granularity)
 
-        if len(mtd_metrics) > 0:
+        if self.has_manipulate_time_metrics() and granularity in df.columns:
             df['__granularity_datetime'] = pd.to_datetime(df[granularity])
             df = df[df['__granularity_datetime'] >= ori_from_dttm]
             del df['__granularity_datetime']
@@ -324,18 +336,16 @@ class BaseViz(object):
     def json_data(self):
         return json.dumps(self.data)
 
-    def calculate_mtd_metrics(self, df, raw_mtd_metrics, date_column):
+    def calculate_mtd_metrics(self, df, date_column):
         if date_column not in df.columns:
             return df
 
-        # Process metrics
+        # Process MTD metrics
         mtd_metrics = {}
         rm_metrics = ['__fdom', '__tomorrow']
 
-        for mtd_metric in raw_mtd_metrics:
-            mtd_metrics[mtd_metric['metric']] = []
-            if not mtd_metric['keep']:
-                rm_metrics.append(mtd_metric['metric'])
+        for mtd_metric in self.get_manipulate_time_metrics('MTD'):
+            mtd_metrics[mtd_metric] = []
 
         # Get first day of the month and first day of next month
         df['__fdom'] = df[date_column].apply(lambda x: x.replace(day=1))
@@ -452,7 +462,6 @@ class PivotTableViz(BaseViz):
         df = df[self.form_data.get('metrics')]
         return dict(
             columns=list(df.columns),
-            isPercentage=['%' in column for column in df.columns],
             html=df.to_html(
                 na_rep='',
                 classes=(

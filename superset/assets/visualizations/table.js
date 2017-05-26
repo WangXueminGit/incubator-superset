@@ -19,10 +19,26 @@ function tableVis(slice, payload) {
 
   const data = payload.data;
   const fd = slice.formData;
-  const styling = fd['styling'] ? fd['styling'] : null;
+  const styling = fd.styling ? fd.styling : null;
+  const columnConfiguration = fd.column_configuration ? fd.column_configuration : {};
+  const formatting = {};
+  const coloringOptions = {};
+  let metric;
+  let mode;
+  for (metric in columnConfiguration) {
+    for (mode in columnConfiguration[metric]) {
+      const columnName = mode === 'Normal' ? metric : mode + ' ' +metric;
+      if (columnConfiguration[metric][mode].coloringOption) {
+        coloringOptions[columnName] = columnConfiguration[metric][mode].coloringOption;
+      }
+      if (columnConfiguration[metric][mode].formatting) {
+        formatting[columnName] = columnConfiguration[metric][mode].formatting;
+      }
+    }
+  }
 
   // Removing metrics (aggregates) that are strings
-  const tempMetrics = fd.metrics.map(m => m.toLowerCase()) || [];
+  const tempMetrics = data.columns.map(m => m.toLowerCase()) || [];
   const metrics = tempMetrics.filter(m => !isNaN(data.records[0][m]));
   const percentageMetrics = tempMetrics.filter(m => /%/.test(m));
 
@@ -69,9 +85,8 @@ function tableVis(slice, payload) {
     .selectAll('td')
     .data(row => data.columns.map((c) => {
       const val = row[c];
-      let html;
+      let html = val;
       const isMetric = metrics.indexOf(c.toLowerCase()) >= 0;
-      const isPercentage = percentageMetrics.indexOf(c.toLowerCase()) >= 0;
 
       if (c === 'timestamp') {
         html = timestampFormatter(val);
@@ -79,26 +94,28 @@ function tableVis(slice, payload) {
       if (typeof (val) === 'string') {
         html = `<span class="like-pre">${val}</span>`;
       }
-      if (isPercentage) {
-        html = d3.format('.2%')(val);
-      }
-      else if (isMetric) {
-        html = slice.d3format(c, val);
+      if (formatting[c]) {
+        html = d3.format(formatting[c])(val);
       }
       return {
         col: c,
         val,
         html,
         isMetric,
-        isPercentage,
+        coloringOption: coloringOptions[c],
       };
     }))
     .enter()
     .append('td')
     .style('font-weight', 900)
     .attr('class', function(d) {
-      if (d.isPercentage) {
-        return d.val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
+      if (d.coloringOption !== null) {
+        if (d.coloringOption === 'Green over 100%') {
+          return d.val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
+        }
+        else if (d.coloringOption === 'Red over 100%') {
+          return d.val <= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
+        }
       }
       if (d.isMetric) {
         const perc = Math.round((d.val / maxes[d.col]) * 100);
@@ -115,7 +132,7 @@ function tableVis(slice, payload) {
       if (styling === null || !d.isMetric) {
         return null;
       }
-      if (d.isPercentage) {
+      if (d.coloringOption !== null) {
         return null;
       }
       const perc = d.val / maxes[d.col] * 1.4;
