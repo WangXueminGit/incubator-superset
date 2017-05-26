@@ -31,3 +31,7 @@ text.nv-axislabel {
 .bar svg.nvd3-svg {
   width: auto;
 }
+
+.nv-barsWrap-value > text {
+  font-size: 10px !important;
+}
