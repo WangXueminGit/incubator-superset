@@ -803,6 +803,6 @@ export function sectionsToRender(vizType, datasourceType) {
     sections.column_configuration,
     datasourceType === 'table' ? sections.sqlClause : [],
     datasourceType === 'table' ? sections.filters[0] : sections.filters,
-    sections.styling,
+    // sections.styling,
   );
 }

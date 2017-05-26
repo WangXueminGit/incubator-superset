@@ -45,7 +45,7 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
       return i === countSeriesDisplayed - 1;
     }).selectAll('rect.positive');
 
-  const groupLabels = svg.select('g.nv-barsWrap').append('g');
+  const groupLabels = svg.select('g.nv-barsWrap').append('g').attr('class', 'nv-barsWrap-value');
   rectsToBeLabeled.each(
     function (d, index) {
       const rectObj = d3.select(this);
@@ -58,7 +58,8 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
         .attr('y', yPos - 5)
         .text(format(stacked ? totalStackedValues[index] : d.y))
         .attr('transform', transformAttr)
-        .attr('class', 'bar-chart-label');
+        .attr('class', 'bar-chart-label')
+        .attr('font-size', '10');
       const labelWidth = t.node().getBBox().width;
       t.attr('x', xPos + rectWidth / 2 - labelWidth / 2); // fine tune
     });
@@ -475,10 +476,7 @@ function nvd3Vis(slice, payload) {
     });
 
     if (fd.show_point_value) {
-      chart.dispatch.on('renderEnd', function () {
-        if (svg.selectAll('path.nv-point').size() > 80) {
-          return;
-        }
+      chart.dispatch.on('renderEnd stateChange', function () {
         svg.selectAll('.nv-point-label').remove();
         svg.selectAll('path.nv-point').each(function (d, i) {
           d3.select(this.parentNode).append('text')
@@ -486,9 +484,19 @@ function nvd3Vis(slice, payload) {
               .attr('dy', '-.35em')
               .attr('transform', d3.select(this).attr('transform'))
               .attr('dx', '.2em')
-              .text(d3.format(fd.y_axis_format || '.3s')(d[0].y))
-              .style({stroke: 'initial'});
+              .attr('font-size', '10')
+              .text(d3.format(fd.y_axis_format || '.1s')(d[0].y))
+              .style({ stroke: 'initial' });
         });
+      });
+    }
+
+    if (fd.show_bar_value) {
+      chart.dispatch.on('stateChange', function() {
+        svg.select('g.nv-barsWrap-value').remove();
+        setTimeout(function () {
+          addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
+        }, animationTime);
       });
     }
 
