@@ -614,6 +614,9 @@ class SqlaTable(Model, BaseDatasource):
                 dbcol.avg = dbcol.is_num
                 dbcol.is_dttm = dbcol.is_time
 
+            if col.name == 'date_id' and not dbcol.groupby:
+                dbcol.groupby = True
+
             db.session.merge(self)
             self.columns.append(dbcol)
 
