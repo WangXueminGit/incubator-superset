@@ -12,6 +12,11 @@ const D3_TIME_FORMAT_OPTIONS = [
   ['$,.2f', '$,.2f | $12,345.43'],
 ];
 
+const COLORING_OPTIONS = [
+  'Green over 100%',
+  'Red over 100%',
+]
+
 const propTypes = {
   name: PropTypes.string.isRequired,
   value: PropTypes.object,
@@ -21,7 +26,7 @@ const propTypes = {
   onChange: PropTypes.func,
 };
 
-const modes = ['Default', 'MTD'];
+const modes = ['Normal', 'MTD'];
 
 const defaultProps = {
   value: {},
@@ -35,6 +40,7 @@ export default class ColumnControl extends React.Component {
     this.state = {
       metrics: props.formData.metrics || [],
       value: props.value,
+      selectedMetric: null,
     };
   }
   componentWillReceiveProps(nextProps) {
@@ -48,9 +54,15 @@ export default class ColumnControl extends React.Component {
       for (let i = 0; i < differenceToDelete.length; i++) {
         delete value[differenceToDelete[i]];
       }
-      value.activate = [...new Set(value.activate)]
-      this.setState({ metrics: nextProps.formData.metrics, value });
+      value.activate = [...new Set(value.activate)];
+      const selectedMetric =
+        (nextProps.formData.metrics.length && this.state.selectedMetric === null) ? nextProps.formData.metrics[0] :
+        (nextProps.formData.metrics.length === 0 && this.state.selectedMetric !== null) ? null : this.state.selectedMetric;
+      this.setState({ metrics: nextProps.formData.metrics, value, selectedMetric });
     }
+  }
+  onSelectChange(value) {
+    this.setState({selectedMetric: value});
   }
   onToggle(metric, mode, type) {
     const value = this.props.value;
@@ -85,81 +97,93 @@ export default class ColumnControl extends React.Component {
   render() {
     const metrics = this.props.formData.metrics || [];
     const value = this.state.value === null ? {} : this.state.value;
+    const metric = this.state.selectedMetric;
+    let metricElement = null;
+    if (this.state.selectedMetric !== null) {
+      metricElement = (
+        <div className="panel panel-default">
+          <div className="panel-body">
+            <table className="table table-bordered" style={{fontSize: '12px'}}>
+              {modes.map((mode) => {
+                const activateChecked = mode === 'Normal' ?
+                      !(
+                          metric in value &&
+                          mode in value[metric] &&
+                          'remove' in value[metric][mode] &&
+                          !value[metric][mode].remove
+                      ) :
+                      (
+                          metric in value &&
+                          mode in value[metric] &&
+                          (!('remove' in value[metric][mode]) || !value[metric][mode].remove)
+                      );
+                const coloringOption = (
+                    metric in value &&
+                    mode in value[metric] &&
+                    'coloringOption' in value[metric][mode]
+                ) ? value[metric][mode].coloringOption : null;
+                const formatting = (
+                    metric in value &&
+                    mode in value[metric] &&
+                    'formatting' in value[metric][mode]
+                ) ? value[metric][mode].formatting : null;
+                return (
+                  <tbody key={mode}>
+                    <tr>
+                      <td rowSpan={3}>{mode}</td>
+                      <td><span>Visible</span></td>
+                      <td>
+                        <Checkbox
+                          checked={activateChecked}
+                          onChange={this.onToggle.bind(this, metric, mode, 'remove')}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><span>Coloring options</span></td>
+                      <td>
+                        <SelectControl
+                          name={mode + '___' + metric + '___coloringOption'}
+                          default={COLORING_OPTIONS[0]}
+                          choices={COLORING_OPTIONS}
+                          clearable
+                          onChange={this.onValueChange.bind(this, metric, mode, 'coloringOption')}
+                          value={coloringOption}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><span>Formatting</span></td>
+                      <td>
+                        <SelectControl
+                          name={mode + '___' + metric + '___formatting'}
+                          default={D3_TIME_FORMAT_OPTIONS[0]}
+                          choices={D3_TIME_FORMAT_OPTIONS}
+                          clearable
+                          freeForm
+                          onChange={this.onValueChange.bind(this, metric, mode, 'formatting')}
+                          value={formatting}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                  );
+                })}
+            </table>
+          </div>
+        </div>
+      );
+    }
     return (
         <div>
-          {metrics.map((metric) => {
-            return (
-                <div key={metric}>
-                  {metric}
-                  <table className="table" style={{fontSize: '12px'}}>
-                    <thead>
-                    <tr>
-                      <td><span>Metric</span></td>
-                      <td><span>Activate</span></td>
-                      <td><span>Reverse coloring</span></td>
-                      <td><span>Format</span></td>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {modes.map((mode) => {
-                      const activateChecked = mode === 'Default' ?
-                          !(
-                              metric in value &&
-                              mode in value[metric] &&
-                              'remove' in value[metric][mode] &&
-                              !value[metric][mode].remove
-                          ) :
-                          (
-                              metric in value &&
-                              mode in value[metric]
-                              && 'remove' in value[metric][mode] &&
-                              value[metric][mode].remove
-                          );
-                      const reverseColoringChecked = (
-                          metric in value &&
-                          mode in value[metric] &&
-                          'reverseColoring' in value[metric][mode] &&
-                          value[metric][mode].reverseColoring
-                      );
-                      const formatting = (
-                          metric in value &&
-                          mode in value[metric] &&
-                          'formatting' in value[metric][mode]
-                      ) ? value[metric][mode].formatting : null;
-                      return (
-                        <tr key={mode}>
-                          <td><span>{mode}</span></td>
-                          <td>
-                            <Checkbox
-                              checked={activateChecked}
-                              onChange={this.onToggle.bind(this, metric, mode, 'remove')}
-                            />
-                          </td>
-                          <td>
-                            <Checkbox
-                              checked={reverseColoringChecked}
-                              onChange={this.onToggle.bind(this, metric, mode, 'reverseColoring')}
-                            />
-                          </td>
-                          <td>
-                            <SelectControl
-                              name={mode + '___' + metric}
-                              default={D3_TIME_FORMAT_OPTIONS[0]}
-                              choices={D3_TIME_FORMAT_OPTIONS}
-                              clearable
-                              freeForm
-                              onChange={this.onValueChange.bind(this, metric, mode, 'formatting')}
-                              value={formatting}
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                    </tbody>
-                  </table>
-                </div>
-            );
-          })}
+          <SelectControl
+            name="column_focus"
+            default={metrics[0]}
+            choices={metrics}
+            onChange={this.onSelectChange.bind(this)}
+            value={this.state.selectedMetric}
+          />
+          {metricElement}
         </div>
     );
   }

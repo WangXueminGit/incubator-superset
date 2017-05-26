@@ -462,7 +462,6 @@ class PivotTableViz(BaseViz):
         df = df[self.form_data.get('metrics')]
         return dict(
             columns=list(df.columns),
-            isPercentage=['%' in column for column in df.columns],
             html=df.to_html(
                 na_rep='',
                 classes=(

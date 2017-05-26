@@ -21,17 +21,17 @@ function tableVis(slice, payload) {
   const fd = slice.formData;
   const styling = fd.styling ? fd.styling : null;
   const columnConfiguration = fd.column_configuration ? fd.column_configuration : {};
-  const formatting = {}
-  const reverseColoring = [];
-  let metric,
-    mode;
+  const formatting = {};
+  const coloringOptions = {};
+  let metric;
+  let mode;
   for (metric in columnConfiguration) {
     for (mode in columnConfiguration[metric]) {
-      if (columnConfiguration[metric][mode].reverseColoring) {
-        reverseColoring.push(mode === 'Default' ? metric : mode + ' ' +metric);
+      const columnName = mode === 'Normal' ? metric : mode + ' ' +metric;
+      if (columnConfiguration[metric][mode].coloringOption) {
+        coloringOptions[columnName] = columnConfiguration[metric][mode].coloringOption;
       }
       if (columnConfiguration[metric][mode].formatting) {
-        const columnName = mode === 'Default' ? metric : mode + ' ' +metric;
         formatting[columnName] = columnConfiguration[metric][mode].formatting;
       }
     }
@@ -85,21 +85,14 @@ function tableVis(slice, payload) {
     .selectAll('td')
     .data(row => data.columns.map((c) => {
       const val = row[c];
-      let html;
+      let html = val;
       const isMetric = metrics.indexOf(c.toLowerCase()) >= 0;
-      const isPercentage = percentageMetrics.indexOf(c.toLowerCase()) >= 0;
 
       if (c === 'timestamp') {
         html = timestampFormatter(val);
       }
       if (typeof (val) === 'string') {
         html = `<span class="like-pre">${val}</span>`;
-      }
-      if (isPercentage) {
-        html = d3.format('.2%')(val);
-      }
-      else if (isMetric) {
-        html = slice.d3format(c, val);
       }
       if (formatting[c]) {
         html = d3.format(formatting[c])(val);
@@ -109,19 +102,20 @@ function tableVis(slice, payload) {
         val,
         html,
         isMetric,
-        isPercentage,
-        reverseColoring: reverseColoring.indexOf(c) >= 0,
+        coloringOption: coloringOptions[c],
       };
     }))
     .enter()
     .append('td')
     .style('font-weight', 900)
     .attr('class', function(d) {
-      if (d.isPercentage) {
-        if (!d.reverseColoring) {
+      if (d.coloringOption !== null) {
+        if (d.coloringOption === 'Green over 100%') {
           return d.val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
         }
-        return d.val <= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
+        else if (d.coloringOption === 'Red over 100%') {
+          return d.val <= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
+        }
       }
       if (d.isMetric) {
         const perc = Math.round((d.val / maxes[d.col]) * 100);
@@ -138,7 +132,7 @@ function tableVis(slice, payload) {
       if (styling === null || !d.isMetric) {
         return null;
       }
-      if (d.isPercentage) {
+      if (d.coloringOption !== null) {
         return null;
       }
       const perc = d.val / maxes[d.col] * 1.4;
