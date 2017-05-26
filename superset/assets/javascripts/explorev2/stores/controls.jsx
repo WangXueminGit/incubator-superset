@@ -1273,5 +1273,11 @@ export const controls = {
     default: [],
     description: 'Colors are added based on theirs order. Drag and drop to rearrange the order',
   },
+
+  column_configuration: {
+    type: 'ColumnControl',
+    label: 'Metrics',
+    description: 'Advanced configuration on columns',
+  },
 };
 export default controls;

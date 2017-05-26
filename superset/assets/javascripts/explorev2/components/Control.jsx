@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import ControlHeader from './ControlHeader';
 
 import CheckboxControl from './controls/CheckboxControl';
+import ColumnControl from './controls/ColumnControl';
 import FilterControl from './controls/FilterControl';
 import HiddenControl from './controls/HiddenControl';
 import SelectControl from './controls/SelectControl';
@@ -12,6 +13,7 @@ import ColorPickerControl from './controls/ColorPickerControl';
 
 const controlMap = {
   CheckboxControl,
+  ColumnControl,
   FilterControl,
   HiddenControl,
   SelectControl,
@@ -24,6 +26,7 @@ const controlTypes = Object.keys(controlMap);
 const propTypes = {
   actions: PropTypes.object.isRequired,
   name: PropTypes.string.isRequired,
+  formData: PropTypes.object,
   type: PropTypes.oneOf(controlTypes).isRequired,
   hidden: PropTypes.bool,
   label: PropTypes.string.isRequired,
@@ -38,11 +41,14 @@ const propTypes = {
     PropTypes.string,
     PropTypes.number,
     PropTypes.bool,
-    PropTypes.array]),
+    PropTypes.array,
+    PropTypes.object,
+  ]),
 };
 
 const defaultProps = {
   renderTrigger: false,
+  formData: {},
   validators: [],
   hidden: false,
   validationErrors: [],

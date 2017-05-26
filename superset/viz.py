@@ -59,11 +59,34 @@ class BaseViz(object):
         self.status = None
         self.error_message = None
 
+    def get_manipulate_time_metrics(self, fields=[]):
+        advanced_configuration = self.form_data.get('column_configuration', {})
+        manipulate_time_marker = ['MTD']
+        return [metric
+                for metric in advanced_configuration
+                for mode in advanced_configuration[metric]
+                if mode in manipulate_time_marker and
+                ('remove' not in advanced_configuration[metric][mode] or
+                 not advanced_configuration[metric][mode]['remove']) or
+                ((len(fields) > 0 and mode in fields) or
+                (len(fields) == 0))]
+
+    def has_manipulate_time_metrics(self):
+        return len(self.get_manipulate_time_metrics()) > 0
+
+    def manipulate_time_first_day(self, start_datetime):
+        # For MTD
+        return start_datetime.replace(day=1)
+
     def get_df(self, query_obj=None):
         """Returns a pandas dataframe based on the query object"""
         if not query_obj:
             query_obj = self.query_obj()
 
+        ori_from_dttm = query_obj['from_dttm']
+        granularity = self.form_data.get("granularity") or self.form_data.get("granularity_sqla")
+        if self.has_manipulate_time_metrics():
+            query_obj['from_dttm'] = self.manipulate_time_first_day(ori_from_dttm)
 
         self.error_msg = ""
         self.results = None
@@ -102,6 +125,14 @@ class BaseViz(object):
                     df[DTTM_ALIAS] += timedelta(hours=self.datasource.offset)
             df.replace([np.inf, -np.inf], np.nan)
             df = df.fillna(0)
+
+        df = self.calculate_mtd_metrics(df, granularity)
+
+        if self.has_manipulate_time_metrics() and granularity in df.columns:
+            df['__granularity_datetime'] = pd.to_datetime(df[granularity])
+            df = df[df['__granularity_datetime'] >= ori_from_dttm]
+            del df['__granularity_datetime']
+
         return df
 
     def get_extra_filters(self):
@@ -305,6 +336,33 @@ class BaseViz(object):
     def json_data(self):
         return json.dumps(self.data)
 
+    def calculate_mtd_metrics(self, df, date_column):
+        if date_column not in df.columns:
+            return df
+
+        # Process MTD metrics
+        mtd_metrics = {}
+        rm_metrics = ['__fdom', '__tomorrow']
+
+        for mtd_metric in self.get_manipulate_time_metrics('MTD'):
+            mtd_metrics[mtd_metric] = []
+
+        # Get first day of the month and first day of next month
+        df['__fdom'] = df[date_column].apply(lambda x: x.replace(day=1))
+        df['__tomorrow'] = df[date_column].apply(lambda x: x+timedelta(days=1))
+
+        for index, row in df.iterrows():
+            result = df[(df[date_column] >= row['__fdom']) & (df['date_id'] < row['__tomorrow'])][mtd_metrics.keys()].sum()
+            for mtd_metric in mtd_metrics:
+                mtd_metrics[mtd_metric].append(result[mtd_metric])
+
+        for mtd_metric in mtd_metrics:
+            df['MTD {}'.format(mtd_metric)] = pd.Series(mtd_metrics[mtd_metric])
+
+        for mtd_metric in rm_metrics:
+            del df[mtd_metric]
+
+        return df
 
 class TableViz(BaseViz):
 
@@ -401,9 +459,9 @@ class PivotTableViz(BaseViz):
             aggfunc=self.form_data.get('pandas_aggfunc'),
             margins=True,
         )
+        df = df[self.form_data.get('metrics')]
         return dict(
             columns=list(df.columns),
-            isPercentage=['%' in column for column in df.columns],
             html=df.to_html(
                 na_rep='',
                 classes=(

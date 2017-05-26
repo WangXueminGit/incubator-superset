@@ -54,6 +54,13 @@ export const sections = {
       ],
     },
   ],
+  column_configuration: [
+    {
+      label: 'Column Configuration',
+      description: 'Advanced configuration on columns',
+      controlSetRows: [['column_configuration']]
+    }
+  ],
   filters: [
     {
       label: 'Filters',
@@ -793,6 +800,7 @@ export function sectionsToRender(vizType, datasourceType) {
     sections.datasourceAndVizType,
     datasourceType === 'table' ? sections.sqlaTimeSeries : sections.druidTimeSeries,
     viz.controlPanelSections,
+    sections.column_configuration,
     datasourceType === 'table' ? sections.sqlClause : [],
     datasourceType === 'table' ? sections.filters[0] : sections.filters,
     sections.styling,

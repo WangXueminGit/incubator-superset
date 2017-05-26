@@ -222,25 +222,36 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
     add_widget = CustomFormWidget
     custom_fields = [
         {
-            "separator": True,
-            "message": utils.markdown("Optional: Create table in **Redshift**", True)
+            "identifier": "create_option",
+            "externalclass": "db_group group_allow_create_table",
+            "title": "SQL type",
+            "input": "radio",
+            "options": [
+                {
+                    "label": utils.markdown("`CREATE VIEW`", True),
+                    "value": "view",
+                },
+                {
+                    "label": utils.markdown("`CREATE TABLE`", True),
+                    "value": "table",
+                },
+            ],
+            "required": False,
         },
         {
             "identifier": "create_table_sql",
-            "title": "Create table with SQL",
+            "externalclass": "db_group group_allow_create_table",
+            "title": "Create table/view with SQL",
             "input": "sql",
-            "placeholder": _("Paste a complete and error-free CREATE TABLE sql"),
+            "placeholder": _("CREATE TABLE"),
             "description": utils.markdown(
-                "Create table with SQL is only applicable to `Redshift`."
+                "Create table/view with SQL is only applicable to `Redshift`."
                 , True),
             "required": False,
         },
         {
-            "separator": True,
-            "message": utils.markdown("Optional: Create table in **SparkSQL Playground**", True)
-        },
-        {
             "identifier": "hdfs_path",
+            "externalclass": "db_group group_allow_hdfs_table",
             "title": "Create table from HDFS",
             "input": "text",
             "placeholder": _("Enter the full path of file from HDFS"),
@@ -251,6 +262,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         },
         {
             "identifier": "hdfs_file_type",
+            "externalclass": "db_group group_allow_hdfs_table",
             "title": "HDFS File type",
             "input": "select",
             "options": [
@@ -270,10 +282,12 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         },
         {
             "separator": True,
-            "message": utils.markdown("Optional: For **admin** only", True)
+            "isadmin": True,
+            "message": utils.markdown("For **admin** only", True)
         },
         {
             "identifier": "create_global_table",
+            "isadmin": True,
             "title": "Create table without user postfix",
             "input": "checkbox",
             "description": utils.markdown("Checked to create table without username as postfix. "
@@ -285,7 +299,72 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
     def _get_add_widget(self, form, exclude_cols=None, widgets=None):
         exclude_cols = exclude_cols or []
         widgets = widgets or {}
+
+        private_roles = [role for role in current_user.roles if role.name not in config.ROBOT_PERMISSION_ROLES]
+        private_roles.sort()
+        is_admin = False
+        for role in current_user.roles:
+            if role.name in config.ROLE_CREATE_TABLE_GLOBAL:
+                is_admin = True
+
+        datasources = db.session.query(models.Database).all()
+        main_datasources = [datasource for datasource in datasources if not datasource.hidden]
+        sub_datasources = dict()
+        datasource_groups = dict()
+        datasource_allowed_action = dict()
+        for datasource in datasources:
+            if datasource.database_group not in datasource_groups:
+                datasource_groups[datasource.id] = datasource.database_group
+            if datasource.database_group not in sub_datasources:
+                sub_datasources[datasource.database_group] = []
+            if len(datasource.force_ctas_schema) > 0:
+                for role in private_roles:
+                    if role in datasource.roles:
+                        sub_datasources[datasource.database_group].append(datasource.force_ctas_schema)
+                if is_admin:
+                    sub_datasources[datasource.database_group].append(datasource.force_ctas_schema)
+
+            if datasource.database_group not in datasource_allowed_action:
+                datasource_allowed_action[datasource.database_group] = []
+            if datasource.allow_create_table:
+                datasource_allowed_action[datasource.database_group].append('allow_create_table')
+            if datasource.allow_hdfs_table:
+                datasource_allowed_action[datasource.database_group].append('allow_hdfs_table')
+
+        allowed_datasources = []
+        if is_admin:
+            allowed_datasources = main_datasources
+        else:
+            t_datasource_groups = []
+            for datasource in datasources:
+                for role in private_roles:
+                    if role in datasource.roles:
+                        t_datasource_groups.append(datasource.database_group)
+            for datasource in main_datasources:
+                if datasource.database_group in t_datasource_groups:
+                    allowed_datasources.append(datasource)
+
+        pre_include_cols = [
+            {
+                "identifier": "database",
+                "title": "Select target database",
+                "input": "select",
+                "required": True,
+                "model": allowed_datasources,
+            },
+            {
+                "identifier": "schema",
+                "title": "Select target schema",
+                "input": "select",
+                "required": False,
+                "model": sub_datasources,
+                "submodel": datasource_groups,
+                "tertiarymodel": datasource_allowed_action,
+            },
+        ]
         widgets['add'] = self.add_widget(form=form,
+                                         is_admin=is_admin,
+                                         pre_include_cols=pre_include_cols,
                                          include_cols=self.add_columns,
                                          exclude_cols=exclude_cols,
                                          fieldsets=self.add_fieldsets,
@@ -322,10 +401,8 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                 if role in t_database.roles:
                     schemas += [t_database.force_ctas_schema]
 
-        if len(schemas) > 0:
-            table.schema = schemas[0]
-        elif not is_admin:
-            table.schema = 'public'
+        if not is_admin and table.schema not in schemas:
+            raise Exception("You are not authorized to access schema {} of database {}".format(table.schema, table.database))
 
         roles = [role.name for role in current_user.roles]
         # decide create table without username/email account
@@ -396,8 +473,9 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                 connection.close()
                 engine.dispose()
 
-        elif not create_global_table:
-            raise Exception("Insufficient permission to use table in database")
+        # Comment to allow user to use existing table from their schema
+        # elif not create_global_table:
+        #     raise Exception("Insufficient permission to use table in database")
 
         # Fail before adding if the table can't be found
         try:

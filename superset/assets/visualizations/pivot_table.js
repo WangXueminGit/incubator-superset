@@ -14,10 +14,20 @@ module.exports = function (slice, payload) {
 
   // payload data is a string of html with a single table element
   container.html(payload.data.html);
-  let percentageIndex = [];
-  for (let j = 0; j < payload.data.isPercentage.length; j++) {
-    if (!!payload.data.isPercentage[j]) {
-      percentageIndex.push(j);
+  const columns = payload.data.columns;
+
+  const columnConfiguration = fd.column_configuration ? fd.column_configuration : {};
+  const formatting = {};
+  const coloringOptions = {};
+  for (const metric in columnConfiguration) {
+    for (const mode in columnConfiguration[metric]) {
+      if (columnConfiguration[metric][mode].coloringOption) {
+        coloringOptions[columnName] = columnConfiguration[metric][mode].coloringOption;
+      }
+      if (columnConfiguration[metric][mode].formatting) {
+        const columnName = mode === 'Default' ? metric : mode + ' ' +metric;
+        formatting[columnName] = columnConfiguration[metric][mode].formatting;
+      }
     }
   }
 
@@ -36,32 +46,50 @@ module.exports = function (slice, payload) {
       scrollX: true,
       colReorder: true,
       rowCallback: (row, data, index) => {
-        if (percentageIndex.length > 0) {
-          for (let i = 0; i < percentageIndex.length; i++) {
-            $(row).find('td:nth-child(' + (percentageIndex[i] + 1) + ')').addClass(data[percentageIndex[i]] >= 100 ? 'pivot-table-hit' : 'pivot-table-not-hit');
+        $(row).find('td').each(function (index) {
+          const column = columns[index];
+          if (column in formatting && formatting[column] !== null) {
+            const val = $(this).data('originalvalue') || $(this).html();
+            $(this).data('originalvalue', val);
+            $(this).html(d3.format(formatting[column])(val));
           }
-        }
+          if (column in coloringOptions && coloringOptions[column] !== null) {
+            if (coloringOptions[column] === 'Green over 100%') {
+              $(this).addClass(val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit');
+            }
+            else if (coloringOptions[column] === 'Red over 100%') {
+              $(this).addClass(val <= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit');
+            }
+          }
+        });
       },
     });
     table.column('-1').order('desc').draw();
     fixDataTableBodyHeight(container.find('.dataTables_wrapper'), height);
-  } else {
+  }
+  else {
     // When there is more than 1 group by column we just render the table, without using
     // the DataTable plugin, so we need to handle the scrolling ourselves.
     // In this case the header is not fixed.
     container.css('overflow', 'auto');
     container.css('height', `${height + 10}px`);
-    if (percentageIndex.length > 0) {
-      container.find('table tbody tr').each(function () {
-        $(this).find('td').each(function (index) {
-          if (percentageIndex.indexOf(index) >= 0) {
-            const val = $(this).data('originalvalue') || $(this).html();
-            $(this).data('originalvalue', val);
-            $(this).html(d3.format('.2%')(val));
+    container.find('table tbody tr').each(function () {
+      $(this).find('td').each(function (index) {
+        const column = columns[index];
+        if (column in formatting && formatting[column] !== null) {
+          const val = $(this).data('originalvalue') || $(this).html();
+          $(this).data('originalvalue', val);
+          $(this).html(d3.format(formatting[column])(val));
+        }
+        if (column in coloringOptions && coloringOptions[column] !== null) {
+          if (coloringOptions[column] === 'Green over 100%') {
             $(this).addClass(val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit');
           }
-        });
+          else if (coloringOptions[column] === 'Red over 100%') {
+            $(this).addClass(val <= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit');
+          }
+        }
       });
-    }
+    });
   }
 };
