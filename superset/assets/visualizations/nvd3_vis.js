@@ -473,10 +473,30 @@ function nvd3Vis(slice, payload) {
     chart.dispatch.on('renderEnd', function () {
       svg.select('.nv-scatterWrap').attr('clip-path', null);
       svg.select('.nv-line > g').attr('clip-path', null);
+      if (fd.show_point_value) {
+        svg.selectAll('.nv-point-label').remove();
+        svg.selectAll('path.nv-point').each(function (d, i) {
+          d3.select(this.parentNode).append('text')
+              .classed('nv-point-label nv-point-label-' + i, true)
+              .attr('dy', '-.35em')
+              .attr('transform', d3.select(this).attr('transform'))
+              .attr('dx', '.2em')
+              .attr('font-size', '10')
+              .text(d3.format(fd.y_axis_format || '.1s')(d[0].y))
+              .style({stroke: 'initial'});
+        });
+      }
+      if (fd.show_bar_value) {
+        svg.select('g.nv-barsWrap-value').remove();
+        setTimeout(function () {
+          addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
+        }, animationTime);
+      }
     });
-
-    if (fd.show_point_value) {
-      chart.dispatch.on('renderEnd stateChange', function () {
+    chart.dispatch.on('stateChange', function () {
+      svg.select('.nv-scatterWrap').attr('clip-path', null);
+      svg.select('.nv-line > g').attr('clip-path', null);
+      if (fd.show_point_value) {
         svg.selectAll('.nv-point-label').remove();
         svg.selectAll('path.nv-point').each(function (d, i) {
           d3.select(this.parentNode).append('text')
@@ -488,17 +508,14 @@ function nvd3Vis(slice, payload) {
               .text(d3.format(fd.y_axis_format || '.1s')(d[0].y))
               .style({ stroke: 'initial' });
         });
-      });
-    }
-
-    if (fd.show_bar_value) {
-      chart.dispatch.on('stateChange', function() {
+      }
+      if (fd.show_bar_value) {
         svg.select('g.nv-barsWrap-value').remove();
         setTimeout(function () {
           addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
         }, animationTime);
-      });
-    }
+      }
+    });
 
     if (chart.yAxis !== undefined) {
       // Hack to adjust y axis left margin to accommodate long numbers
