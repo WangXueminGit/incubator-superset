@@ -341,15 +341,15 @@ class BaseViz(object):
         return json.dumps(self.data)
 
     def calculate_mtd_metrics(self, df, date_column, query_obj):
-        if date_column not in df.columns:
-            return df
-
         # Process MTD metrics
         mtd_metrics = {}
         rm_metrics = ['__fdom', '__tomorrow']
 
         for mtd_metric in self.get_manipulate_time_metrics('MTD'):
             mtd_metrics[mtd_metric] = []
+
+        if len(mtd_metrics) > 0 and date_column not in df.columns:
+            raise ValueError("Please group by the date column to calculate MTD value")
 
         # Get first day of the month and first day of next month
         df['__fdom'] = df[date_column].apply(lambda x: x.replace(day=1))
