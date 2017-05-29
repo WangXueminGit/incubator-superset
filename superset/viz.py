@@ -140,7 +140,8 @@ class BaseViz(object):
         return {f['col']: f['val'] for f in extra_filters}
 
     def get_extra_groupby(self):
-        extra_groupby = self.form_data.get('extra_groupby', [])
+        extra_filters = self.form_data.get('extra_filters', [])
+        extra_groupby = self.form_data.get('extra_groupby', []) + [f['col'] for f in extra_filters]
         return extra_groupby
 
     def query_obj(self):
@@ -346,6 +347,11 @@ class BaseViz(object):
 
         for mtd_metric in self.get_manipulate_time_metrics('MTD'):
             mtd_metrics[mtd_metric] = []
+
+        if len(mtd_metrics.keys()) > 0 and date_column not in df.columns:
+            raise ValueError("Please group by the date column to calculate MTD value")
+        if len(mtd_metrics.keys()) == 0:
+            return df
 
         # Get first day of the month and first day of next month
         df['__fdom'] = df[date_column].apply(lambda x: x.replace(day=1))
