@@ -59,6 +59,10 @@ class BaseViz(object):
         self.status = None
         self.error_message = None
 
+    def get_post_calc_metrics(self):
+        advanced_configuration = self.form_data.get('column_configuration', {})
+        return ['{} {}'.format(mode, metric) for metric in advanced_configuration for mode in advanced_configuration[metric] if mode != 'remove']
+
     def get_manipulate_time_metrics(self, fields=[]):
         advanced_configuration = self.form_data.get('column_configuration', {})
         manipulate_time_marker = ['MTD']
@@ -126,7 +130,7 @@ class BaseViz(object):
             df.replace([np.inf, -np.inf], np.nan)
             df = df.fillna(0)
 
-        df = self.calculate_mtd_metrics(df, granularity)
+        df = self.calculate_mtd_metrics(df, granularity, query_obj)
 
         if self.has_manipulate_time_metrics() and granularity in df.columns:
             df['__granularity_datetime'] = pd.to_datetime(df[granularity])
@@ -336,10 +340,7 @@ class BaseViz(object):
     def json_data(self):
         return json.dumps(self.data)
 
-    def calculate_mtd_metrics(self, df, date_column):
-        if date_column not in df.columns:
-            return df
-
+    def calculate_mtd_metrics(self, df, date_column, query_obj):
         # Process MTD metrics
         mtd_metrics = {}
         rm_metrics = ['__fdom', '__tomorrow']
@@ -347,12 +348,19 @@ class BaseViz(object):
         for mtd_metric in self.get_manipulate_time_metrics('MTD'):
             mtd_metrics[mtd_metric] = []
 
+        if len(mtd_metrics) > 0 and date_column not in df.columns:
+            raise ValueError("Please group by the date column to calculate MTD value")
+
         # Get first day of the month and first day of next month
         df['__fdom'] = df[date_column].apply(lambda x: x.replace(day=1))
         df['__tomorrow'] = df[date_column].apply(lambda x: x+timedelta(days=1))
 
+        groupbys = list(set(query_obj['groupby']) - set([date_column]))
         for index, row in df.iterrows():
-            result = df[(df[date_column] >= row['__fdom']) & (df['date_id'] < row['__tomorrow'])][mtd_metrics.keys()].sum()
+            ddf = df[(df[date_column] >= row['__fdom']) & (df[date_column] < row['__tomorrow'])]
+            for groupby in groupbys:
+                ddf = ddf[ddf[groupby] == row[groupby]]
+            result = ddf[mtd_metrics.keys()].sum()
             for mtd_metric in mtd_metrics:
                 mtd_metrics[mtd_metric].append(result[mtd_metric])
 
@@ -361,8 +369,8 @@ class BaseViz(object):
 
         for mtd_metric in rm_metrics:
             del df[mtd_metric]
-
         return df
+
 
 class TableViz(BaseViz):
 
@@ -455,11 +463,11 @@ class PivotTableViz(BaseViz):
         df = df.pivot_table(
             index=self.form_data.get('groupby'),
             columns=self.form_data.get('columns'),
-            values=self.form_data.get('metrics'),
+            values=self.form_data.get('metrics') + self.get_post_calc_metrics(),
             aggfunc=self.form_data.get('pandas_aggfunc'),
             margins=True,
         )
-        df = df[self.form_data.get('metrics')]
+        df = df[self.form_data.get('metrics') + self.get_post_calc_metrics()]
         return dict(
             columns=list(df.columns),
             html=df.to_html(
@@ -1005,7 +1013,6 @@ class NVD3SimpleLineViz(NVD3Viz):
 
     def to_series(self, df, classed='', title_suffix=''):
         cols = []
-        print(df)
         for col in df.columns:
             if col == '':
                 cols.append('N/A')
@@ -1047,7 +1054,6 @@ class NVD3SimpleLineViz(NVD3Viz):
         df = df.fillna(0)
         if fd.get("granularity") == "all":
             raise Exception("Pick a time granularity for your time series")
-        print(df)
         df = df.pivot_table(
             index=fd.get('x'),
             columns=[],
