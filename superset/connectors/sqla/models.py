@@ -41,6 +41,7 @@ class TableColumn(Model, BaseColumn):
         backref=backref('columns', cascade='all, delete-orphan'),
         foreign_keys=[table_id])
     is_dttm = Column(Boolean, default=False)
+    is_hex = Column(Boolean, default=False)
     expression = Column(Text, default='')
     python_date_format = Column(String(255))
     database_expression = Column(String(255))
@@ -49,7 +50,7 @@ class TableColumn(Model, BaseColumn):
         'table_id', 'column_name', 'verbose_name', 'is_dttm', 'is_active',
         'type', 'groupby', 'count_distinct', 'sum', 'avg', 'max', 'min',
         'filterable', 'expression', 'description', 'python_date_format',
-        'database_expression'
+        'database_expression', 'is_hex'
     )
 
     @property
@@ -117,6 +118,14 @@ class TableColumn(Model, BaseColumn):
             s = self.table.database.db_engine_spec.convert_dttm(
                 self.type or '', dttm)
             return s or "'{}'".format(dttm.strftime(tf))
+
+    @property
+    def is_base64_encoded(self):
+        return self.encoded_type == 'b64'
+
+    @property
+    def is_base16_encoded(self):
+        return self.encoded_type == 'b16'
 
 
 class SqlMetric(Model, BaseMetric):
@@ -576,7 +585,7 @@ class SqlaTable(Model, BaseDatasource):
     def get_sqla_table_object(self):
         return self.database.get_table(self.table_name, schema=self.schema)
 
-    def fetch_metadata(self):
+    def fetch_metadata(self, refresh=False):
         """Fetches the metadata for the table and merges it in"""
         try:
             table = self.get_sqla_table_object()
@@ -590,6 +599,7 @@ class SqlaTable(Model, BaseDatasource):
         metrics = []
         any_date_col = None
         db_dialect = self.database.get_sqla_engine().dialect
+
         for col in table.columns:
             try:
                 datatype = "{}".format(col.type).upper()
@@ -606,7 +616,7 @@ class SqlaTable(Model, BaseDatasource):
                 .first()
             )
             db.session.flush()
-            if not dbcol:
+            if not dbcol or refresh:
                 dbcol = TableColumn(column_name=col.name, type=datatype)
                 dbcol.groupby = dbcol.is_string
                 dbcol.filterable = dbcol.is_string

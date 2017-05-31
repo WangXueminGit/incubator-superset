@@ -37,13 +37,15 @@ class TableColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
         'column_name', 'verbose_name', 'description',
         'type', 'groupby', 'filterable',
         'table', 'count_distinct', 'sum', 'min', 'max', 'expression',
-        'is_dttm', 'python_date_format', 'database_expression']
+        'is_dttm', 'python_date_format', 'database_expression', 'is_hex']
     add_columns = edit_columns
     list_columns = [
         'column_name', 'type', 'groupby', 'filterable', 'count_distinct',
-        'sum', 'min', 'max', 'is_dttm']
+        'sum', 'min', 'max', 'is_dttm', 'is_hex']
     page_size = 500
     description_columns = {
+        'is_hex': _(
+            "Value is base16(hex) encoded"),
         'is_dttm': _(
             "Whether to make this column available as a "
             "[Time Granularity] option, column has to be DATETIME or "
@@ -92,7 +94,8 @@ class TableColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
         'expression': _("Expression"),
         'is_dttm': _("Is temporal"),
         'python_date_format': _("Datetime Format"),
-        'database_expression': _("Database Expression")
+        'database_expression': _("Database Expression"),
+        'is_hex': _("Base16 encoded"),
     }
 appbuilder.add_view_no_menu(TableColumnInlineView)
 
@@ -560,9 +563,9 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
     def fetch_metadata(self, tables):
         if isinstance(tables, list):
             for table in tables:
-                table.fetch_metadata()
+                table.fetch_metadata(refresh=True)
         else:
-            tables.fetch_metadata()
+            tables.fetch_metadata(refresh=True)
         return redirect('/tablemodelview/list/')
 
     @has_access
