@@ -8,7 +8,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import base64
 import copy
 import hashlib
 import logging
@@ -29,7 +28,7 @@ from six import string_types, PY3
 from dateutil import relativedelta as rdelta
 
 from superset import app, utils, cache
-from superset.utils import DTTM_ALIAS
+from superset.utils import DTTM_ALIAS, decode_base16_string
 
 config = app.config
 
@@ -83,7 +82,7 @@ class BaseViz(object):
         # For MTD
         return start_datetime.replace(day=1)
 
-    def get_df(self, query_obj=None):
+    def get_df(self, query_obj=None, force=False):
         """Returns a pandas dataframe based on the query object"""
         if not query_obj:
             query_obj = self.query_obj()
@@ -103,7 +102,7 @@ class BaseViz(object):
                 timestamp_format = dttm_col.python_date_format
 
         # The datasource here can be different backend but the interface is common
-        self.results = self.datasource.query(query_obj)
+        self.results = self.datasource.query(query_obj, force=force)
         self.query = self.results.query
         self.status = self.results.status
         self.error_message = self.results.error_message
@@ -133,7 +132,7 @@ class BaseViz(object):
 
         for hex_column in [column.column_name for column in self.datasource.columns if column.is_hex]:
             if hex_column in df.columns:
-                df[hex_column] = df[hex_column].apply(lambda x: base64.b16decode(x))
+                df[hex_column] = df[hex_column].apply(lambda x: decode_base16_string(x))
 
         df = self.calculate_mtd_metrics(df, granularity, query_obj)
 
@@ -279,7 +278,7 @@ class BaseViz(object):
             cache_timeout = self.cache_timeout
             stacktrace = None
             try:
-                df = self.get_df()
+                df = self.get_df(force=force)
                 if not self.error_message:
                     data = self.get_data(df)
             except Exception as e:

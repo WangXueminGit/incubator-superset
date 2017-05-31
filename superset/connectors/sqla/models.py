@@ -555,7 +555,7 @@ class SqlaTable(Model, BaseDatasource):
 
         return qry.select_from(tbl)
 
-    def query(self, query_obj):
+    def query(self, query_obj, force=False):
         qry_start_dttm = datetime.now()
         engine = self.database.get_sqla_engine()
         qry = self.get_sqla_query(**query_obj)
@@ -565,7 +565,7 @@ class SqlaTable(Model, BaseDatasource):
         # Remove non-alphanumeric character as key of cache
         query_string = 'DB_{}__{}'.format(self.database.id, re.sub('[^0-9a-zA-Z]+', '_', self.get_query_str(query_obj)))
         df = tables_cache.get(query_string)
-        if df is None:
+        if df is None or force:
             try:
                 df = pd.read_sql_query(qry, con=engine)
                 tables_cache.set(query_string, df, timeout=10 * 60)
