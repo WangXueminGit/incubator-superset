@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import base64
 import decimal
 import functools
 import json
@@ -737,3 +738,9 @@ def clean_sql(sql, allow_methods=[]):
         if r.match(dirty_sql):
             return None
     return dirty_sql
+
+def decode_base16_string(text):
+    try:
+        return base64.b16decode(text)
+    except:
+        return text
