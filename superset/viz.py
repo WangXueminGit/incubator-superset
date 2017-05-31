@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import base64
 import copy
 import hashlib
 import logging
@@ -129,6 +130,10 @@ class BaseViz(object):
                     df[DTTM_ALIAS] += timedelta(hours=self.datasource.offset)
             df.replace([np.inf, -np.inf], np.nan)
             df = df.fillna(0)
+
+        for hex_column in [column.column_name for column in self.datasource.columns if column.is_hex]:
+            if hex_column in df.columns:
+                df[hex_column] = df[hex_column].apply(lambda x: base64.b16decode(x))
 
         df = self.calculate_mtd_metrics(df, granularity, query_obj)
 
