@@ -1,38 +1,38 @@
 .dashboard {
   padding-bottom: 100px;
-  //::-webkit-scrollbar {
-  //  width: 7px;
-  //  height: 7px;
-  //}
-  //::-webkit-scrollbar-button {
-  //  width: 0px;
-  //  height: 0px;
-  //}
-  //::-webkit-scrollbar-thumb {
-  //  background: #5a595b;
-  //  border: 0px none #ffffff;
-  //  border-radius: 50px;
-  //}
-  //::-webkit-scrollbar-thumb:hover {
-  //  background: #3d403c;
-  //}
-  //::-webkit-scrollbar-thumb:active {
-  //  background: #000000;
-  //}
-  //::-webkit-scrollbar-track {
-  //  background: #d0cdd3;
-  //  border: 0px none #ffffff;
-  //  border-radius: 73px;
-  //}
-  //::-webkit-scrollbar-track:hover {
-  //  background: #d6dadd;
-  //}
-  //::-webkit-scrollbar-track:active {
-  //  background: #39393a;
-  //}
-  //::-webkit-scrollbar-corner {
-  //  background: transparent;
-  //}
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
+  ::-webkit-scrollbar-button {
+    width: 0px;
+    height: 0px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #5a595b;
+    border: 0px none #ffffff;
+    border-radius: 50px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3d403c;
+  }
+  ::-webkit-scrollbar-thumb:active {
+    background: #000000;
+  }
+  ::-webkit-scrollbar-track {
+    background: #d0cdd3;
+    border: 0px none #ffffff;
+    border-radius: 73px;
+  }
+  ::-webkit-scrollbar-track:hover {
+    background: #d6dadd;
+  }
+  ::-webkit-scrollbar-track:active {
+    background: #39393a;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
   .selected > .fa-star {
     color: #FED766;
   }

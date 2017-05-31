@@ -493,7 +493,7 @@ class MarkupViz(BaseViz):
     verbose_name = _("Markup")
     is_timeseries = False
 
-    def get_df(self):
+    def get_df(self, force=False):
         return True
 
     def get_data(self, df):
@@ -1479,7 +1479,7 @@ class IFrameViz(BaseViz):
     credits = 'a <a href="https://github.com/airbnb/superset">Superset</a> original'
     is_timeseries = False
 
-    def get_df(self):
+    def get_df(self, force=False):
        return None
 
 
