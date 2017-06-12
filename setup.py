@@ -17,6 +17,12 @@ def get_git_sha():
     except:
         return ""
 
+
+def parse_requirements(requirements_file):
+    with open(requirements_file) as f:
+        return [l.strip('\n') for l in f if l.strip('\n') and not l.startswith('#')]
+
+
 GIT_SHA = get_git_sha()
 version_info = {
     'GIT_SHA': GIT_SHA,
@@ -41,38 +47,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     scripts=['superset/bin/superset'],
-    install_requires=[
-        'boto3==1.4.4',
-        'celery==3.1.23',
-        'cryptography==1.7.2',
-        # 'flask-appbuilder==1.8.1', # Use the master build but not 1.8.1 and 2.0.0
-        'flask-cache==0.13.1',
-        'flask-migrate==2.0.3',
-        'flask-script==2.0.5',
-        'flask-sqlalchemy==2.0',
-        'Flask_OAuthlib==0.9.3',
-        'Flask-Mail==0.9.1',
-        'flask-testing==0.6.2',
-        'flask-wtf==0.14.2',
-        'future>=0.16.0, <0.17',
-        'humanize==0.5.1',
-        'gunicorn==19.7.1',
-        'markdown==2.6.8',
-        'pandas==0.19.2',
-        'parsedatetime==2.0.0',
-        'pydruid==0.3.1',
-        # 'PyHive>=0.2.1', # Use the master branch of PyHive and not v0.2.1 # Uncomment when new version of PyHive is available
-        'python-dateutil==2.6.0',
-        'python-slugify==1.2.4',
-        'requests==2.13.0',
-        'simplejson==3.10.0',
-        'six==1.10.0',
-        'sqlalchemy==1.1.9',
-        'sqlalchemy-utils==0.32.14',
-        'sqlparse==0.2.3',
-        'thrift<=0.9.3',
-        'thrift-sasl>=0.2.1',
-    ],
+    install_requires=parse_requirements('install-reqs.txt'),
     extras_require={
         'cors': ['Flask-Cors>=2.0.0'],
     },
