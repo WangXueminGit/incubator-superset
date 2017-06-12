@@ -24,6 +24,7 @@ requests==2.13.0
 redis>=2.10.0
 simplejson==3.10.0
 six==1.10.0
+python-slugify==1.2.4
 sqlalchemy==1.1.9
 sqlalchemy-utils==0.32.14
 sqlparse==0.2.3
