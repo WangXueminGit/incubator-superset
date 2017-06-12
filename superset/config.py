@@ -18,6 +18,15 @@ from dateutil import tz
 from flask_appbuilder.security.manager import AUTH_OAUTH
 from werkzeug.contrib.cache import RedisCache
 
+def get_env_variable(var_name):
+    """Get the environment variable or raise exception."""
+    try:
+        return os.environ[var_name]
+    except KeyError:
+        error_msg = "The environment variable {} was missing, abort..."\
+                    .format(var_name)
+        raise EnvironmentError(error_msg)
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATA_DIR = os.path.join(os.path.expanduser('~'), '.superset')
 if not os.path.exists(DATA_DIR):
@@ -58,11 +67,21 @@ SECRET_KEY = 'HwesXr36GvNAdGdxaTL7CN3QDFsaMsfATzzTKYtDgay4DhAP'  # noqa
 # Username: superset
 # Password: t8dSVXELrpbCwYqDP77WgAXk
 
+POSTGRES_USER = get_env_variable('POSTGRES_USER')
+POSTGRES_PASSWORD = get_env_variable('POSTGRES_PASSWORD')
+POSTGRES_HOST = get_env_variable('POSTGRES_HOST')
+POSTGRES_PORT = get_env_variable('POSTGRES_PORT')
+POSTGRES_DB = get_env_variable('POSTGRES_DB')
+
 # The SQLAlchemy connection string.
 # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DATA_DIR, 'superset.db')
 # SQLALCHEMY_DATABASE_URI = 'mysql://myapp@localhost/myapp'
-SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:Ap99B8hDPrmun6ZMtDUcLzPw@localhost:5432'
+# SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:Ap99B8hDPrmun6ZMtDUcLzPw@localhost:5432'
 # SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:Garena.com@localhost/superset'
+SQLALCHEMY_DATABASE_URI = "postgresql://%s:%s@%s:%s" % (POSTGRES_PASSWORD,
+                                                        POSTGRES_PASSWORD,
+                                                        POSTGRES_HOST,
+                                                        POSTGRES_PORT)
 
 # The limit of queries fetched for query search
 QUERY_SEARCH_LIMIT = 1000
