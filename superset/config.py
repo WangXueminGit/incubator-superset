@@ -73,6 +73,9 @@ POSTGRES_HOST = get_env_variable('POSTGRES_HOST')
 POSTGRES_PORT = get_env_variable('POSTGRES_PORT')
 POSTGRES_DB = get_env_variable('POSTGRES_DB')
 
+REDIS_HOST = get_env_variable('REDIS_HOST')
+REDIS_PORT = get_env_variable('REDIS_PORT')
+
 # The SQLAlchemy connection string.
 # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DATA_DIR, 'superset.db')
 # SQLALCHEMY_DATABASE_URI = 'mysql://myapp@localhost/myapp'
@@ -206,8 +209,14 @@ IMG_UPLOAD_URL = '/static/uploads/'
 # IMG_SIZE = (300, 200, True)
 
 CACHE_DEFAULT_TIMEOUT = 60 * 60 * 24
-CACHE_CONFIG = {'CACHE_TYPE': 'redis', 'CACHE_REDIS_HOST': 'localhost', 'CACHE_REDIS_PORT': 6379, 'CACHE_REDIS_DB': 2}
-TABLE_NAMES_CACHE_CONFIG = {'CACHE_TYPE': 'redis', 'CACHE_REDIS_HOST': 'localhost', 'CACHE_REDIS_PORT': 6379, 'CACHE_REDIS_DB': 3}
+CACHE_CONFIG = {'CACHE_TYPE': 'redis',
+                'CACHE_REDIS_HOST': REDIS_HOST,
+                'CACHE_REDIS_PORT': REDIS_PORT,
+                'CACHE_REDIS_DB': 2}
+TABLE_NAMES_CACHE_CONFIG = {'CACHE_TYPE': 'redis',
+                            'CACHE_REDIS_HOST': REDIS_HOST,
+                            'CACHE_REDIS_PORT': REDIS_PORT,
+                            'CACHE_REDIS_DB': 3}
 
 # CORS Options
 ENABLE_CORS = False
@@ -285,9 +294,9 @@ WARNING_MSG = None
 
 # Example:
 class CeleryConfig(object):
-    BROKER_URL = 'redis://localhost:6379/0'
+    BROKER_URL = "redis://%s:%s/0" % (REDIS_HOST, REDIS_PORT)
     CELERY_IMPORTS = ('superset.sql_lab', )
-    CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
+    CELERY_RESULT_BACKEND = "redis://%s:%s/1" % (REDIS_HOST, REDIS_PORT)
     CELERY_ANNOTATIONS = {'tasks.add': {'rate_limit': '10/s'}}
     CELERY_TASK_PROTOCOL = 1
 
@@ -317,7 +326,11 @@ SQLLAB_DEFAULT_DBID = None
 # in SQL Lab by using the "Run Async" button/feature
 # RESULTS_BACKEND = None
 # RESULTS_BACKEND = FileSystemCache('/tmp/sqllab_cache', default_timeout=60*24*7)
-RESULTS_BACKEND = RedisCache(host='localhost', port='6379', db=4, key_prefix='sqllab_cache_', default_timeout=60*24*7)
+RESULTS_BACKEND = RedisCache(host=REDIS_HOST,
+                             port=REDIS_PORT,
+                             db=4,
+                             key_prefix='sqllab_cache_',
+                             default_timeout=60*24*7)
 
 # A dictionary of items that gets merged into the Jinja context for
 # SQL Lab. The existing context gets updated with this dictionary,
