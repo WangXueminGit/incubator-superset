@@ -55,6 +55,14 @@ def runserver(debug, no_reload, address, port, timeout, workers, socket):
     """Starts a Superset web server."""
     debug = debug or config.get("DEBUG")
     if debug:
+        app.debug = True
+
+        try:
+            from flask_debugtoolbar import DebugToolbarExtension
+            toolbar = DebugToolbarExtension(app)
+            app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
+        except ImportError as e:
+            logging.exception('flask_debugtoolbar not installed, ignored.')
         app.run(
             host='0.0.0.0',
             port=int(port),
