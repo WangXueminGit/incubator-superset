@@ -107,7 +107,6 @@ function tableVis(slice, payload) {
     }))
     .enter()
     .append('td')
-    .style('font-weight', 900)
     .attr('class', function(d) {
       if (d.coloringOption !== null) {
         if (d.coloringOption === 'Green over 100%') {
