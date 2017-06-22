@@ -116,15 +116,6 @@ function tableVis(slice, payload) {
           return d.val <= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
         }
       }
-      if (d.isMetric) {
-        const perc = Math.round((d.val / maxes[d.col]) * 100);
-        if (styling) {
-          return `background-scale-reverse-${perc}`
-        }
-        else {
-          return `background-scale-${perc}`
-        }
-      }
       return null;
     })
     .style('background-color', function(d) {
