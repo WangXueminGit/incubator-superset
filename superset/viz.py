@@ -89,8 +89,8 @@ class BaseViz(object):
 
         ori_from_dttm = query_obj['from_dttm']
         granularity = self.form_data.get("granularity") or self.form_data.get("granularity_sqla")
-        if self.has_manipulate_time_metrics():
-            query_obj['from_dttm'] = self.manipulate_time_first_day(ori_from_dttm)
+        # if self.has_manipulate_time_metrics():
+        #     query_obj['from_dttm'] = self.manipulate_time_first_day(ori_from_dttm)
 
         self.error_msg = ""
         self.results = None
