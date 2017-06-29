@@ -21,11 +21,11 @@ module.exports = function (slice, payload) {
   const coloringOptions = {};
   for (const metric in columnConfiguration) {
     for (const mode in columnConfiguration[metric]) {
+      const columnName = metric;
       if (columnConfiguration[metric][mode].coloringOption) {
         coloringOptions[columnName] = columnConfiguration[metric][mode].coloringOption;
       }
       if (columnConfiguration[metric][mode].formatting) {
-        const columnName = mode === 'Default' ? metric : mode + ' ' +metric;
         formatting[columnName] = columnConfiguration[metric][mode].formatting;
       }
     }
@@ -82,6 +82,7 @@ module.exports = function (slice, payload) {
           $(this).html(d3.format(formatting[column])(val));
         }
         if (column in coloringOptions && coloringOptions[column] !== null) {
+          const val = $(this).data('originalvalue') || $(this).html();
           if (coloringOptions[column] === 'Green over 100%') {
             $(this).addClass(val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit');
           }

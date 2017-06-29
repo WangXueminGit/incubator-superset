@@ -470,11 +470,11 @@ class PivotTableViz(BaseViz):
         df = df.pivot_table(
             index=self.form_data.get('groupby'),
             columns=self.form_data.get('columns'),
-            values=self.form_data.get('metrics') + self.get_post_calc_metrics(),
+            values=self.form_data.get('metrics')
             aggfunc=self.form_data.get('pandas_aggfunc'),
             margins=True,
         )
-        df = df[self.form_data.get('metrics') + self.get_post_calc_metrics()]
+        df = df[self.form_data.get('metrics')
         return dict(
             columns=list(df.columns),
             html=df.to_html(

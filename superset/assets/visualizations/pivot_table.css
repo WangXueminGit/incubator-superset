@@ -1,6 +1,6 @@
 .widget.pivot_table tr > th,
 .widget.pivot_table tr > td {
-  padding: 1px 5px;
+  /* padding: 1px 5px; */
 }
 
 td.pivot-table-hit {
