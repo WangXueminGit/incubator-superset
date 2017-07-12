@@ -81,10 +81,11 @@ REDIS_PORT = get_env_variable('REDIS_PORT')
 # SQLALCHEMY_DATABASE_URI = 'mysql://myapp@localhost/myapp'
 # SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:Ap99B8hDPrmun6ZMtDUcLzPw@localhost:5432'
 # SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:Garena.com@localhost/superset'
-SQLALCHEMY_DATABASE_URI = "postgresql://%s:%s@%s:%s" % (POSTGRES_PASSWORD,
-                                                        POSTGRES_PASSWORD,
-                                                        POSTGRES_HOST,
-                                                        POSTGRES_PORT)
+SQLALCHEMY_DATABASE_URI = "postgresql://%s:%s@%s:%s/%s" % (POSTGRES_PASSWORD,
+                                                           POSTGRES_PASSWORD,
+                                                           POSTGRES_HOST,
+                                                           POSTGRES_PORT,
+                                                           POSTGRES_DB)
 
 # The limit of queries fetched for query search
 QUERY_SEARCH_LIMIT = 1000
