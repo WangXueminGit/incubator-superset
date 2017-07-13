@@ -51,6 +51,7 @@ if DEBUG_MODE:
     WEBSHOT_ROOT_ADDRESS = 'http://localhost:8011/webshot/'
 else:
     WEBSHOT_ROOT_ADDRESS = 'http://localhost/webshot/'
+
 SUPERSET_WEBSERVER_ADDRESS = 'localhost'
 SUPERSET_WEBSERVER_PORT = 8088
 
@@ -75,10 +76,6 @@ REDIS_HOST = get_env_variable('REDIS_HOST')
 REDIS_PORT = get_env_variable('REDIS_PORT')
 
 # The SQLAlchemy connection string.
-# SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DATA_DIR, 'superset.db')
-# SQLALCHEMY_DATABASE_URI = 'mysql://myapp@localhost/myapp'
-# SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:Ap99B8hDPrmun6ZMtDUcLzPw@localhost:5432'
-# SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:Garena.com@localhost/superset'
 SQLALCHEMY_DATABASE_URI = "postgresql://%s:%s@%s:%s/%s" % (POSTGRES_PASSWORD,
                                                            POSTGRES_PASSWORD,
                                                            POSTGRES_HOST,
