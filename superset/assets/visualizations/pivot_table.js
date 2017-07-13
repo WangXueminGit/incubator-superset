@@ -75,6 +75,10 @@ module.exports = function (slice, payload) {
     container.css('overflow', 'auto');
     container.css('height', `${height + 10}px`);
     container.find('table tbody tr').each(function () {
+      // Remove "All" row for pivot table
+      if (this.cells[0].innerText == 'All') {
+        $(this).hide();
+      }
       $(this).find('td').each(function (index) {
         const column = columns[index];
         if (column in formatting && formatting[column] !== null) {
