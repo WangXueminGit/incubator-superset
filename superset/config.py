@@ -45,12 +45,10 @@ VIZ_ROW_LIMIT = 10000
 SUPERSET_WORKERS = 2
 SUPERSET_CELERY_WORKERS = 32
 
-DEBUG_MODE = os.environ.get("DEBUG_MODE", False)
-if DEBUG_MODE:
-    # SUPERSET_WEBSERVER_ADDRESS = 'instage.superset.shopeemobile.com'
-    WEBSHOT_ROOT_ADDRESS = 'http://localhost:8011/webshot/'
-else:
-    WEBSHOT_ROOT_ADDRESS = 'http://localhost/webshot/'
+WEBSHOT_HOST = get_env_variable('WEBSHOT_HOST')
+WEBSHOT_PORT = get_env_variable('WEBSHOT_PORT')
+
+WEBSHOT_URI = "http://%s:%s" % (WEBSHOT_HOST, WEBSHOT_PORT)
 
 SUPERSET_WEBSERVER_ADDRESS = 'localhost'
 SUPERSET_WEBSERVER_PORT = 8088

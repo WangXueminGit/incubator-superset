@@ -2461,10 +2461,10 @@ class Superset(BaseSupersetView):
     @has_access_api
     @expose("/export/dashboard/<dashboard_id>/<export_type>", methods=['POST'])
     def export_dashbaord(self, dashboard_id, export_type):
-        webshot_path = app.config.get('WEBSHOT_ROOT_ADDRESS') + 'superset/dashboard/' + \
+        webshot_path = app.config.get('WEBSHOT_URI') + \
+                       '/webshot/superset/dashboard/' + \
                        str(dashboard_id) + '/' + str(export_type)
-        webshot_auth = (app.config.get('WEBSHOT_AUTH_USERNAME'), app.config.get('WEBSHOT_AUTH_PASSWORD'))
-        r = requests.post(webshot_path, data=request.form, auth=webshot_auth)
+        r = requests.post(webshot_path, data=request.form)
         return json_success(r.content)
 
 appbuilder.add_view_no_menu(Superset)
