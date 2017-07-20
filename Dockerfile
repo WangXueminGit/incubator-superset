@@ -29,15 +29,20 @@ RUN mkdir $HOME/lumos-code
 
 WORKDIR $HOME/lumos-code
 
-COPY ./ ./
+COPY ./install-reqs.txt ./dev-reqs.txt ./dev-reqs-for-docs.txt ./
 
 RUN pip install --upgrade setuptools pip
 RUN pip install -r install-reqs.txt && pip install -r dev-reqs.txt \
     && pip install -r dev-reqs-for-docs.txt
 
-RUN chown -R work:work $HOME
+RUN mkdir -p superset/assets/
 
-HEALTHCHECK CMD ["curl", "-f", "http://localhost:8088/health"]
+COPY ./superset/assets/package.json superset/assets/
+
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list; \
+    apt-get update; \
+    apt-get install -y yarn
 
 ENV PATH=/home/work/lumos-code/superset/bin:$PATH \
     PYTHONPATH=.:$PYTHONPATH
@@ -46,14 +51,14 @@ COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
 
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list; \
-    apt-get update; \
-    apt-get install -y yarn
+COPY ./ ./
+RUN chown -R work:work $HOME
 
 USER work
 
 RUN cd superset/assets && yarn && npm run build
+
+HEALTHCHECK CMD ["curl", "-f", "http://localhost:8088/health"]
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 
