@@ -51,12 +51,13 @@ COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
 
-COPY ./ ./
+COPY ./superset ./superset
 RUN chown -R work:work $HOME
 
 USER work
 
-RUN cd superset/assets && yarn && npm run build
+RUN cd superset/assets && yarn
+RUN cd superset/assets && npm run build
 
 HEALTHCHECK CMD ["curl", "-f", "http://localhost:8088/health"]
 
