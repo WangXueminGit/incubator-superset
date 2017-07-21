@@ -176,10 +176,10 @@ function tableVis(slice, payload) {
   });
   fixDataTableBodyHeight(container.find('.dataTables_wrapper'), height);
   // Sorting table by main column
-  if (metrics.length > 0) {
-    const mainMetric = metrics[0];
-    datatable.column(data.columns.indexOf(mainMetric)).order('desc').draw();
-  }
+  // if (metrics.length > 0) {
+  //   const mainMetric = metrics[0];
+  //   datatable.column(data.columns.indexOf(mainMetric)).order('desc').draw();
+  // }
   container.parents('.widget').find('.tooltip').remove();
 }
 
