@@ -2460,7 +2460,7 @@ class Superset(BaseSupersetView):
 
     @has_access_api
     @expose("/export/dashboard/<dashboard_id>/<export_type>", methods=['POST'])
-    def export_dashbaord(self, dashboard_id, export_type):
+    def export_dashboard(self, dashboard_id, export_type):
         webshot_path = app.config.get('WEBSHOT_URI') + \
                        '/webshot/superset/dashboard/' + \
                        str(dashboard_id) + '/' + str(export_type)

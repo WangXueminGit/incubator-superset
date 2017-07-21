@@ -60,7 +60,7 @@ class ExportMailModal extends React.PureComponent {
     var data = {
       target: target,
       screenwidth: screenWidth || 1600,
-      "dashbaord_name": dashboard.dashboard_title,
+      "dashboard_name": dashboard.dashboard_title,
       selector: slice ? '#slice_' + slice.slice_id : false,
     };
     if (exportType === 'email' && !this.isEmail(target)) {
