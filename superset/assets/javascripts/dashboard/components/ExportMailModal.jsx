@@ -22,22 +22,15 @@ class ExportMailModal extends React.PureComponent {
       dashboard: props.dashboard,
       css: props.css,
       target: '',
-      screenWidth: 1600,
       working: false
     };
     this.modal = null;
     this.handleTargetChange = this.handleTargetChange.bind(this);
-    this.handleScreenWidthChange = this.handleScreenWidthChange.bind(this);
     this.exportEmail = this.exportEmail.bind(this);
   }
   handleTargetChange(event) {
     this.setState({
       target: event.target.value,
-    });
-  }
-  handleScreenWidthChange(event) {
-    this.setState({
-      screenWidth: event.target.value,
     });
   }
   isEmail(emailList) {
@@ -52,14 +45,13 @@ class ExportMailModal extends React.PureComponent {
     }
     return true;
   }
-  exportEmail(target, screenWidth, exportType) {
+  exportEmail(target, exportType) {
     const dashboard = this.props.dashboard;
     const exportMailModal = this.modal;
     const slice = this.props.slice;
     const $this = this;
     var data = {
       target: target,
-      screenwidth: screenWidth || 1600,
       "dashboard_name": dashboard.dashboard_title,
       selector: slice ? '#slice_' + slice.slice_id : false,
     };
@@ -79,17 +71,7 @@ class ExportMailModal extends React.PureComponent {
       success(resp) {
         $this.setState({working: false});
         exportMailModal.close();
-        if(exportType === 'download') {
-          showModal({
-            title: 'Success',
-            body: 'The download of snapshot should be started immediately.',
-          });
-          var filename = slice ? "Lumos-Dashboard-"+dashboard.id+"-slice-"+slice.slice_id+".jpeg" : "Lumos-Dashboard-"+dashboard.id+".jpg", a = document.createElement('a');
-          a.setAttribute("download", filename);
-          a.setAttribute("href", 'data:image/jpeg;base64,' + resp.image);
-          a.click();
-        }
-        else if(exportType === 'email') {
+        if(exportType === 'email') {
           showModal({
             title: 'Success',
             body: 'The snapshot of dashboard was sent to '+target+' successfully.',
@@ -138,13 +120,6 @@ class ExportMailModal extends React.PureComponent {
               onFocus={this.handleTargetChange}
               onChange={this.handleTargetChange}
             />
-            Snapshot width(Screen width)
-            <FormControl
-              type="number"
-              placeholder="Leave blank for default 1600px"
-              onFocus={this.handleScreenWidthChange}
-              onChange={this.handleScreenWidthChange}
-            />
           </FormGroup>
         }
         modalFooter={
@@ -152,17 +127,10 @@ class ExportMailModal extends React.PureComponent {
             {loadingElement}
             <Button
               bsStyle="primary"
-              onClick={() => { this.exportEmail(this.state.target, this.state.screenWidth, 'email'); }}
+              onClick={() => { this.exportEmail(this.state.target, 'email'); }}
               disabled={working}
             >
               <i className="fa fa-envelope" aria-hidden="true"></i> Send to email
-            </Button>
-            <Button
-              bsStyle="primary"
-              onClick={() => { this.exportEmail(this.state.target, this.state.screenWidth, 'download'); }}
-              disabled={working}
-            >
-              <i className="fa fa-download" aria-hidden="true"></i> Download to local
             </Button>
           </div>
         }
