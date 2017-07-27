@@ -67,6 +67,18 @@ module.exports = function (slice, payload) {
     });
     table.column('-1').order('desc').draw();
     fixDataTableBodyHeight(container.find('.dataTables_wrapper'), height);
+
+    //add for change the row's background color(the row contains 'sub total')
+    table.rows().eq(0).each(function (index) {
+      var row = table.row(index);
+      var data = row.data();
+      var rowNode = row.node();
+      //if(data[0].indexOf('Sub Total') !== -1){
+      if($.inArray('[Sub Total]', data) !== -1){
+        $(rowNode).addClass('subtotal-hit');
+      }
+    });
+
   }
   else {
     // When there is more than 1 group by column we just render the table, without using
@@ -79,6 +91,12 @@ module.exports = function (slice, payload) {
       if (this.cells[0].innerText == 'All') {
         $(this).hide();
       }
+
+      //add for change the background color of subtotal row
+      if (this.cells[0].innerText == '[Sub Total]') {
+        $(this).addClass('subtotal-hit');
+      }
+
       $(this).find('td').each(function (index) {
         const column = columns[index];
         if (column in formatting && formatting[column] !== null) {
@@ -96,6 +114,6 @@ module.exports = function (slice, payload) {
           }
         }
       });
-    });
+    });  
   }
 };
