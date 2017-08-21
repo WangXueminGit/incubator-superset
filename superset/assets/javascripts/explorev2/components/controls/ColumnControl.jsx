@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Checkbox } from 'react-bootstrap';
 import SelectControl from './SelectControl';
+import TextControl from './TextControl';
 
 const D3_TIME_FORMAT_OPTIONS = [
   ['.3s', '.3s | 12.3k'],
@@ -12,9 +13,34 @@ const D3_TIME_FORMAT_OPTIONS = [
   ['$,.2f', '$,.2f | $12,345.43'],
 ];
 
+const COMPARISION_OPTIONS = [
+  '<',
+  '=',
+  '>',
+  'contains',
+  'startsWith',
+  'endsWith',
+]
+
 const COLORING_OPTIONS = [
-  'Green over 100%',
-  'Red over 100%',
+  ['seagreen', 'seagreen', null, 'lightseagreen'],
+  ['lightpink', 'lightpink', null, 'lightpink'],
+  ['lightblue', 'lightblue', null, 'lightblue'],
+  ['beige', 'beige', null, 'beige'],
+  ['lightgray', 'lightgray', null, 'lightgray'],
+]
+
+const BC_COLORING_OPTIONS = [
+  ['seagreen', 'seagreen', null, 'lightseagreen'],
+  ['lightpink', 'lightpink', null, 'lightpink'],
+  ['lightblue', 'lightblue', null, 'lightblue'],
+  ['beige', 'beige', null, 'beige'],
+  ['lightgray', 'lightgray', null, 'lightgray'],
+]
+
+const FONT_OPTIONS = [
+  'Just normal',
+  'Important bold'
 ]
 
 const propTypes = {
@@ -116,11 +142,31 @@ export default class ColumnControl extends React.Component {
                         mode in value[metric] &&
                         (!('remove' in value[metric][mode]) || !value[metric][mode].remove)
                     );
+              const comparisionOption = (
+                  metric in value &&
+                  mode in value[metric] &&
+                  'comparisionOption' in value[metric][mode]
+              ) ? value[metric][mode].comparisionOption : null;
+              const basement = (
+                  metric in value &&
+                  mode in value[metric] &&
+                  'basement' in value[metric][mode]
+              ) ? value[metric][mode].basement : null;
               const coloringOption = (
                   metric in value &&
                   mode in value[metric] &&
                   'coloringOption' in value[metric][mode]
               ) ? value[metric][mode].coloringOption : null;
+              const bcColoringOption = (
+                  metric in value &&
+                  mode in value[metric] &&
+                  'bcColoringOption' in value[metric][mode]
+              ) ? value[metric][mode].bcColoringOption : null;
+              const fontOption = (
+                  metric in value &&
+                  mode in value[metric] &&
+                  'fontOption' in value[metric][mode]
+              ) ? value[metric][mode].fontOption : null;
               const formatting = (
                   metric in value &&
                   mode in value[metric] &&
@@ -129,12 +175,37 @@ export default class ColumnControl extends React.Component {
               return (
                 <tbody key={mode}>
                   <tr>
-                    <td rowSpan={3}>{mode}</td>
+                    <td rowSpan={7}>{mode}</td>
                     <td><span>Visible</span></td>
                     <td>
                       <Checkbox
                         checked={activateChecked}
                         onChange={this.onToggle.bind(this, metric, mode, 'remove')}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><span>Comparision options</span></td>
+                    <td>
+                      <SelectControl
+                        name={mode + '___' + metric + '___comparisionOption'}
+                        default={COMPARISION_OPTIONS[0]}
+                        choices={COMPARISION_OPTIONS}
+                        clearable
+                        onChange={this.onValueChange.bind(this, metric, mode, 'comparisionOption')}
+                        value={comparisionOption}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><span>Basement setting</span></td>
+                    <td>
+                      <TextControl
+                        name={mode + '___' + metric + '___basementSetting'}
+                        default={''}
+                        clearable
+                        onChange={this.onValueChange.bind(this, metric, mode, 'basement')}
+                        value={basement}
                       />
                     </td>
                   </tr>
@@ -148,6 +219,32 @@ export default class ColumnControl extends React.Component {
                         clearable
                         onChange={this.onValueChange.bind(this, metric, mode, 'coloringOption')}
                         value={coloringOption}
+                      /> 
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><span>Background(Contrast) Coloring options</span></td>
+                    <td>
+                      <SelectControl
+                        name={mode + '___' + metric + '___bcColoringOption'}
+                        default={BC_COLORING_OPTIONS[0]}
+                        choices={BC_COLORING_OPTIONS}
+                        clearable
+                        onChange={this.onValueChange.bind(this, metric, mode, 'bcColoringOption')}
+                        value={bcColoringOption}
+                      /> 
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><span>Font options</span></td>
+                    <td>
+                      <SelectControl
+                        name={mode + '___' + metric + '___fontOption'}
+                        default={FONT_OPTIONS[0]}
+                        choices={FONT_OPTIONS}
+                        clearable
+                        onChange={this.onValueChange.bind(this, metric, mode, 'fontOption')}
+                        value={fontOption}
                       />
                     </td>
                   </tr>

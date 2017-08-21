@@ -3,14 +3,37 @@
   /* padding: 1px 5px; */
 }
 
-td.pivot-table-hit {
-  background: #c6efce;
+td.backcolorlightpink {
+  background: rgba(255, 182, 193, 0.5);
   color: #000000;
 }
 
-td.pivot-table-not-hit {
-  background: #ffc7cd;
+td.backcolorlightseagreen {
+  background: rgba(32, 178, 170, 0.5);
   color: #000000;
+}
+
+td.backcolorlightblue {
+  background: rgba(173, 216, 230, 0.5);
+  color: #000000;
+}
+
+td.backcolorbeige {
+  background: beige;
+  color: #000000;
+}
+
+td.backcolorlightgray {
+  background: lightgray;
+  color: #000000;
+}
+
+td.importantbold {
+  font-weight: bold;
+}
+
+td.justnormal {
+  font-weight: normal;
 }
 
 tr.subtotal-hit {
