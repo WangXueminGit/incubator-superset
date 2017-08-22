@@ -26,9 +26,9 @@ const defaultProps = {
   onChange: () => {},
 };
 
-var renderColorbox = function (backcolor) {
+var renderColorbox = function (backgroundColor) {
   return {
-    background: backcolor,
+    background: backgroundColor,
     width: '10px',
     height: '10px',
     display: 'inline-block',
@@ -71,7 +71,7 @@ export default class SelectControl extends React.PureComponent {
         };
         if (c[2] && c[2] !== null) option.imgSrc = c[2];
         if (c[3]) {
-          option.backcolor = c[3];
+          option.backgroundColor = c[3];
         }
       } else if (Object.is(c)) {
         option = c;
@@ -101,10 +101,10 @@ export default class SelectControl extends React.PureComponent {
     return options;
   }
   renderOption(opt) {
-    if (opt.backcolor) {
+    if (opt.backgroundColor) {
       return (
         <div>
-          <div class="color-box" style={renderColorbox(opt.backcolor)}></div>
+          <div class="color-box" style={renderColorbox(opt.backgroundColor)}></div>
           <span>{opt.label}</span>
         </div>
       )

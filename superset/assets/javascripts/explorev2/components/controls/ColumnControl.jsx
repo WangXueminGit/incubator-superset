@@ -22,6 +22,11 @@ const COMPARISION_OPTIONS = [
   'endsWith',
 ]
 
+//The COLORING_OPTIONS will send four arguments to SelectControl
+//The first is the value of the option
+//The second is the label text showed in the option
+//The third is the img showed in the option
+//The fourth is the cube color showed in the option
 const COLORING_OPTIONS = [
   ['seagreen', 'seagreen', null, 'lightseagreen'],
   ['lightpink', 'lightpink', null, 'lightpink'],
@@ -39,8 +44,8 @@ const BC_COLORING_OPTIONS = [
 ]
 
 const FONT_OPTIONS = [
-  'Just normal',
-  'Important bold'
+  'normal',
+  'bold'
 ]
 
 const propTypes = {
@@ -52,7 +57,8 @@ const propTypes = {
   onChange: PropTypes.func,
 };
 
-const modes = ['Normal', 'MTD'];
+//const modes = ['Normal', 'MTD'];
+const modes = ['Normal'];
 
 const defaultProps = {
   value: {},
