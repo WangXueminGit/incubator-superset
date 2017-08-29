@@ -217,6 +217,8 @@ def parse_human_datetime(s):
     except Exception:
         try:
             cal = parsedatetime.Calendar()
+            consts = parsedatetime.Constants(usePyICU=False)
+            consts.DOWParseStyle = -1
             dttm = dttm_from_timtuple(cal.parse(s)[0])
         except Exception as e:
             logging.exception(e)
