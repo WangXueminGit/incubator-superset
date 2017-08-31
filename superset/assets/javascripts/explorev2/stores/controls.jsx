@@ -213,10 +213,18 @@ export const controls = {
 
   show_bar_value: {
     type: 'CheckboxControl',
-    label: 'Bar Values',
+    label: 'Show Values on the Top',
     default: false,
     renderTrigger: true,
     description: 'Show the value on top of the bar',
+  },
+
+  show_bar_value_on_the_bar: {
+    type: 'CheckboxControl',
+    label: 'Show Values on the Bar',
+    default: false,
+    renderTrigger: true,
+    description: 'Show the value on the bar',
   },
 
   order_bars: {

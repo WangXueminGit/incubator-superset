@@ -104,8 +104,9 @@ const visTypes = {
           ['groupby'],
           ['columns'],
           ['row_limit'],
-          ['show_legend', 'show_bar_value'],
+          ['show_legend'],
           ['bar_stacked', 'order_bars'],
+          ['show_bar_value', 'show_bar_value_on_the_bar'],
           ['y_axis_format', 'bottom_margin'],
           ['x_axis_label', 'y_axis_label'],
           ['x_axis_class_range', 'x_axis_lower_bound'],
@@ -223,7 +224,8 @@ const visTypes = {
       {
         label: 'Chart Options',
         controlSetRows: [
-          ['show_brush', 'show_legend', 'show_bar_value'],
+          ['show_brush', 'show_legend'],
+          ['show_bar_value', 'show_bar_value_on_the_bar'],
           ['rich_tooltip', 'y_axis_zero'],
           ['y_log_scale', 'contribution'],
           ['x_axis_format', 'y_axis_format'],
@@ -812,5 +814,6 @@ export function sectionsToRender(vizType, datasourceType) {
     datasourceType === 'table' ? sections.sqlClause : [],
     datasourceType === 'table' ? sections.filters[0] : sections.filters,
     // sections.styling,
+    //datasourceType === 'table' ? sections.styling : null,
   );
 }
