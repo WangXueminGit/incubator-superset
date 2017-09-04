@@ -26,6 +26,18 @@ const defaultProps = {
   onChange: () => {},
 };
 
+var renderColorbox = function (backgroundColor) {
+  return {
+    background: backgroundColor,
+    width: '10px',
+    height: '10px',
+    display: 'inline-block',
+    left: '5px',
+    top: '5px',
+    marginRight: '10px'
+  }  
+}
+
 export default class SelectControl extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -57,7 +69,10 @@ export default class SelectControl extends React.PureComponent {
           value: c[0],
           label,
         };
-        if (c[2]) option.imgSrc = c[2];
+        if (c[2] && c[2] !== null) option.imgSrc = c[2];
+        if (c[3]) {
+          option.backgroundColor = c[3];
+        }
       } else if (Object.is(c)) {
         option = c;
       } else {
@@ -86,6 +101,14 @@ export default class SelectControl extends React.PureComponent {
     return options;
   }
   renderOption(opt) {
+    if (opt.backgroundColor) {
+      return (
+        <div>
+          <div class="color-box" style={renderColorbox(opt.backgroundColor)}></div>
+          <span>{opt.label}</span>
+        </div>
+      )
+    }
     if (opt.imgSrc) {
       return (
         <div>
@@ -93,7 +116,7 @@ export default class SelectControl extends React.PureComponent {
           <span>{opt.label}</span>
         </div>
       );
-    }
+    } 
     return opt.label;
   }
   render() {

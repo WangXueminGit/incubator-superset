@@ -3,8 +3,14 @@ import 'datatables-bootstrap3-plugin/media/css/datatables-bootstrap3.css';
 import 'datatables.net';
 import dt from 'datatables.net-bs';
 
-import { fixDataTableBodyHeight } from '../javascripts/modules/utils';
-import { timeFormatFactory, formatDate } from '../javascripts/modules/dates';
+import {
+  fixDataTableBodyHeight
+}
+  from '../javascripts/modules/utils';
+import {
+  timeFormatFactory, formatDate
+}
+  from '../javascripts/modules/dates';
 import './table.css';
 import './table.scss';
 
@@ -16,27 +22,73 @@ function tableVis(slice, payload) {
   const container = $(slice.selector);
   const fC = d3.format('0,000');
   let timestampFormatter;
-
   const data = payload.data;
   const fd = slice.formData;
   const styling = fd.styling ? fd.styling : null;
   const columnConfiguration = fd.column_configuration ? fd.column_configuration : {};
+  const rowConfiguration = fd.row_configuration ? fd.row_configuration : {};
   const formatting = {};
+  const comparisionOptions = {};
+  const basements = {};
   const coloringOptions = {};
+  const bcColoringOptions = {};
+  const fontOptions = {};
   let metric;
   let mode;
+  const colorings = ['seagreen', 'lightpink', 'lightblue', 'beige',
+    'lightgray'
+  ];
+  const colorStyles = ['background-lightseagreen', 'background-lightpink',
+    'background-lightblue', 'background-beige', 'background-lightgray'
+  ];
+  const fontWeights = ['bold', 'normal'];
+  const fontWeightStyles = ['bold', 'normal'];
+  // variables for row configuration
+  var rowContains = [];
+  var rowColor = '';
+  var rowFont = '';
   for (metric in columnConfiguration) {
     for (mode in columnConfiguration[metric]) {
-      const columnName = mode === 'Normal' ? metric : mode + ' ' +metric;
+      const columnName = mode === 'Normal' ? metric : mode + ' ' +
+        metric;
+      if (columnConfiguration[metric][mode].comparisionOption) {
+        comparisionOptions[columnName] = columnConfiguration[metric]
+        [mode].comparisionOption;
+      }
+      if (columnConfiguration[metric][mode].basement) {
+        basements[columnName] = columnConfiguration[metric][mode]
+          .basement;
+      }
       if (columnConfiguration[metric][mode].coloringOption) {
-        coloringOptions[columnName] = columnConfiguration[metric][mode].coloringOption;
+        coloringOptions[columnName] = columnConfiguration[metric][
+          mode
+        ].coloringOption;
+      }
+      if (columnConfiguration[metric][mode].bcColoringOption) {
+        bcColoringOptions[columnName] = columnConfiguration[metric]
+        [mode].bcColoringOption;
       }
       if (columnConfiguration[metric][mode].formatting) {
-        formatting[columnName] = columnConfiguration[metric][mode].formatting;
+        formatting[columnName] = columnConfiguration[metric][mode]
+          .formatting;
+      }
+      if (columnConfiguration[metric][mode].fontOption) {
+        fontOptions[columnName] = columnConfiguration[metric][mode]
+          .fontOption;
       }
     }
   }
-
+  if (rowConfiguration.coloringOption) {
+    rowColor = colorStyles[colorings.indexOf(
+      rowConfiguration.coloringOption)];
+  }
+  if (rowConfiguration.fontOption) {
+    rowFont = fontWeightStyles[fontWeights.indexOf(
+      rowConfiguration.fontOption)];
+  }
+  if (rowConfiguration.basements) {
+    rowContains = rowConfiguration.basements;
+  }
   // Removing metrics (aggregates) that are strings
   const tempMetrics = data.columns.map(m => m.toLowerCase()) || [];
   const metrics = tempMetrics.filter(m => !isNaN(data.records[0][m]));
@@ -53,7 +105,6 @@ function tableVis(slice, payload) {
   for (let i = 0; i < metrics.length; i += 1) {
     maxes[metrics[i]] = d3.max(col(metrics[i]));
   }
-
   if (fd.table_timestamp_format === 'smart_date') {
     timestampFormatter = formatDate;
   } else if (fd.table_timestamp_format !== undefined) {
@@ -64,8 +115,8 @@ function tableVis(slice, payload) {
   div.html('');
   const table = div.append('table')
     .classed(
-      'dataframe dataframe table table-striped table-bordered ' +
-      'table-condensed table-hover dataTable no-footer', true)
+    'dataframe dataframe table table-striped table-bordered ' +
+    'table-condensed table-hover dataTable no-footer', true)
     .attr('width', '100%');
 
   table.append('thead').append('tr')
@@ -87,7 +138,6 @@ function tableVis(slice, payload) {
       const val = row[c];
       let html = val;
       const isMetric = metrics.indexOf(c.toLowerCase()) >= 0;
-
       if (c === 'timestamp') {
         html = timestampFormatter(val);
       }
@@ -102,23 +152,86 @@ function tableVis(slice, payload) {
         val,
         html,
         isMetric,
+        comparisionOption: comparisionOptions[c],
+        basement: basements[c],
         coloringOption: coloringOptions[c],
+        bcColoringOption: bcColoringOptions[c],
+        fontOption: fontOptions[c],
       };
     }))
     .enter()
     .append('td')
-    .attr('class', function(d) {
+    .attr('class', function (d) {
+      var base = $.trim(d.basement)
+      var coloringOptionClass = ''
+      var bcColoringOptionClass = ''
+      var fontOptionClass = ''
       if (d.coloringOption !== null) {
-        if (d.coloringOption === 'Green over 100%') {
-          return d.val >= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
+        if (d.coloringOption === 'seagreen') {
+          coloringOptionClass = 'background-lightseagreen'
+        } else if (d.coloringOption === 'lightpink') {
+          coloringOptionClass = 'background-lightpink'
+        } else if (d.coloringOption === 'lightblue') {
+          coloringOptionClass = 'background-lightblue'
+        } else if (d.coloringOption === 'beige') {
+          coloringOptionClass = 'background-beige'
+        } else if (d.coloringOption === 'lightgray') {
+          coloringOptionClass = 'background-lightgray'
         }
-        else if (d.coloringOption === 'Red over 100%') {
-          return d.val <= 1.0 ? 'pivot-table-hit' : 'pivot-table-not-hit';
+      }
+      if (d.bcColoringOption !== null) {
+        if (d.bcColoringOption === 'seagreen') {
+          bcColoringOptionClass = 'background-lightseagreen'
+        } else if (d.bcColoringOption === 'lightpink') {
+          bcColoringOptionClass = 'background-lightpink'
+        } else if (d.bcColoringOption === 'lightblue') {
+          bcColoringOptionClass = 'background-lightblue'
+        } else if (d.bcColoringOption === 'beige') {
+          bcColoringOptionClass = 'background-beige'
+        } else if (d.bcColoringOption === 'lightgray') {
+          bcColoringOptionClass = 'background-lightgray'
+        }
+      }
+      if (d.fontOption !== null) {
+        if (d.fontOption === 'bold') {
+          fontOptionClass = 'bold'
+        } else if (d.fontOption === 'normal') {
+          fontOptionClass = 'normal'
+        }
+      }
+      if (!isNaN(parseFloat(base))) {
+        if (d.comparisionOption !== null) {
+          if (d.comparisionOption === '<') {
+            return d.val < base ? coloringOptionClass + ' ' +
+              fontOptionClass : bcColoringOptionClass;
+          } else if (d.comparisionOption === '=') {
+            return d.val == base ? coloringOptionClass +
+              ' ' + fontOptionClass :
+              bcColoringOptionClass;
+          } else if (d.comparisionOption === '>') {
+            return d.val > base ? coloringOptionClass + ' ' +
+              fontOptionClass : bcColoringOptionClass;
+          }
+        }
+      }
+      if (d.comparisionOption !== null) {
+        if (d.comparisionOption === 'contains') {
+          return (d.val.toString().indexOf(base) !== -1) ?
+            coloringOptionClass + ' ' + fontOptionClass :
+            bcColoringOptionClass;
+        } else if (d.comparisionOption === 'startsWith') {
+          return (d.val.toString().startsWith(base)) ?
+            coloringOptionClass + ' ' + fontOptionClass :
+            bcColoringOptionClass;
+        } else if (d.comparisionOption === 'endsWith') {
+          return (d.val.toString().endsWith(base)) ?
+            coloringOptionClass + ' ' + fontOptionClass :
+            bcColoringOptionClass;
         }
       }
       return null;
     })
-    .style('background-color', function(d) {
+    .style('background-color', function (d) {
       if (styling === null || !d.isMetric) {
         return null;
       }
@@ -128,7 +241,8 @@ function tableVis(slice, payload) {
       const perc = d.val / maxes[d.col] * 1.4;
       const colorIndex = metrics.indexOf(d.col);
       if (colorIndex >= 0 && styling.length > colorIndex) {
-        return 'rgba(' + styling[colorIndex] + ', ' + perc + ')';
+        return 'rgba(' + styling[colorIndex] + ', ' + perc +
+          ')';
       }
       return 'lightgrey';
     })
@@ -157,6 +271,18 @@ function tableVis(slice, payload) {
       return (!d.isMetric) ? 'pointer' : '';
     })
     .html(d => d.html ? d.html : d.val);
+  table.selectAll('tr').each(function () {
+    for (var i in rowContains) {
+      for (var j in this.cells) {
+        if (this.cells[j].innerText == rowContains[i]) {
+          $(this).addClass(rowColor);
+          $(this).addClass(rowFont);
+        }
+        continue;
+      }
+      continue;
+    }
+  });
   const height = slice.height();
   let paging = false;
   let pageLength;

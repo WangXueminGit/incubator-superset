@@ -1279,5 +1279,11 @@ export const controls = {
     label: 'Metrics',
     description: 'Advanced configuration on columns',
   },
+
+  row_configuration: {
+    type: 'RowControl',
+    label: 'Row change based on value of each td in the row',
+    description: 'Advanced configuration on rows',
+  },
 };
 export default controls;

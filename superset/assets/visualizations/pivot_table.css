@@ -3,14 +3,40 @@
   /* padding: 1px 5px; */
 }
 
-td.pivot-table-hit {
+td.background-lightpink, tr.background-lightpink {
+  /*background: rgba(255, 182, 193, 0.5) !important;*/
   background: #c6efce;
   color: #000000;
 }
 
-td.pivot-table-not-hit {
+td.background-lightseagreen, tr.background-lightseagreen {
+  /*background: rgba(32, 178, 170, 0.5) !important;*/
   background: #ffc7cd;
   color: #000000;
+}
+
+td.background-lightblue, tr.background-lightblue {
+  background: rgba(173, 216, 230, 0.5) !important;
+  color: #000000;
+}
+
+td.background-beige, tr.background-beige {
+  /*background: beige !important;*/
+  background: rgba(240, 220, 180, 0.5) !important;
+  color: #000000;
+}
+
+td.background-lightgray, tr.background-lightgray {
+  background: lightgray !important;
+  color: #000000;
+}
+
+td.bold, tr.bold {
+  font-weight: bold;
+}
+
+td.normal, tr.normal {
+  font-weight: normal;
 }
 
 tr.subtotal-hit {
