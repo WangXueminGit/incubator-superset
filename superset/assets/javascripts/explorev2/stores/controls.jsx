@@ -213,10 +213,18 @@ export const controls = {
 
   show_bar_value: {
     type: 'CheckboxControl',
-    label: 'Bar Values',
+    label: 'Show Values on the Top',
     default: false,
     renderTrigger: true,
     description: 'Show the value on top of the bar',
+  },
+
+  show_bar_value_on_the_bar: {
+    type: 'CheckboxControl',
+    label: 'Show Values on the Bar',
+    default: false,
+    renderTrigger: true,
+    description: 'Show the value on the bar',
   },
 
   order_bars: {
@@ -502,8 +510,8 @@ export const controls = {
       'Yesterday 12AM',
       'Today 12AM',
       'This Monday 12AM (W)',
-      'Last Monday and 7 days ago 12AM (W-1)',
-      'Last Monday and 14 days ago 12AM (W-2)',
+      'This Monday and 7 days ago 12AM (W-1)',
+      'This Monday and 14 days ago 12AM (W-2)',
       'Last month and 1 month 12AM (M)',
       'Last month 12AM (M-1)',
       'Last month and 1 month ago 12AM (M-2)',
