@@ -90,9 +90,10 @@ function tableVis(slice, payload) {
     rowContains = rowConfiguration.basements;
   }
   // Removing metrics (aggregates) that are strings
-  const tempMetrics = data.columns.map(m => m.toLowerCase()) || [];
-  const metrics = tempMetrics.filter(m => !isNaN(data.records[0][m]));
-  const percentageMetrics = tempMetrics.filter(m => /%/.test(m));
+  //const tempMetrics = data.columns.map(m => m.toLowerCase()) || [];
+  //const metrics = tempMetrics.filter(m => !isNaN(data.records[0][m]));
+  const metrics = data.columns.filter(m => !isNaN(data.records[0][m]));
+  //const percentageMetrics = tempMetrics.filter(m => /%/.test(m));
 
   function col(c) {
     const arr = [];
@@ -192,6 +193,10 @@ function tableVis(slice, payload) {
           bcColoringOptionClass = 'background-lightgray'
         }
       }
+      if (styling !== null) {
+        coloringOptionClass = ''
+        bcColoringOptionClass = ''
+      }
       if (d.fontOption !== null) {
         if (d.fontOption === 'bold') {
           fontOptionClass = 'bold'
@@ -231,21 +236,29 @@ function tableVis(slice, payload) {
       }
       return null;
     })
-    .style('background-color', function (d) {
-      if (styling === null || !d.isMetric) {
+    .style('background-image', function (d) { 
+      //if (styling === null || !d.isMetric) {
+      if (styling === null || !$.isNumeric(d.val)) {
         return null;
       }
-      if (d.coloringOption !== null) {
-        return null;
+      //if (d.isMetric) {
+      if ($.isNumeric(d.val)) {
+        const perc = Math.round((d.val / maxes[d.col]) * 100);
+        const colorIndex = metrics.indexOf(d.col);
+        const progressBarStyle = `linear-gradient(to right, rgba(` +
+        styling[d.col] + `, 0.6), rgba(` +
+        styling[d.col] + `, 0.6) ${perc}%,     ` +
+        `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+        // The 0.01 to 0.001 is a workaround for what appears to be a
+        // CSS rendering bug on flat, transparent colors
+        return (
+          progressBarStyle
+        );
       }
-      const perc = d.val / maxes[d.col] * 1.4;
-      const colorIndex = metrics.indexOf(d.col);
-      if (colorIndex >= 0 && styling.length > colorIndex) {
-        return 'rgba(' + styling[colorIndex] + ', ' + perc +
-          ')';
-      }
-      return 'lightgrey';
+      return null;
     })
+    //.classed('text-right', d=>d.isMetric)
+    .classed('text-right', d=>$.isNumeric(d.val))
     .attr('title', (d) => {
       if (!isNaN(d.val)) {
         return fC(d.val);

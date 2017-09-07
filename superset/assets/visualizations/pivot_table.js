@@ -16,6 +16,7 @@ module.exports = function(slice, payload) {
   // payload data is a string of html with a single table element
   container.html(payload.data.html);
   const columns = payload.data.columns;
+  const styling = fd.styling ? fd.styling : null;
   const columnConfiguration =
     fd.column_configuration ? fd.column_configuration : {};
   const rowConfiguration = fd.row_configuration ? fd.row_configuration : {};
@@ -140,6 +141,32 @@ module.exports = function(slice, payload) {
     addClass(obj, base, val, compare, coloringOptionClass,
       fontOptionClass, bcColoringOptionClass);
   }
+  const groups = fd.groupby.length;
+  var arrForMax ={};
+  for (var j in columns) {
+    arrForMax[columns[j]] = [];
+  }
+  container.find('table tbody tr').each(function () {
+    // Remove "All" row for pivot table
+    /*
+    if (this.cells[0].innerText == 'All') {
+      $(this).hide();
+    }
+    */
+    for (var m = 0; m < this.cells.length - groups; m += 1) {
+      arrForMax[columns[m]].push(parseFloat(this.cells[m+groups].innerText));
+    }
+    $(this).find('td').addClass('text-right');
+  });
+  var lengthOfarr = Object.keys(arrForMax).length;
+  for (var q=0; q < lengthOfarr; q+=1) {
+    var l = arrForMax[columns[q]].length;
+    arrForMax[columns[q]].splice(l-1, 1);
+  }
+  const maxes = {};
+  for (var n = 0; n < Object.keys(arrForMax).length; n += 1) {
+    maxes[columns[n]] = d3.max(arrForMax[columns[n]]);
+  }
   if (fd.groupby.length === 1) {
     // When there is only 1 group by column,
     // we use the DataTable plugin to make the header fixed.
@@ -157,6 +184,7 @@ module.exports = function(slice, payload) {
       rowCallback: (row, data, index) => {
         $(row).find('td').each(function (index) {
           var column = columns[index];
+          var originalColumn = columns[index];
           if (Array.isArray(column)) {
             column = column[0];
           }
@@ -198,6 +226,16 @@ module.exports = function(slice, payload) {
             coloringOptionClass,
             fontOptionClass,
             bcColoringOptionClass);
+          const perc = Math.round((val / maxes[originalColumn]) * 100);
+          var cellTotalColumn = column;
+          if (Array.isArray(cellTotalColumn)) {
+            cellTotalColumn = cellTotalColumn[0];
+          }
+          const progressBarStyle = `linear-gradient(to right, rgba(` +
+          styling[cellTotalColumn] + `, 0.7), rgba(` +
+          styling[cellTotalColumn] + `, 0.7) ${perc}%,     ` +
+          `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+          $(this).css('background-image',progressBarStyle);
         });
       },
     });
@@ -208,8 +246,8 @@ module.exports = function(slice, payload) {
       var row = table.row(index);
       var data = row.data();
       var rowNode = row.node();
-      for (var i in rowContains) {
-        if ($.inArray(rowContains[i], data) !== -1) {
+      for (var k in rowContains) {
+        if ($.inArray(rowContains[k], data) !== -1) {
           $(rowNode).addClass(rowFont);
           $(rowNode).addClass(rowColor);
         }
@@ -220,6 +258,7 @@ module.exports = function(slice, payload) {
     // When there is more than 1 group by column we just render the table, without using
     // the DataTable plugin, so we need to handle the scrolling ourselves.
     // In this case the header is not fixed.
+    //const groups = fd.groupby.length;
     container.css('overflow', 'auto');
     container.css('height', `${height + 10}px`);
     container.find('table tbody tr').each(function () {
@@ -250,7 +289,6 @@ module.exports = function(slice, payload) {
           $(this).html(d3.format(formatting[
             column])(val));
         }
-        //const val = $(this).data('originalvalue') || $(this).html();
         var val = $(this).data('originalvalue') ||
           $(this).html();
         var base = ''
@@ -277,6 +315,16 @@ module.exports = function(slice, payload) {
           coloringOptionClass,
           fontOptionClass,
           bcColoringOptionClass);
+        const perc = Math.round((val / maxes[columns[index]]) * 100);
+        var cellTotalColumn = columns[index];
+        if (Array.isArray(cellTotalColumn)) {
+            cellTotalColumn = cellTotalColumn[0];
+        }
+        const progressBarStyle = `linear-gradient(to right, rgba(` +
+            styling[cellTotalColumn] + `, 0.7), rgba(` +
+            styling[cellTotalColumn] + `, 0.7) ${perc}%,     ` +
+            `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+        $(this).css('background-image',progressBarStyle);
       });
     });
   }

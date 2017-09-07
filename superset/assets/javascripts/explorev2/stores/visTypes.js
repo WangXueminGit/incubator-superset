@@ -86,7 +86,7 @@ export const sections = {
   ],
   styling: [
     {
-      label: 'Styling',
+      label: 'Table Progress Bar Configuration',
       description: 'Add styling rules to the visualization',
       controlSetRows: [['styling']],
     }
@@ -814,6 +814,6 @@ export function sectionsToRender(vizType, datasourceType) {
     datasourceType === 'table' ? sections.sqlClause : [],
     datasourceType === 'table' ? sections.filters[0] : sections.filters,
     // sections.styling,
-    //datasourceType === 'table' ? sections.styling : null,
+    datasourceType === 'table' ? sections.styling : null,
   );
 }

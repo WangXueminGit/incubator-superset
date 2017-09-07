@@ -1278,7 +1278,7 @@ export const controls = {
   styling: {
     type: 'ColorPickerControl',
     label: 'Add colors',
-    default: [],
+    default: {},
     description: 'Colors are added based on theirs order. Drag and drop to rearrange the order',
   },
 
