@@ -1,10 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Select, { Creatable } from 'react-select';
 import { SwatchesPicker } from 'react-color';
-import { WithOutContext as ReactTags } from 'react-tag-input';
 import '../../../../stylesheets/react-tag/react-tag.css';
 import '../../../../stylesheets/react-color/react-color.css';
+import SelectControl from './SelectControl';
 
 const propTypes = {
   choices: PropTypes.array,
@@ -16,7 +15,8 @@ const propTypes = {
   multi: PropTypes.bool,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.array]),
+  value: PropTypes.object,
+  formData: PropTypes.object,
 };
 
 const defaultProps = {
@@ -27,83 +27,102 @@ const defaultProps = {
   isLoading: false,
   label: null,
   multi: false,
-  value: [],
+  value: {},
   onChange: () => {},
+  formData: {},
 };
 
 export default class ColorPickerControl extends React.Component {
   constructor(props) {
     super(props);
-    const value = props.value ? props.value : [];
-    let output = [], i;
-    for (i = 0; i < value.length; i++) {
-      output.push({id: value[i], text: value[i]});
-    }
+    const metrics = props.formData.metrics || [];
     this.state = {
-      value: value,
-      tagValue: output,
+      value: props.value,
+      metrics: metrics,
+      selectedMetric: null,
     };
   }
-  handleDelete(i) {
-    let value = this.state.value;
-    value.splice(i, 1);
-    this.setState({ value });
-    this.getTagArray();
-    this.props.onChange(value);
-  }
-  handleColorAddition(color) {
-    const colorString = color.rgb.r + ', ' + color.rgb.g + ', ' + color.rgb.b;
-    this.handleAddition(colorString);
-    this.getTagArray();
-  }
-  handleAddition(tag) {
-    let value = this.state.value;
-    value.push(tag);
-    this.setState({ value });
-    this.props.onChange(value);
-  }
-  handleDrag(tag, currPos, newPos) {
-    let value = this.state.value;
-
-    // mutate array
-    value.splice(newPos, 0, value.splice(currPos, 1)[0]);
-
-    // re-render
-    this.setState({ value });
-    this.getTagArray();
-    this.props.onChange(value);
-  }
-  renderColorTag(value) {
-    const style = {
-      width: '12px',
-      height: '12px',
-      display: 'inline-block',
-      background: 'rgb(' + value.text + ')',
-    };
-    return (<div style={{display: "inline-block"}}><span style={Object.assign({}, style)}></span></div>);
-  }
-  getTagArray() {
-    let output = [], i;
-    for (i = 0; i < this.state.value.length; i++) {
-      output.push({id: this.state.value[i], text: this.state.value[i]});
+  componentWillReceiveProps(nextProps) {
+    if ('formData' in nextProps && 'metrics' in nextProps.formData && 
+        nextProps.formData.metrics !== this.state.metrics) {
+      const differenceToAdd = nextProps.formData.metrics.filter(
+          x => this.state.metrics.indexOf(x) === -1);
+      const differenceToDelete = this.state.metrics.filter(
+          x => nextProps.formData.metrics.indexOf(x) === -1);
+      const value = this.state.value;
+      for (let i = 0; i < differenceToAdd.length; i++) {
+        value[differenceToAdd[i]] = {};
+      }
+      for (let i = 0; i < differenceToDelete.length; i++) {
+        delete value[differenceToDelete[i]];
+      }
+      const selectedMetric =
+        (nextProps.formData.metrics.length && this.state.selectedMetric === null) ?
+          nextProps.formData.metrics[0] :
+          (nextProps.formData.metrics.length === 0 && this.state.selectedMetric !== null) ?
+            null : (this.state.selectedMetric in nextProps.formData.metrics) ?
+              this.state.selectedMetric : nextProps.formData.metrics[0];
+      this.setState({ metrics: nextProps.formData.metrics, value, selectedMetric });
     }
-    this.setState({tagValue: output});
+  }
+  onSelectChange(value) {
+    this.setState({selectedMetric: value});
+  }
+  onToggle(type) {
+    const value = this.props.value;
+    if (!(type in value)) {
+      value[type] = {};
+    }
+    value[type] = !value[type];
+    this.setState({value});
+    this.props.onChange(value);
+  }
+  onValueChange(type, newValue) {
+    const value = this.props.value;
+    if (!(type in value)) {
+      value[type] = null;
+    }
+    value[type] = newValue;
+    this.setState({value});
+    this.props.onChange(value);
+  }
+  handleColorAddition(metric, color) {
+    const colorString = color.rgb.r + ', ' + color.rgb.g + ', ' + color.rgb.b;
+    this.handleAddition(metric, colorString);
+  }
+  handleAddition(metric, tag) {
+    let value = this.props.value;
+    if (!(metric in value)) {
+      value[metric] = null;
+    }
+    value[metric] = tag;
+    this.setState({ value });
+    this.props.onChange(value);
   }
   render() {
     //  Tab, comma or Enter will trigger a new option created for FreeFormSelect
-    var selectWrap = (<ReactTags tags={this.state.tagValue}
-                                   suggestions={[]}
-                                   handleDelete={this.handleDelete.bind(this)}
-                                   handleAddition={this.handleAddition.bind(this)}
-                                   handleDrag={this.handleDrag.bind(this)}
-                                   renderTag={this.renderColorTag}
-                                   inline={false}
-                                   autofocus={false}/>);
-    const colorPicker = (<SwatchesPicker onChange={this.handleColorAddition.bind(this)} height={560} width={"100%"} />);
+    const metrics = this.props.formData.metrics || [];
+    const value = this.state.value === null ? {} : this.state.value;
+    const metric = this.state.selectedMetric;
+    let selectWrap = null;
+    let colorPicker = null;
+    if (this.state.selectedMetric !== null) {
+      colorPicker = (<SwatchesPicker onChange={
+          this.handleColorAddition.bind(this,metric)} height={560} width={"100%"} />);
+    }
     return (
-      <div>
-        {selectWrap}
-        {colorPicker}
+      <div className="panel panel-default" 
+           style={{ border: 'initial', borderColor: '#ddd' }}>
+          <div className="panel-heading">
+            <SelectControl
+              name="column_focus"
+              default={metrics[0]}
+              choices={metrics}
+              onChange={this.onSelectChange.bind(this)}
+              value={this.state.selectedMetric}
+            />
+          </div>
+          {colorPicker}
       </div>
     );
   }
