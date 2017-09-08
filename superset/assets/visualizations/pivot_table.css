@@ -2,32 +2,53 @@
 .widget.pivot_table tr > td {
   /* padding: 1px 5px; */
 }
-
-td.background-lightpink, tr.background-lightpink {
-  /*background: rgba(255, 182, 193, 0.5) !important;*/
-  background: #c6efce;
+.table-striped > tbody > tr:nth-of-type(odd).background-lightpink{
+  background-color: #ffc7cd;
   color: #000000;
 }
 
-td.background-lightseagreen, tr.background-lightseagreen {
-  /*background: rgba(32, 178, 170, 0.5) !important;*/
+.table-striped > tbody > tr:nth-of-type(odd).background-lightseagreen{
+  background-color: #c6efce;
+  color: #000000;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd).background-lightblue{
+  background-color: rgba(173, 216, 230, 0.5);
+  color: #000000;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd).background-beige{
+  background-color: rgba(240, 220, 180, 0.5);
+  color: #000000;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd).background-lightgray{
+  background-color: lightgray;
+  color: #000000;
+}
+
+td.background-lightpink, tr.background-lightpink {
   background: #ffc7cd;
   color: #000000;
 }
 
+td.background-lightseagreen, tr.background-lightseagreen {
+  background: #c6efce;
+  color: #000000;
+}
+
 td.background-lightblue, tr.background-lightblue {
-  background: rgba(173, 216, 230, 0.5) !important;
+  background: rgba(173, 216, 230, 0.5);
   color: #000000;
 }
 
 td.background-beige, tr.background-beige {
-  /*background: beige !important;*/
-  background: rgba(240, 220, 180, 0.5) !important;
+  background: rgba(240, 220, 180, 0.5);
   color: #000000;
 }
 
 td.background-lightgray, tr.background-lightgray {
-  background: lightgray !important;
+  background: lightgray;
   color: #000000;
 }
 

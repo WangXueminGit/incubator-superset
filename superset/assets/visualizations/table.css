@@ -1,18 +1,18 @@
 .slice-grid .widget.table .slice_container {
-    overflow: auto !important;
+  overflow: auto !important;
 }
 
 .widget.table table {
-    margin: 0px !important;
+  margin: 0px !important;
 }
 
 .widget.table td.filtered {
-    background-color: #005a63;
-    color: white;
+  background-color: #005a63;
+  color: white;
 }
 
 table.table thead th.sorting:after, table.table thead th.sorting_asc:after, table.table thead th.sorting_desc:after {
-    top: 8px;
+  top: 8px;
 }
 
 .like-pre {
