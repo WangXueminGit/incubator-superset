@@ -152,11 +152,25 @@ module.exports = function(slice, payload) {
     if (this.cells[0].innerText == 'All') {
       $(this).hide();
     }
+<<<<<<< HEAD
     */
     for (var m = 0; m < this.cells.length - groups; m += 1) {
       arrForMax[columns[m]].push(parseFloat(this.cells[m+groups].innerText));
     }
     $(this).find('td').addClass('text-right');
+=======
+    // If hideColumnAll is true, then hide the column who contains 'all'
+    // This section is used to hide 'td' elements
+    $(this).find('td').addClass('text-right').each(function (index){
+      var column = columns[index];
+      arrForMax[columns[index]].push(parseFloat(this.innerText));
+      if (hideColumnAll) {
+        if ($.inArray('All', column) !== -1) {
+          $(this).hide();
+        }
+      }
+    });
+>>>>>>> ba3af5a3... Fix the bug of wrong percentage showed in the
   });
   var lengthOfarr = Object.keys(arrForMax).length;
   for (var q=0; q < lengthOfarr; q+=1) {
