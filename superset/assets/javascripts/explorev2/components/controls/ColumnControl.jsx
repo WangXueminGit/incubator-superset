@@ -51,6 +51,7 @@ const FONT_OPTIONS = [
 const propTypes = {
   name: PropTypes.string.isRequired,
   value: PropTypes.object,
+  hideAllOrNot: PropTypes.bool,
   formData: PropTypes.object,
   label: PropTypes.string,
   description: PropTypes.string,
@@ -130,7 +131,29 @@ export default class ColumnControl extends React.Component {
     const metrics = this.props.formData.metrics || [];
     const value = this.state.value === null ? {} : this.state.value;
     const metric = this.state.selectedMetric;
+    const hideAllOrNot = (
+                  'hide' in value &&
+                  'hide' in value['hide'] &&
+                  'hideAllOrNot' in value['hide']['hide']
+              ) ? value['hide']['hide'].hideAllOrNot : false;
     let metricElement = null;
+    let hideAllElement = (
+      <div className="panel-body">
+          <table className="table table-bordered" style={{fontSize: '12px'}}>
+            <tbody>
+              <tr>
+                <td><span>Hide column 'all'</span></td>
+                <td>
+                  <Checkbox
+                    checked={hideAllOrNot}
+                    onChange={this.onToggle.bind(this, 'hide', 'hide', 'hideAllOrNot')}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+      </div>
+    );
     if (this.state.selectedMetric !== null) {
       metricElement = (
         <div className="panel-body">
@@ -287,6 +310,7 @@ export default class ColumnControl extends React.Component {
             />
           </div>
           {metricElement}
+          {hideAllElement}
         </div>
     );
   }
