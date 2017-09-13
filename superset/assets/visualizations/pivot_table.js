@@ -171,19 +171,17 @@ module.exports = function(slice, payload) {
         $(this).hide();
       }
     }
-    for (var m = 0; m < this.cells.length - groups; m += 1) {
-      arrForMax[columns[m]].push(parseFloat(this.cells[m+groups].innerText));
-    }
     // If hideColumnAll is true, then hide the column who contains 'all'
     // This section is used to hide 'td' elements
-    if (hideColumnAll) {
-      $(this).find('td').addClass('text-right').each(function (index){
-        var column = columns[index];
+    $(this).find('td').addClass('text-right').each(function (index){
+      var column = columns[index];
+      arrForMax[columns[index]].push(parseFloat(this.innerText));
+      if (hideColumnAll) {
         if ($.inArray('All', column) !== -1) {
           $(this).hide();
         }
-      });
-    } 
+      }
+    });
   });
   // If hideColumnAll is true, then hide the column who contains 'all'
   // This section is used to hide 'th' elements
