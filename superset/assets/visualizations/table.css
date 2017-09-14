@@ -11,6 +11,14 @@
   color: white;
 }
 
+.widget.table tr>th {
+    font-size: small !important;
+}
+
+.widget.table tr>td {
+    font-size: small !important;
+}
+
 table.table thead th.sorting:after, table.table thead th.sorting_asc:after, table.table thead th.sorting_desc:after {
   top: 8px;
 }
