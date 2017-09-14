@@ -15,6 +15,12 @@ module.exports = function(slice, payload) {
   const height = container.height();
   // payload data is a string of html with a single table element
   container.html(payload.data.html);
+  // Example:
+  // fd.columns: ["state"]
+  // fd.groupby: ["name"]
+  // fd.metrics: ["metrics"]
+  // payload.data.columns: [["sum__num", "CA"], ["sum_num", "FL"]]
+  const metrics = fd.metrics;
   const columns = payload.data.columns;
   const styling = fd.styling ? fd.styling : null;
   const columnConfiguration =
@@ -38,34 +44,43 @@ module.exports = function(slice, payload) {
   var rowContains = [];
   var rowColor = '';
   var rowFont = '';
+  // array of string indicates to hide the row contains these string
+  var hide = [];
+  // boolean for column configuration to indicates hide all or not
+  var hideColumnAll = false;
   for (const metric in columnConfiguration) {
     for (const mode in columnConfiguration[metric]) {
-      const columnName = metric;
-      if (columnConfiguration[metric][mode].coloringOption) {
-        coloringOptions[columnName] = columnConfiguration[metric][
-          mode
-        ].coloringOption;
+      if (mode == 'hide') {
+        hideColumnAll = columnConfiguration[metric][mode].hideAll;
       }
-      if (columnConfiguration[metric][mode].bcColoringOption) {
-        bcColoringOptions[columnName] = columnConfiguration[metric]
-        [mode].bcColoringOption;
-      }
-      if (columnConfiguration[metric][mode].formatting) {
-        formatting[columnName] = columnConfiguration[metric][mode]
-          .formatting;
-      }
-      if (columnConfiguration[metric][mode].fontOption) {
-        fontOptions[columnName] = columnConfiguration[metric][mode]
-          .fontOption;
-      }
-      if (columnConfiguration[metric][mode].comparisionOption) {
-        comparisionOptions[columnName] = columnConfiguration[metric]
-        [mode].comparisionOption;
-      }
-      if (columnConfiguration[metric][mode].basement) {
-        basements[columnName] = columnConfiguration[metric][mode]
-          .basement;
-      }
+      else{
+        const columnName = metric;
+        if (columnConfiguration[metric][mode].coloringOption) {
+            coloringOptions[columnName] = columnConfiguration[metric][
+            mode
+            ].coloringOption;
+        }
+        if (columnConfiguration[metric][mode].bcColoringOption) {
+            bcColoringOptions[columnName] = columnConfiguration[metric]
+            [mode].bcColoringOption;
+        }
+        if (columnConfiguration[metric][mode].formatting) {
+            formatting[columnName] = columnConfiguration[metric][mode]
+            .formatting;
+        }
+        if (columnConfiguration[metric][mode].fontOption) {
+            fontOptions[columnName] = columnConfiguration[metric][mode]
+            .fontOption;
+        }
+        if (columnConfiguration[metric][mode].comparisionOption) {
+            comparisionOptions[columnName] = columnConfiguration[metric]
+            [mode].comparisionOption;
+        }
+        if (columnConfiguration[metric][mode].basement) {
+            basements[columnName] = columnConfiguration[metric][mode]
+            .basement;
+        }
+        }
     }
   }
   if (rowConfiguration.coloringOption) {
@@ -78,6 +93,9 @@ module.exports = function(slice, payload) {
   }
   if (rowConfiguration.basements) {
     rowContains = rowConfiguration.basements;
+  }
+  if (rowConfiguration.hide) {
+    hide = rowConfiguration.hide;
   }
   // The function accepts option configuration name and
   // return corresponding style class name
@@ -147,17 +165,50 @@ module.exports = function(slice, payload) {
     arrForMax[columns[j]] = [];
   }
   container.find('table tbody tr').each(function () {
-    // Remove "All" row for pivot table
-    /*
-    if (this.cells[0].innerText == 'All') {
-      $(this).hide();
+    if (hide) {
+      // Remove row contains "rowContains" for pivot table
+      if ($.inArray(this.cells[0].innerText, hide) !== -1) {
+        $(this).hide();
+      }
     }
-    */
-    for (var m = 0; m < this.cells.length - groups; m += 1) {
-      arrForMax[columns[m]].push(parseFloat(this.cells[m+groups].innerText));
-    }
-    $(this).find('td').addClass('text-right');
+    // If hideColumnAll is true, then hide the column who contains 'all'
+    // This section is used to hide 'td' elements
+    $(this).find('td').addClass('text-right').each(function (index){
+      var column = columns[index];
+      arrForMax[columns[index]].push(parseFloat(this.innerText));
+      if (hideColumnAll) {
+        if ($.inArray('All', column) !== -1) {
+          $(this).hide();
+        }
+      }
+    });
   });
+  // If hideColumnAll is true, then hide the column who contains 'all'
+  // This section is used to hide 'th' elements
+  if (hideColumnAll) {
+    container.find('table thead tr').each(function () {
+      var firstTh = $(this).find('th')[groups];
+      var theColSpan = $(firstTh).prop('colSpan');
+      //acc is set for get the column index
+      var acc = 0;
+      $(this).find('th').each(function (index){
+        if (index >= groups) {
+          if ($.inArray(firstTh.innerText, metrics) !== -1) {
+            if (theColSpan > 1 ) {
+              $(this).prop('colSpan', theColSpan - 1);
+            }
+          }
+          else {
+            var column = columns[acc];
+            acc += $(this).prop('colSpan');
+            if ($.inArray('All', column) !== -1) {
+              $(this).hide();
+            }
+          }
+        }
+      })
+    });
+  }
   var lengthOfarr = Object.keys(arrForMax).length;
   for (var q=0; q < lengthOfarr; q+=1) {
     var l = arrForMax[columns[q]].length;
@@ -254,6 +305,23 @@ module.exports = function(slice, payload) {
         continue;
       }
     });
+    //this section for hiding some column using datatable may be used later
+    /*
+    table.columns().eq(0).each(function (index) {
+      var column = table.column(index);
+      var thisColumn = columns[index];
+      var data = column.data();
+      console.log("column's data is " + data);
+      var columnNodes = column.nodes();
+      if ($.inArray('All', thisColumn) !== -1) {
+        //$(columnNode).hide();
+        //fnSetColumnVis( index, false );
+        //$(columnNodes).hide();
+        table.column(index + groups).visible( false );
+        //table.columns.adjust().draw( false ); 
+      }
+    });
+    */
   } else {
     // When there is more than 1 group by column we just render the table, without using
     // the DataTable plugin, so we need to handle the scrolling ourselves.
@@ -262,10 +330,6 @@ module.exports = function(slice, payload) {
     container.css('overflow', 'auto');
     container.css('height', `${height + 10}px`);
     container.find('table tbody tr').each(function () {
-      // Remove "All" row for pivot table
-      if (this.cells[0].innerText == 'All') {
-        $(this).hide();
-      }
       for (var i in rowContains) {
         for (var j in this.cells) {
           if (this.cells[j].innerText == rowContains[i]) {

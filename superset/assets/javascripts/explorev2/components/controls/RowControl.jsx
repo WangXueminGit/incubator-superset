@@ -60,6 +60,9 @@ export default class RowControl extends React.Component {
     const fontOption = (
         'fontOption' in value
     ) ? value.fontOption : null;
+    const hide = (
+        'hide' in value
+    ) ? value.hide : null;
     return (
         <div className="panel panel-default" style={{ border: 'initial', borderColor: '#ddd' }}>
           <div className="panel-body">
@@ -107,7 +110,26 @@ export default class RowControl extends React.Component {
                 </tbody>
           </table>
         </div>
+        <div className="panel-body">
+          <table className="table table-bordered" style={{fontSize: '12px'}}>
+            <tbody>
+              <tr>
+                <td><span>Hide the Row Contains</span></td>
+                <td>
+                  <SelectControl
+                    multi={true}
+                    freeForm
+                    name="contains-value"
+                    clearable
+                    onChange={this.onValueChange.bind(this, 'hide')}
+                    value={hide}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+    </div>
     );
   }
 }

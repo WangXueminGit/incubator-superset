@@ -51,6 +51,7 @@ const FONT_OPTIONS = [
 const propTypes = {
   name: PropTypes.string.isRequired,
   value: PropTypes.object,
+  hideAll: PropTypes.bool,
   formData: PropTypes.object,
   label: PropTypes.string,
   description: PropTypes.string,
@@ -130,24 +131,34 @@ export default class ColumnControl extends React.Component {
     const metrics = this.props.formData.metrics || [];
     const value = this.state.value === null ? {} : this.state.value;
     const metric = this.state.selectedMetric;
+    const hideAll = (
+                  'hide' in value &&
+                  'hide' in value['hide'] &&
+                  'hideAll' in value['hide']['hide']
+              ) ? value['hide']['hide'].hideAll : false;
     let metricElement = null;
+    let hideAllElement = (
+      <div className="panel-body">
+          <table className="table table-bordered" style={{fontSize: '12px'}}>
+            <tbody>
+              <tr>
+                <td><span>Hide the Column Contains 'all'</span></td>
+                <td>
+                  <Checkbox
+                    checked={hideAll}
+                    onChange={this.onToggle.bind(this, 'hide', 'hide', 'hideAll')}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+      </div>
+    );
     if (this.state.selectedMetric !== null) {
       metricElement = (
         <div className="panel-body">
           <table className="table table-bordered" style={{fontSize: '12px'}}>
             {modes.map((mode) => {
-              const activateChecked = mode === 'Normal' ?
-                    !(
-                        metric in value &&
-                        mode in value[metric] &&
-                        'remove' in value[metric][mode] &&
-                        !value[metric][mode].remove
-                    ) :
-                    (
-                        metric in value &&
-                        mode in value[metric] &&
-                        (!('remove' in value[metric][mode]) || !value[metric][mode].remove)
-                    );
               const comparisionOption = (
                   metric in value &&
                   mode in value[metric] &&
@@ -180,16 +191,6 @@ export default class ColumnControl extends React.Component {
               ) ? value[metric][mode].formatting : null;
               return (
                 <tbody key={mode}>
-                  <tr>
-                    <td rowSpan={7}>{mode}</td>
-                    <td><span>Visible</span></td>
-                    <td>
-                      <Checkbox
-                        checked={activateChecked}
-                        onChange={this.onToggle.bind(this, metric, mode, 'remove')}
-                      />
-                    </td>
-                  </tr>
                   <tr>
                     <td><span>Comparision options</span></td>
                     <td>
@@ -287,6 +288,7 @@ export default class ColumnControl extends React.Component {
             />
           </div>
           {metricElement}
+          {hideAllElement}
         </div>
     );
   }
