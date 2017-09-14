@@ -40,7 +40,7 @@ PACKAGE_FILE = os.path.join(PACKAGE_DIR, 'package.json')
 with open(PACKAGE_FILE) as package_file:
     VERSION_STRING = json.load(package_file)['version']
 
-ROW_LIMIT = 50000
+ROW_LIMIT = 1000000
 VIZ_ROW_LIMIT = 10000
 SUPERSET_WORKERS = 2
 SUPERSET_CELERY_WORKERS = 32
