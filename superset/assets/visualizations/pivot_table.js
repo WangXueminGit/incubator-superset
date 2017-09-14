@@ -51,7 +51,7 @@ module.exports = function(slice, payload) {
   for (const metric in columnConfiguration) {
     for (const mode in columnConfiguration[metric]) {
       if (mode == 'hide') {
-        hideColumnAll = columnConfiguration[metric][mode].hideAllOrNot;
+        hideColumnAll = columnConfiguration[metric][mode].hideAll;
       }
       else{
         const columnName = metric;
