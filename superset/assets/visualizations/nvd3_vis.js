@@ -45,7 +45,8 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
       return i === countSeriesDisplayed - 1;
     }).selectAll('rect.positive');
 
-  const groupLabels = svg.select('g.nv-barsWrap').append('g').attr('class', 'nv-barsWrap-value');
+  const groupLabels = svg.select('g.nv-barsWrap').append('g')
+    .attr('class', 'nv-barsWrap-value');
   rectsToBeLabeled.each(
     function (d, index) {
       const rectObj = d3.select(this);
@@ -65,11 +66,16 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
     });
 };
 
-const showEachBarValue = function (svg, chart, data, stacked, axisFormat) {
+const showEachBarValue = function (svg, chart, data, stacked, axisFormat, min) {
   const format = d3.format(axisFormat || '.3s');
   const countSeriesDisplayed = data.length;
   const rectsToBeLabeled = svg.selectAll('g.nv-group').selectAll('rect.positive');
-  const groupLabels = svg.select('g.nv-barsWrap').append('g').attr('class', 'nv-barsWrap-value');
+  const groupLabels = svg.select('g.nv-barsWrap').append('g')
+    .attr('class', 'nv-barsWrap-value-on-bar');
+  if (min == '') {
+    min = 0;
+  }
+  const minimum = parseFloat(min);
   rectsToBeLabeled.each(
     function (d, index) {
       const rectObj = d3.select(this);
@@ -81,14 +87,14 @@ const showEachBarValue = function (svg, chart, data, stacked, axisFormat) {
       const t = groupLabels.append('text')
         .attr('x', xPos) // rough position first, fine tune later
         .attr('y', yPos + 15)
-        .text(format(d.y))
+        .text(d.y < minimum ? null : format(d.y))
         .attr('transform', transformAttr)
         .attr('class', 'bar-chart-label')
-        .attr('font-size', '10');
+        .attr('font-size', '13');
       const labelWidth = t.node().getBBox().width;
       const labelHeight = t.node().getBBox().height;
       t.attr('x', xPos + rectWidth / 2 - labelWidth / 2); // fine tune
-      t.attr('y', yPos + rectHeight /2 - labelHeight / 2); //fien tune
+      t.attr('y', yPos + rectHeight / 2 - labelHeight / 2 + 10); //fine tune
     });
 };
 
@@ -223,7 +229,7 @@ function nvd3Vis(slice, payload) {
 
         if (fd.show_bar_value_on_the_bar) {
           setTimeout(function () {
-            showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format);
+            showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format, fd.hide_value_below);
           }, animationTime);
         }
 
@@ -259,7 +265,7 @@ function nvd3Vis(slice, payload) {
         }
         if (fd.show_bar_value_on_the_bar) {
           setTimeout(function () {
-            showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format);
+            showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format, fd.hide_value_below);
           }, animationTime);
         }
         if (!reduceXTicks) {
@@ -534,7 +540,7 @@ function nvd3Vis(slice, payload) {
       if (fd.show_bar_value_on_the_bar) {
         svg.select('g.nv-barsWrap-value').remove();
         setTimeout(function () {
-          showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format);
+          showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format, fd.hide_value_below);
         }, animationTime);
       }
     });
@@ -563,7 +569,7 @@ function nvd3Vis(slice, payload) {
       if (fd.show_bar_value_on_the_bar) {
         svg.select('g.nv-barsWrap-value').remove();
         setTimeout(function () {
-          showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format);
+          showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format, fd.hide_value_below);
         }, animationTime);
       }
     });
