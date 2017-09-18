@@ -82,7 +82,8 @@ def my_user_info_getter(sm, provider, response=None):
             'garena.co.in',
             'shopee.vn',
             'garena.co.id',
-            'seagroup.com'
+            'seagroup.com',
+            'shopee.com'
         ]
         if domain not in authorized_email_extensions:
             raise SupersetSecurityException('Email domain is not allowed.')
