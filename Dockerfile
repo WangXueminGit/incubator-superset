@@ -24,10 +24,14 @@ RUN apt-get install -y vim less postgresql-client redis-tools
 # https://nodejs.org/en/download/package-manager/
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN apt-get install -y nodejs
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list; \
+    apt-get update; \
+    apt-get install -y yarn
 
-RUN mkdir $HOME/lumos-code
+RUN mkdir $HOME/lumos-superset
 
-WORKDIR $HOME/lumos-code
+WORKDIR $HOME/lumos-superset
 
 COPY ./install-reqs.txt ./dev-reqs.txt ./dev-reqs-for-docs.txt ./
 
@@ -35,17 +39,7 @@ RUN pip install --upgrade setuptools pip
 RUN pip install -r install-reqs.txt && pip install -r dev-reqs.txt \
     && pip install -r dev-reqs-for-docs.txt
 
-RUN mkdir -p superset/assets/
-
-COPY ./superset/assets/package.json superset/assets/
-COPY ./superset/assets/yarn.lock superset/assets/
-
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list; \
-    apt-get update; \
-    apt-get install -y yarn
-
-ENV PATH=/home/work/lumos-code/superset/bin:$PATH \
+ENV PATH=/home/work/lumos-superset/superset/bin:$PATH \
     PYTHONPATH=.:$PYTHONPATH
 
 COPY docker-entrypoint.sh /usr/local/bin/
