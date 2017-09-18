@@ -1,11 +1,11 @@
 #!/bin/bash
-set -e
+set -ex
 
 if [ "$#" -ne 0 ]; then
     exec "$@"
-elif [ "$LUMOS_ENV" = "dev" ]; then
+elif [ "$LUMOS_ENV" = "test" ]; then
     superset runserver -d
-elif [ "$LUMOS_ENV" = "production" ]; then
+elif [ "$LUMOS_ENV" = "prod" ]; then
     superset runserver -a 0.0.0.0
 else
     superset --help

@@ -2,4 +2,4 @@
 
 set -ex
 
-docker build -t shopee/lumos-web -f Dockerfile .
+docker build -t shopee/lumos-superset -f Dockerfile .

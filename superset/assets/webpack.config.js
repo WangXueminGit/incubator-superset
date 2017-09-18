@@ -31,14 +31,10 @@ const config = {
     ],
     alias: {
       webworkify: 'webworkify-webpack',
-      'mapbox-gl/js/geo/transform': path.join(
-        __dirname, '/node_modules/mapbox-gl/js/geo/transform'),
-      'mapbox-gl': path.join(__dirname, '/node_modules/mapbox-gl/dist/mapbox-gl.js'),
     },
 
   },
   module: {
-    noParse: /mapbox-gl\/dist/,
     loaders: [
       {
         test: /datatables\.net.*/,
@@ -55,12 +51,6 @@ const config = {
             'react',
           ],
         },
-      },
-      /* for react-map-gl overlays */
-      {
-        test: /\.react\.js$/,
-        include: APP_DIR + '/node_modules/react-map-gl/src/overlays',
-        loader: 'babel-loader',
       },
       /* for require('*.scss') */
       {
@@ -114,16 +104,6 @@ const config = {
         test: /\.less$/,
         include: APP_DIR,
         loader: 'style-loader!css-loader!less-loader',
-      },
-      /* for mapbox */
-      {
-        test: /\.json$/,
-        loader: 'json-loader',
-      },
-      {
-        test: /\.js$/,
-        include: APP_DIR + '/node_modules/mapbox-gl/js/render/painter/use_program.js',
-        loader: 'transform/cacheable?brfs',
       },
     ],
   },
