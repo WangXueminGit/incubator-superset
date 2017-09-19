@@ -740,6 +740,13 @@ export const controls = {
     default: '',
   },
 
+  hide_value_below: {
+    type: 'TextControl',
+    label:'Hide Value below',
+    renderTrigger: true,
+    default:'',
+  },
+
   where: {
     type: 'TextControl',
     label: 'Custom WHERE clause',
