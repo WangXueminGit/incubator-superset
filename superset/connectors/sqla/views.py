@@ -683,3 +683,27 @@ appbuilder.add_view(
     category="",
     category_label="",
     icon='fa-table',)
+
+appbuilder.add_link(
+    'Lumos User Guide',
+    label=__("Lumos User Guide"),
+    href='https://docs.google.com/a/shopeemobile.com/document/d/1pgQcFJ-p57QfhfcrWj9GbOF4ACThjyb9o47mWj4YmW8/edit?usp=sharing',
+    category='Documentation',
+    category_label=__("Documentation"),
+    category_icon='fa-book',)
+
+appbuilder.add_link(
+    'Order Mart Schema Guide',
+    label=__("Order Mart Schema Guide"),
+    href='https://docs.google.com/a/garena.com/spreadsheets/d/1-mGknmLWREy68R_9iBrWwTIMM8cTsE4eu34hUR43lo8/edit?usp=sharing',
+    category='Documentation',
+    category_label=__("Documentation"),
+    category_icon='fa-book',)
+
+appbuilder.add_link(
+    'User Feedback',
+    label=__("User Feedback"),
+    href='https://goo.gl/forms/K4dJqf3xjwhATnrw2',
+    category='Documentation',
+    category_label=__("Documentation"),
+    category_icon='fa-book',)
