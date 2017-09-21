@@ -236,7 +236,7 @@ function tableVis(slice, payload) {
       }
       return null;
     })
-    .style('background-image', function (d) { 
+    .style('background-image', function (d) {
       //if (styling === null || !d.isMetric) {
       if (styling === null || !$.isNumeric(d.val)) {
         return null;
@@ -312,6 +312,24 @@ function tableVis(slice, payload) {
     scrollY: height + 'px',
     scrollCollapse: true,
     scrollX: true,
+    stateSave: true,
+    slice: slice,
+    sliceId: slice.formData.slice_id,
+    stateSaveCallback: function(settings, data) {
+      localStorage.setItem('datatable_slice_state_' +
+                           settings.oInit.sliceId, JSON.stringify(data))
+    },
+    stateLoadCallback: function(settings) {
+      if (('slice_state' in settings.oInit.slice.formData) && 
+        (settings.oInit.slice.formData['slice_state']!==undefined)) {
+          console.log("state load for datatable_slice_state_" +
+                    settings.oInit.sliceId);
+          return JSON.parse(settings.oInit.slice.formData.slice_state);
+        }
+      else {
+        return null;
+      }
+    },
   });
   fixDataTableBodyHeight(container.find('.dataTables_wrapper'), height);
   // Sorting table by main column

@@ -232,6 +232,25 @@ module.exports = function(slice, payload) {
       scrollCollapse: true,
       scrollX: true,
       colReorder: true,
+      stateSave: true,
+      stateDuration: -1,
+      slice: slice,
+      sliceId: slice.formData.slice_id,
+      stateSaveCallback: function(settings, data) {
+        localStorage.setItem('datatable_slice_state_' +
+                             settings.oInit.sliceId, JSON.stringify(data))
+      },
+      stateLoadCallback: function(settings) {
+        if (('slice_state' in settings.oInit.slice.formData) && 
+            (settings.oInit.slice.formData['slice_state']!==undefined)) {
+          console.log("state load for datatable_slice_state_" +
+                    settings.oInit.sliceId);
+          return JSON.parse(settings.oInit.slice.formData.slice_state);
+        }
+        else {
+          return null;
+        }
+      },
       rowCallback: (row, data, index) => {
         $(row).find('td').each(function (index) {
           var column = columns[index];
@@ -290,7 +309,6 @@ module.exports = function(slice, payload) {
         });
       },
     });
-    table.column('-1').order('desc').draw();
     fixDataTableBodyHeight(container.find('.dataTables_wrapper'),
       height);
     table.rows().eq(0).each(function (index) {
@@ -318,7 +336,7 @@ module.exports = function(slice, payload) {
         //fnSetColumnVis( index, false );
         //$(columnNodes).hide();
         table.column(index + groups).visible( false );
-        //table.columns.adjust().draw( false ); 
+        //table.columns.adjust().draw( false );
       }
     });
     */

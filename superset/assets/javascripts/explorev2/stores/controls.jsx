@@ -1300,5 +1300,12 @@ export const controls = {
     label: 'Row change based on value of each td in the row',
     description: 'Advanced configuration on rows',
   },
+
+  slice_state: {
+    type: 'HiddenControl',
+    label: 'Save slice state across browsers',
+    hidden: true,
+    description: 'Keep slice state when take screenshot',
+  },
 };
 export default controls;

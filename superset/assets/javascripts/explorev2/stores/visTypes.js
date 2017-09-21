@@ -65,7 +65,10 @@ export const sections = {
     {
       label: 'Row Configuration',
       description: 'Advanced configuration on rows',
-      controlSetRows: [['row_configuration']]
+      controlSetRows: [
+          ['row_configuration'],
+          ['slice_state'],
+        ],
     }
   ],
   filters: [
@@ -813,7 +816,6 @@ export function sectionsToRender(vizType, datasourceType) {
     sections.row_configuration,
     datasourceType === 'table' ? sections.sqlClause : [],
     datasourceType === 'table' ? sections.filters[0] : sections.filters,
-    // sections.styling,
     datasourceType === 'table' ? sections.styling : null,
   );
 }
