@@ -32,6 +32,7 @@ module.exports = function(slice, payload) {
   const coloringOptions = {};
   const bcColoringOptions = {};
   const fontOptions = {};
+  const textAligns = {};
   const colorings = ['seagreen', 'lightpink', 'lightblue', 'beige',
     'lightgray'
   ];
@@ -71,6 +72,10 @@ module.exports = function(slice, payload) {
         if (columnConfiguration[metric][mode].fontOption) {
             fontOptions[columnName] = columnConfiguration[metric][mode]
             .fontOption;
+        }
+        if (columnConfiguration[metric][mode].textAlign) {
+            textAligns[columnName] = columnConfiguration[metric][mode]
+            .textAlign;
         }
         if (columnConfiguration[metric][mode].comparisionOption) {
             comparisionOptions[columnName] = columnConfiguration[metric]
@@ -173,7 +178,8 @@ module.exports = function(slice, payload) {
     }
     // If hideColumnAll is true, then hide the column who contains 'all'
     // This section is used to hide 'td' elements
-    $(this).find('td').addClass('text-right').each(function (index){
+    //$(this).find('td').addClass('text-right').each(function (index){
+    $(this).find('td').each(function (index){
       var column = columns[index];
       arrForMax[columns[index]].push(parseFloat(this.innerText));
       if (hideColumnAll) {
@@ -305,7 +311,9 @@ module.exports = function(slice, payload) {
           styling[cellTotalColumn] + `, 0.7), rgba(` +
           styling[cellTotalColumn] + `, 0.7) ${perc}%,     ` +
           `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+          const textAlign = textAligns[column] == undefined ? 'right' : textAligns[column];
           $(this).css('background-image',progressBarStyle);
+          $(this).addClass('text-' + textAlign);
         });
       },
     });
@@ -406,7 +414,9 @@ module.exports = function(slice, payload) {
             styling[cellTotalColumn] + `, 0.7), rgba(` +
             styling[cellTotalColumn] + `, 0.7) ${perc}%,     ` +
             `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+        const textAlign = textAligns[column] == undefined ? 'right' : textAligns[column];
         $(this).css('background-image',progressBarStyle);
+        $(this).addClass('text-' + textAlign);
       });
     });
   }

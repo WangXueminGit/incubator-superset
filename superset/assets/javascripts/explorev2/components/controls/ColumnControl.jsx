@@ -48,6 +48,12 @@ const FONT_OPTIONS = [
   'bold'
 ]
 
+const TEXT_ALIGN = [
+  'left',
+  'center',
+  'right'
+]
+
 const propTypes = {
   name: PropTypes.string.isRequired,
   value: PropTypes.object,
@@ -184,6 +190,11 @@ export default class ColumnControl extends React.Component {
                   mode in value[metric] &&
                   'fontOption' in value[metric][mode]
               ) ? value[metric][mode].fontOption : null;
+              const textAlign = (
+                  metric in value &&
+                  mode in value[metric] &&
+                  'textAlign' in value[metric][mode]
+              ) ? value[metric][mode].textAlign : null;
               const formatting = (
                   metric in value &&
                   mode in value[metric] &&
@@ -252,6 +263,19 @@ export default class ColumnControl extends React.Component {
                         clearable
                         onChange={this.onValueChange.bind(this, metric, mode, 'fontOption')}
                         value={fontOption}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><span>Text Align</span></td>
+                    <td>
+                      <SelectControl
+                        name={mode + '___' + metric + '___textAlign'}
+                        default={TEXT_ALIGN[2]}
+                        choices={TEXT_ALIGN}
+                        clearable
+                        onChange={this.onValueChange.bind(this, metric, mode, 'textAlign')}
+                        value={textAlign}
                       />
                     </td>
                   </tr>

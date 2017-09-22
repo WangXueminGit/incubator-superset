@@ -33,6 +33,7 @@ function tableVis(slice, payload) {
   const coloringOptions = {};
   const bcColoringOptions = {};
   const fontOptions = {};
+  const textAligns = {};
   let metric;
   let mode;
   const colorings = ['seagreen', 'lightpink', 'lightblue', 'beige',
@@ -75,6 +76,10 @@ function tableVis(slice, payload) {
       if (columnConfiguration[metric][mode].fontOption) {
         fontOptions[columnName] = columnConfiguration[metric][mode]
           .fontOption;
+      }
+      if (columnConfiguration[metric][mode].textAlign) {
+        textAligns[columnName] = columnConfiguration[metric][mode]
+          .textAlign;
       }
     }
   }
@@ -158,6 +163,7 @@ function tableVis(slice, payload) {
         coloringOption: coloringOptions[c],
         bcColoringOption: bcColoringOptions[c],
         fontOption: fontOptions[c],
+        textAlign: textAligns[c],
       };
     }))
     .enter()
@@ -258,7 +264,9 @@ function tableVis(slice, payload) {
       return null;
     })
     //.classed('text-right', d=>d.isMetric)
-    .classed('text-right', d=>$.isNumeric(d.val))
+    .classed('text-right', d=>$.isNumeric(d.val) && (d.textAlign=='right' || d.textAlign == undefined))
+    .classed('text-left', d=>$.isNumeric(d.val) && d.textAlign=='left')
+    .classed('text-center', d=>$.isNumeric(d.val) && d.textAlign=='center')
     .attr('title', (d) => {
       if (!isNaN(d.val)) {
         return fC(d.val);
