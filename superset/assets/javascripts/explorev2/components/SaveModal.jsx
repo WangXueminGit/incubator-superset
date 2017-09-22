@@ -105,11 +105,19 @@ class SaveModal extends React.Component {
     const baseUrl = `/superset/explore/${this.props.datasource.type}/${this.props.datasource.id}/`;
     sliceParams.datasource_name = this.props.datasource.name;
 
-    const slice_state = {slice_state: localStorage.getItem('datatable_slice_state_' + this.props.slice.slice_id)};
+    let saveUrl = '';
+    if (this.props.slice === null) {
+      saveUrl = `${baseUrl}?form_data=` +
+        `${encodeURIComponent(JSON.stringify(this.props.form_data))}` +
+        `&${$.param(sliceParams, true)}`;
+    } else {
+      const slice_state = {slice_state: localStorage.getItem('datatable_slice_state_' + this.props.slice.slice_id)};
 
-    const saveUrl = `${baseUrl}?form_data=` +
-      `${encodeURIComponent(JSON.stringify(Object.assign({}, this.props.form_data, slice_state)))}` +
-      `&${$.param(sliceParams, true)}`;
+      saveUrl = `${baseUrl}?form_data=` +
+        `${encodeURIComponent(JSON.stringify(Object.assign({}, this.props.form_data, slice_state)))}` +
+        `&${$.param(sliceParams, true)}`;
+    }
+
     this.props.actions.saveSlice(saveUrl);
     this.props.onHide();
   }
