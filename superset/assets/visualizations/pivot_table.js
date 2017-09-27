@@ -9,6 +9,10 @@ from '../javascripts/modules/utils';
 import './pivot_table.css';
 dt(window, $);
 
+var imported = document.createElement('script');
+imported.src = "/static/assets/vendor/javascripts/dataTables.rowsGroup.js"
+document.head.appendChild(imported);
+
 module.exports = function(slice, payload) {
   const container = slice.container;
   const fd = slice.formData;
@@ -370,7 +374,6 @@ module.exports = function(slice, payload) {
     // When there is more than 1 group by column we just render the table, without using
     // the DataTable plugin, so we need to handle the scrolling ourselves.
     // In this case the header is not fixed.
-    //const groups = fd.groupby.length;
     container.css('overflow', 'auto');
     container.css('height', `${height + 10}px`);
     container.find('table tbody tr').each(function () {
@@ -445,5 +448,53 @@ module.exports = function(slice, payload) {
         $(this).addClass('text-' + textAlign);
       });
     });
+
+    // Add for make rowsgroup plugin can be used which means datatable can be used
+    // to enable sorting in pivot table with multiple group.
+    var rowsGroup = [];
+    container.find('table tbody td[rowspan], table tbody th[rowspan]').each(function () {
+      var cell = $(this);
+      var row = cell.parent();
+      var index = cell.get(0).cellIndex;
+      if (rowsGroup.indexOf(index) == -1) {
+        rowsGroup.push(index);
+      }
+      var count = parseInt(cell.attr('rowspan')) - 1;
+      cell.removeAttr('rowspan');
+      var childIndex = index + 1;
+      while(count > 0) {
+        row = row.next();
+        row.find("td:nth-child(" + childIndex + ")," + " th:nth-child(" + childIndex + ")").before(cell.clone());
+        count--;
+      }
+    });
+    const table = container.find('table').DataTable({
+      paging: false,
+      searching: false,
+      bInfo: false,
+      colReorder: true,
+      rowsGroup: rowsGroup,
+      stateSave: true,
+      stateDuration: 0,
+      slice: slice,
+      sliceId: slice.formData.slice_id,
+      stateSaveCallback: function(settings, data) {
+        localStorage.setItem('datatable_slice_state_' +
+                             settings.oInit.sliceId, JSON.stringify(data))
+      },
+      stateLoadCallback: function(settings) {
+        if (('slice_state' in settings.oInit.slice.formData) && 
+            (settings.oInit.slice.formData['slice_state']!==undefined)) {
+          console.log("state load for datatable_slice_state_" +
+                    settings.oInit.sliceId);
+          return JSON.parse(settings.oInit.slice.formData.slice_state);
+        }
+        else {
+          return null;
+        }
+      },
+    });
+    fixDataTableBodyHeight(container.find('.dataTables_wrapper'),
+      height);
   }
 };
