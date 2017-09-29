@@ -610,7 +610,8 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
             for row in data_array:
                 try:
                     data_string = ','.join(["'{}'".format(column.replace("'", "''")) for column in row])
-                    sql = "INSERT INTO {}.{} ({}) VALUES ({})".format(table.schema, table.table_name, columns, data_string)
+                    schema = table.schema if table.schema else 'public'
+                    sql = "INSERT INTO {}.{} ({}) VALUES ({})".format(schema, table.table_name, columns, data_string)
                     connection.execute(sql)
                 except Exception as e:
                     transaction.rollback()
