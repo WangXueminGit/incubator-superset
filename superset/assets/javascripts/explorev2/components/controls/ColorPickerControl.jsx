@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { SwatchesPicker } from 'react-color';
+import { WithOutContext as ReactTags } from 'react-tag-input';
 import '../../../../stylesheets/react-tag/react-tag.css';
 import '../../../../stylesheets/react-color/react-color.css';
 import SelectControl from './SelectControl';
@@ -35,15 +36,23 @@ const defaultProps = {
 export default class ColorPickerControl extends React.Component {
   constructor(props) {
     super(props);
+    const value = props.value ? props.value : {};
     const metrics = props.formData.metrics || [];
+    let output = [], i;
+    if (Object.keys(value).length >= 1) {
+      for (var prop in value) {
+        output.push({id: prop, text: value[prop]});
+      }
+    }
     this.state = {
       value: props.value,
+      tagValue: output,
       metrics: metrics,
       selectedMetric: null,
     };
   }
   componentWillReceiveProps(nextProps) {
-    if ('formData' in nextProps && 'metrics' in nextProps.formData && 
+    if ('formData' in nextProps && 'metrics' in nextProps.formData &&
         nextProps.formData.metrics !== this.state.metrics) {
       const differenceToAdd = nextProps.formData.metrics.filter(
           x => this.state.metrics.indexOf(x) === -1);
@@ -86,9 +95,20 @@ export default class ColorPickerControl extends React.Component {
     this.setState({value});
     this.props.onChange(value);
   }
+  handleDelete(metric) {
+    let value = this.state.value;
+    if (!(metric in value)) {
+      value[metric] = null;
+    }
+    value[metric] = null;
+    this.setState({ value });
+    this.getTagArray(false);
+    this.props.onChange(value);
+  }
   handleColorAddition(metric, color) {
     const colorString = color.rgb.r + ', ' + color.rgb.g + ', ' + color.rgb.b;
     this.handleAddition(metric, colorString);
+    this.getTagArray(true);
   }
   handleAddition(metric, tag) {
     let value = this.props.value;
@@ -98,20 +118,49 @@ export default class ColorPickerControl extends React.Component {
     value[metric] = tag;
     this.setState({ value });
     this.props.onChange(value);
+    this.renderColorTag(tag);
+    this.getTagArray(true);
+  }
+  renderColorTag(value) {
+    const style = {
+      width: '12px',
+      height: '12px',
+      display: 'inline-block',
+      background: 'rgb(' + value.text + ')',
+    };
+    return (<div style={{display: "inline-block"}}><span style={Object.assign({}, style)}></span></div>);
+  }
+  getTagArray(add) {
+    let output = [], i;
+    const selectedMetric = this.state.selectedMetric;
+    if (add) {
+      output.push({id: selectedMetric, text: this.state.value[selectedMetric]});
+    }
+    else {
+      output = [];
+    }
+    this.setState({tagValue: output});
   }
   render() {
     //  Tab, comma or Enter will trigger a new option created for FreeFormSelect
     const metrics = this.props.formData.metrics || [];
     const value = this.state.value === null ? {} : this.state.value;
     const metric = this.state.selectedMetric;
-    let selectWrap = null;
     let colorPicker = null;
+    let selectWrap = null;
     if (this.state.selectedMetric !== null) {
+      selectWrap = (<ReactTags tags={this.state.tagValue}
+                                   suggestions={[]}
+                                   handleDelete={this.handleDelete.bind(this, metric)}
+                                   handleAddition={this.handleAddition.bind(this, metric)}
+                                   renderTag={this.renderColorTag}
+                                   inline={false}
+                                   autofocus={false}/>);
       colorPicker = (<SwatchesPicker onChange={
           this.handleColorAddition.bind(this,metric)} height={560} width={"100%"} />);
     }
     return (
-      <div className="panel panel-default" 
+      <div className="panel panel-default"
            style={{ border: 'initial', borderColor: '#ddd' }}>
           <div className="panel-heading">
             <SelectControl
@@ -122,6 +171,7 @@ export default class ColorPickerControl extends React.Component {
               value={this.state.selectedMetric}
             />
           </div>
+          {selectWrap}
           {colorPicker}
       </div>
     );
