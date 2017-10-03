@@ -599,6 +599,8 @@ class SqlaTable(Model, BaseDatasource):
         metrics = []
         any_date_col = None
         db_dialect = self.database.get_sqla_engine().dialect
+        self_column_names = [column.column_name for column in self.columns]
+        table_column_names = [column.name for column in table.columns]
 
         for col in table.columns:
             try:
@@ -628,7 +630,8 @@ class SqlaTable(Model, BaseDatasource):
                 dbcol.groupby = True
 
             db.session.merge(self)
-            self.columns.append(dbcol)
+            if dbcol.column_name not in self_column_names:
+                self.columns.append(dbcol)
 
             if not any_date_col and dbcol.is_time:
                 any_date_col = col.name
@@ -688,7 +691,7 @@ class SqlaTable(Model, BaseDatasource):
         for metric in metrics:
             m = (
                 db.session.query(M)
-                .filter(M.metric_name == metric.metric_name)
+                .filter(M.verbose_name == metric.verbose_name)
                 .filter(M.table_id == self.id)
                 .first()
             )
@@ -696,6 +699,18 @@ class SqlaTable(Model, BaseDatasource):
             if not m:
                 db.session.add(metric)
                 db.session.commit()
+
+        for column in self.columns:
+            parsed_column_name = column.column_name
+            if parsed_column_name not in table_column_names:
+                self.columns.remove(column)
+                db.session.merge(self)
+                db.session.commit()
+                for metric in self.metrics:
+                    if parsed_column_name in metric.expression:
+                        db.session.delete(metric)
+                        db.session.commit()
+
         if not self.main_dttm_col:
             self.main_dttm_col = any_date_col
 
