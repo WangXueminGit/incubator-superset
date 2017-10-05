@@ -4,6 +4,7 @@ import ControlHeader from './ControlHeader';
 
 import CheckboxControl from './controls/CheckboxControl';
 import ColumnControl from './controls/ColumnControl';
+import DateFilterControl from './controls/DateFilterControl';
 import RowControl from './controls/RowControl';
 import FilterControl from './controls/FilterControl';
 import HiddenControl from './controls/HiddenControl';
@@ -15,6 +16,7 @@ import ColorPickerControl from './controls/ColorPickerControl';
 const controlMap = {
   CheckboxControl,
   ColumnControl,
+  DateFilterControl,
   RowControl,
   FilterControl,
   HiddenControl,

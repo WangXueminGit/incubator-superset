@@ -34,3 +34,9 @@
 .background-transparent {
   background-color: transparent !important;
 }
+
+.input-inline {
+  float: left;
+  display: inline-block;
+  padding-right: 3px;
+}
