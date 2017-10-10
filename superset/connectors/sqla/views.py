@@ -708,3 +708,11 @@ appbuilder.add_link(
     category='Documentation',
     category_label=__("Documentation"),
     category_icon='fa-book',)
+
+appbuilder.add_link(
+    'Developer Notes',
+    label=__("Developer Notes"),
+    href='https://docs.google.com/document/d/17r0jMfQHMAi0ymNjNfhc2QT17X8gdGb9I5-dBQcJijI/edit',
+    category='Documentation',
+    category_label=__("Documentation"),
+    category_icon='fa-book',)
