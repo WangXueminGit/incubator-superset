@@ -210,6 +210,8 @@ def parse_human_datetime(s):
     >>> year_ago_1 == year_ago_2
     True
     """
+    if not s:
+        return None
     if isinstance(s, list):
         s = ''.join(s)
     try:
@@ -217,9 +219,14 @@ def parse_human_datetime(s):
     except Exception:
         try:
             cal = parsedatetime.Calendar()
-            consts = parsedatetime.Constants(usePyICU=False)
-            consts.DOWParseStyle = -1
-            dttm = dttm_from_timtuple(cal.parse(s)[0])
+            parsed_dttm, parsed_flags = cal.parseDT(s)
+            # when time is not extracted, we 'reset to midnight'
+            if parsed_flags & 2 == 0:
+                if 'month' in s or 'Month' in s:
+                    parsed_dttm = parsed_dttm.replace(day=1, hour=0, minute=0, second=0)
+                elif 'monday' in s or 'Monday' in s:
+                    parsed_dttm = parsed_dttm.replace(hour=0, minute=0, second=0)
+            dttm = dttm_from_timtuple(parsed_dttm.utctimetuple())
         except Exception as e:
             logging.exception(e)
             raise ValueError("Couldn't parse date string [{}]".format(s))
