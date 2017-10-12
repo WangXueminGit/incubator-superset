@@ -321,6 +321,7 @@ function tableVis(slice, payload) {
     scrollCollapse: true,
     scrollX: true,
     stateSave: true,
+    stateDuration: 0,
     slice: slice,
     sliceId: slice.formData.slice_id,
     stateSaveCallback: function(settings, data) {

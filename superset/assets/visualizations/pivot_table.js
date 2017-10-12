@@ -239,7 +239,7 @@ module.exports = function(slice, payload) {
       scrollX: true,
       colReorder: true,
       stateSave: true,
-      stateDuration: -1,
+      stateDuration: 0,
       slice: slice,
       sliceId: slice.formData.slice_id,
       stateSaveCallback: function(settings, data) {
