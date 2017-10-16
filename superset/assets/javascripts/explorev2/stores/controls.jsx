@@ -299,6 +299,13 @@ export const controls = {
     }),
   },
 
+  show_metrics_under_columns: {
+    type: 'CheckboxControl',
+    label: 'Show the metrics under columns',
+    default: false,
+    description: 'Whether show the metrics on the top or columns on the top',
+  },
+
   filterby: {
     type: 'SelectControl',
     multi: true,

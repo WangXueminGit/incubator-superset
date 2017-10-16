@@ -49,6 +49,7 @@ module.exports = function(slice, payload) {
   var hide = [];
   // boolean for column configuration to indicates hide all or not
   var hideColumnAll = false;
+  var metricUnderColumn = fd.show_metrics_under_columns;
   for (const metric in columnConfiguration) {
     for (const mode in columnConfiguration[metric]) {
       if (mode == 'hide') {
@@ -199,16 +200,25 @@ module.exports = function(slice, payload) {
       var acc = 0;
       $(this).find('th').each(function (index){
         if (index >= groups) {
-          if ($.inArray(firstTh.innerText, metrics) !== -1) {
-            if (theColSpan > 1 ) {
-              $(this).prop('colSpan', theColSpan - 1);
-            }
-          }
-          else {
+          if (metricUnderColumn) {
             var column = columns[acc];
             acc += $(this).prop('colSpan');
             if ($.inArray('All', column) !== -1) {
               $(this).hide();
+            }
+          }
+          else {
+            if ($.inArray(firstTh.innerText, metrics) !== -1) {
+              if (theColSpan > 1 ) {
+                $(this).prop('colSpan', theColSpan - 1);
+              }
+            }
+            else {
+              var column = columns[acc];
+              acc += $(this).prop('colSpan');
+              if ($.inArray('All', column) !== -1) {
+                $(this).hide();
+              }
             }
           }
         }

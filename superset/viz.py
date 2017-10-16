@@ -474,7 +474,15 @@ class PivotTableViz(BaseViz):
             aggfunc=self.form_data.get('pandas_aggfunc'),
             margins=True,
         )
-        df = df[self.form_data.get('metrics')]
+        metric_under_column = self.form_data.get(
+            'show_metrics_under_columns')
+        if metric_under_column:
+            lenOfColumnLevels = len(df.columns.levels) - 1
+            for i in range(lenOfColumnLevels) :
+                df.columns = df.columns.swaplevel(i, i+1)
+                df.sortlevel(0, axis=1, inplace=True)
+        else:
+            df = df[self.form_data.get('metrics')]
         return dict(
             columns=list(df.columns),
             html=df.to_html(
