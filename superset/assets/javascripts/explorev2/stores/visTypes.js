@@ -330,6 +330,7 @@ const visTypes = {
         controlSetRows: [
           ['groupby', 'columns'],
           ['metrics', 'pandas_aggfunc'],
+          ['show_metrics_under_columns'],
         ],
       },
     ],
