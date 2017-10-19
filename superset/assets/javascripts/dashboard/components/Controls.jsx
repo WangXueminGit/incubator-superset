@@ -112,6 +112,15 @@ class Controls extends React.PureComponent {
             </Button>
           }
         />
+        <Button
+          onClick={() => {
+            const dl_csv_api_path = `/dashboardmodelview/download_dashboard_csv/`
+            window.location = dl_csv_api_path + `${dashboard.id}`;
+          }}
+          tooltip="Export as CSV"
+        >
+          <i className="fa fa-table" />
+        </Button>
         <ExportMailModal
           dashboard={dashboard}
           css={this.state.css}

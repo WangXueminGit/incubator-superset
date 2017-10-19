@@ -107,7 +107,7 @@ class ExportMailModal extends React.PureComponent {
         ref={(modal) => { this.modal = modal; }}
         triggerNode={this.props.triggerNode}
         isButton={this.props.isButton}
-        tooltip="Export"
+        tooltip="Export as Image"
         isLink={this.props.isLink}
         modalTitle="Export Snapshot as image"
         modalBody={

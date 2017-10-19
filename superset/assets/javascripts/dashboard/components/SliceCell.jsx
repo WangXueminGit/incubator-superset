@@ -3,6 +3,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ExportMailModal from './ExportMailModal';
 
+import { getExploreUrl } from '../../explorev2/exploreUtils';
+
 const propTypes = {
   dashboard: PropTypes.object.isRequired,
   slice: PropTypes.object.isRequired,
@@ -54,6 +56,14 @@ function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
                   className="fa fa-close"
                   onClick={() => { removeSlice(slice.slice_id); }}
                 />
+              </a>
+              <a
+                className="exportCSV"
+                href={getExploreUrl(slice.form_data, 'csv')}
+                title="Export as CSV"
+                data-toggle="tooltip"
+              >
+                <i className="fa fa-table" />
               </a>
               <ExportMailModal
                 dashboard={dashboard}

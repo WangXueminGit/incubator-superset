@@ -11,8 +11,10 @@ import pandas as pd
 import pickle
 import re
 import requests
+import StringIO
 import time
 import traceback
+import zipfile
 
 from slugify import slugify
 import sqlalchemy as sqla
@@ -565,6 +567,36 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
             dashboards_url='/dashboardmodelview/list'
         )
 
+    def get_viz_by_slice_id(self, slice_id):
+        slc = (
+            db.session.query(models.Slice)
+            .filter_by(id=slice_id)
+            .one()
+        )
+        return slc.get_viz()
+
+    @expose("/download_dashboard_csv/<dashboard_id>")
+    @has_access
+    def download_dashboard_csv(self, dashboard_id):
+        dashboard = db.session.query(models.Dashboard).filter_by(id=dashboard_id).one()
+        zsio = StringIO.StringIO()
+        zf = zipfile.ZipFile(zsio, "w", zipfile.ZIP_DEFLATED, False)
+        for dashboard_slice in dashboard.data['slices']:
+            slice_id = dashboard_slice['slice_id']
+            slice_name = dashboard_slice['slice_name']
+            slice_viz = self.get_viz_by_slice_id(slice_id)
+            # Not all data sources are dataframes, thus these cannot be downloaded as csv
+            if type(slice_viz.get_df()) == pd.DataFrame:
+                slice_csv = slice_viz.get_csv()
+                zf.writestr('%s.csv' % slice_name, slice_csv)
+        zf.close()
+        zsio.seek(0)
+        return Response(
+            zsio,
+            status=200,
+            headers=generate_download_headers("zip"),
+            mimetype="application/zip")
+
 
 appbuilder.add_view(
     DashboardModelView,
@@ -583,6 +615,7 @@ class DashboardModelViewAsync(DashboardModelView):  # noqa
         'creator': _('Creator'),
         'modified': _('Modified'),
     }
+
 
 appbuilder.add_view_no_menu(DashboardModelViewAsync)
 
