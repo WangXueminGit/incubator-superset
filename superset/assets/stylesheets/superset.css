@@ -142,6 +142,17 @@ div.navbar {
 .datasource .tooltip-inner {
   max-width: 350px;
 }
+
+.m-t-5 {
+    margin-top: 5px;
+}
+.m-l-5 {
+    margin-left: 5px;
+}
+.text-transparent {
+    color: transparent;
+}
+
 img.loading {
   width: 40px;
   position: relative;

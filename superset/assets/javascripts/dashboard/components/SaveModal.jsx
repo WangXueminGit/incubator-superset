@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, FormControl, FormGroup, Radio } from 'react-bootstrap';
 import { getAjaxErrorMsg, showModal } from '../../modules/utils';
 import ModalTrigger from '../../components/ModalTrigger';
+import Checkbox from '../../components/Checkbox';
 
 const $ = window.$ = require('jquery');
 
@@ -20,12 +21,16 @@ class SaveModal extends React.PureComponent {
       dashboard: props.dashboard,
       css: props.css,
       saveType: 'overwrite',
-      newDashName: '',
+      newDashName: props.dashboard.dashboard_title + ' [copy]',
+      duplicateSlices: false,
     };
     this.modal = null;
     this.handleSaveTypeChange = this.handleSaveTypeChange.bind(this);
     this.handleNameChange = this.handleNameChange.bind(this);
     this.saveDashboard = this.saveDashboard.bind(this);
+  }
+  toggleDuplicateSlices() {
+    this.setState({ duplicateSlices: !this.state.duplicateSlices });
   }
   handleSaveTypeChange(event) {
     this.setState({
@@ -87,6 +92,7 @@ class SaveModal extends React.PureComponent {
       css: this.state.css,
       expanded_slices: expandedSlices,
       refreshInterval: refreshInterval,
+      duplicate_slices: this.state.duplicateSlices,
     };
     let url = null;
     if (saveType === 'overwrite') {
@@ -131,9 +137,17 @@ class SaveModal extends React.PureComponent {
             <FormControl
               type="text"
               placeholder="[dashboard name]"
+              value={this.state.newDashName}
               onFocus={this.handleNameChange}
               onChange={this.handleNameChange}
             />
+            <div className="m-l-25 m-t-5">
+              <Checkbox
+                checked={this.state.duplicateSlices}
+                onChange={this.toggleDuplicateSlices.bind(this)}
+              />
+              <span className="m-l-5">also copy (duplicate) slices</span>
+            </div>
           </FormGroup>
         }
         modalFooter={

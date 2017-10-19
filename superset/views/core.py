@@ -1483,7 +1483,21 @@ class Superset(BaseSupersetView):
 
         dash.owners = [g.user] if g.user else []
         dash.dashboard_title = data['dashboard_title']
-        dash.slices = original_dash.slices
+        if data['duplicate_slices']:
+            # Duplicating slices as well, mapping old ids to new ones
+            old_to_new_sliceids = {}
+            for slc in original_dash.slices:
+                new_slice = slc.clone()
+                new_slice.owners = [g.user] if g.user else []
+                session.add(new_slice)
+                session.flush()
+                new_slice.dashboards.append(dash)
+                old_to_new_sliceids['{}'.format(slc.id)] =\
+                    '{}'.format(new_slice.id)
+            for d in data['positions']:
+                d['slice_id'] = old_to_new_sliceids[d['slice_id']]
+        else:
+            dash.slices = original_dash.slices
         dash.slug = slugify(dash.dashboard_title)
         if '__' not in dash.slug:
             dash.slug = '{}__{}'.format(dash.slug, hashlib.sha256(str(time.time())).hexdigest())
