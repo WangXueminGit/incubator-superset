@@ -328,7 +328,8 @@ const visTypes = {
       {
         label: null,
         controlSetRows: [
-          ['groupby', 'columns'],
+          ['groupby', ],
+          ['columns', 'pivot_columns_sort'],
           ['metrics', 'pandas_aggfunc'],
           ['show_metrics_under_columns'],
         ],

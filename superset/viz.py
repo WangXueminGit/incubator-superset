@@ -474,15 +474,26 @@ class PivotTableViz(BaseViz):
             aggfunc=self.form_data.get('pandas_aggfunc'),
             margins=True,
         )
+        time_column = self.form_data.get('granularity_sqla')
+        custom_column_orders = self.form_data.get('pivot_columns_sort')
         metric_under_column = self.form_data.get(
             'show_metrics_under_columns')
         if metric_under_column:
             lenOfColumnLevels = len(df.columns.levels) - 1
-            for i in range(lenOfColumnLevels) :
-                df.columns = df.columns.swaplevel(i, i+1)
+            for i in range(lenOfColumnLevels):
+                df.columns = df.columns.swaplevel(i, i + 1)
                 df.sortlevel(0, axis=1, inplace=True)
         else:
             df = df[self.form_data.get('metrics')]
+        # Setting default order
+        index_sort_order = map(lambda x: x != time_column, df.columns.names)
+        # Overwrite with custom order
+        if custom_column_orders:
+            columns_order = map(json.loads, custom_column_orders)
+            for col_name, col_order in columns_order:
+                index_sort_order[df.columns.names.index(col_name)] = col_order
+        # Applying column ordering
+        df = df.sort_index(axis=1, ascending=index_sort_order, sort_remaining=False)
         return dict(
             columns=list(df.columns),
             html=df.to_html(

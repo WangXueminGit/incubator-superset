@@ -328,6 +328,27 @@ export const controls = {
     description: 'One or many controls to pivot as columns',
   },
 
+  pivot_columns_sort: {
+    type: 'SelectControl',
+    multi: true,
+    label: 'Columns Sorting',
+    default: [],
+    description: 'One or many metrics to display',
+    mapStateToProps: state => ({
+      choices: (state.datasource) ? state.datasource.order_by_choices.filter(
+          function (i) {
+            if (!state.controls & !state.form_data) {
+              return []
+            }
+            const order_by_col_name = i[1].split(' ')[0]
+            const from_data_include = (state.form_data) ? state.form_data.columns.indexOf(order_by_col_name) > -1 : []
+            const include = (state.controls) ? state.controls.columns.value.indexOf(order_by_col_name) > -1 : from_data_include
+            return include
+          }
+        ) : [],
+    }),
+  },
+
   all_columns: {
     type: 'SelectControl',
     multi: true,
