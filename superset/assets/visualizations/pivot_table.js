@@ -380,8 +380,14 @@ module.exports = function(slice, payload) {
       for (var i in rowContains) {
         for (var j in this.cells) {
           if (this.cells[j].innerText == rowContains[i]) {
-            $(this).addClass(rowColor);
-            $(this).addClass(rowFont);
+            // remove the class of rowcolor and rowfont when this cell's
+            // rowspan is more than 1
+            $(this).find('td, th').each(function (index) {
+              if (!($(this).attr('rowspan') > 1)) {
+                $(this).addClass(rowColor);
+                $(this).addClass(rowFont);
+              }
+            });
           }
           continue;
         }

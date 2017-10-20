@@ -32,27 +32,27 @@ table.dataTable thead > tr > th {
   color: #000000;
 }
 
-td.background-lightpink, tr.background-lightpink {
+td.background-lightpink, tr.background-lightpink, th.background-lightpink {
   background: #ffc7cd;
   color: #000000;
 }
 
-td.background-lightseagreen, tr.background-lightseagreen {
+td.background-lightseagreen, tr.background-lightseagreen, th.background-lightseagreen {
   background: #c6efce;
   color: #000000;
 }
 
-td.background-lightblue, tr.background-lightblue {
+td.background-lightblue, tr.background-lightblue, th.background-lightblue {
   background: rgba(173, 216, 230, 0.5);
   color: #000000;
 }
 
-td.background-beige, tr.background-beige {
+td.background-beige, tr.background-beige, th.background-beige {
   background: rgba(240, 220, 180, 0.5);
   color: #000000;
 }
 
-td.background-lightgray, tr.background-lightgray {
+td.background-lightgray, tr.background-lightgray, th.background-lightgray {
   background: lightgray;
   color: #000000;
 }
