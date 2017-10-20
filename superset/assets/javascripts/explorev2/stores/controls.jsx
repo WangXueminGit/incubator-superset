@@ -341,8 +341,8 @@ export const controls = {
               return []
             }
             const order_by_col_name = i[1].split(' ')[0]
-            const from_data_include = (state.form_data) ? state.form_data.columns.indexOf(order_by_col_name) > -1 : []
-            const include = (state.controls) ? state.controls.columns.value.indexOf(order_by_col_name) > -1 : from_data_include
+            const from_data_include = (state.form_data && state.form_data.columns) ? state.form_data.columns.indexOf(order_by_col_name) > -1 : []
+            const include = (state.controls && state.controls.columns && state.controls.columns.value) ? state.controls.columns.value.indexOf(order_by_col_name) > -1 : from_data_include
             return include
           }
         ) : [],

@@ -176,7 +176,7 @@ const visTypes = {
         controlSetRows: [
           ['x', 'metrics'],
           ['groupby'],
-          ['limit']
+          ['limit'],
           ['show_point_value'],
         ],
       }
