@@ -271,8 +271,16 @@ module.exports = function(slice, payload) {
         $(row).find('td').each(function (index) {
           var column = columns[index];
           var originalColumn = columns[index];
+          // Change for dealing with different situations:
+          // metircs on the top or columns on the top
           if (Array.isArray(column)) {
-            column = column[0];
+            if (metricUnderColumn) {
+              var lengthOfCol = column.length;
+              column = column[lengthOfCol - 1];
+            }
+            else {
+              column = column[0];
+            }
           }
           if (column in formatting &&
             formatting[column] !== null) {
@@ -378,8 +386,16 @@ module.exports = function(slice, payload) {
       }
       $(this).find('td').each(function (index) {
         var column = columns[index];
+        // Change for dealing with different situations:
+        // metircs on the top or columns on the top
         if (Array.isArray(column)) {
-          column = column[0];
+          if (metricUnderColumn) {
+            var lengthOfCol = column.length;
+            column = column[lengthOfCol - 1];
+          }
+          else {
+            column = column[0];
+          }
         }
         if (column in formatting && formatting[
           column] !== null) {
