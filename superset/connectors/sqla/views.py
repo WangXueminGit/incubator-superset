@@ -569,16 +569,16 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         return redirect('/tablemodelview/list/')
 
     @has_access
-    @action("upload_data", "Upload data", "Upload data to ONE table",
+    @action("add_records", "Add Records", "Append data to ONE table",
             "fa-upload")
-    def upload_data_action(self, tables):
+    def add_records_action(self, tables):
         if isinstance(tables, list):
             tables = tables[0]
-        return redirect('/tablemodelview/upload_data/{}/'.format(tables.id))
+        return redirect('/tablemodelview/add_records/{}/'.format(tables.id))
 
-    @expose('/upload_data/<pk>/', methods=['GET', 'POST'])
+    @expose('/add_records/<pk>/', methods=['GET', 'POST'])
     @has_access
-    def upload_data(self, pk):
+    def add_records(self, pk):
         table = self.datamodel.get(pk, self._base_filters)
         pk = self.datamodel.get_pk_value(table)
         database = db.session.query(Database).get(table.database.id)
@@ -599,7 +599,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                         "Failed in importing data with error: "
                         "Column %(column) not available in table", column=column),
                         "danger")
-                    return redirect('/tablemodelview/upload_data/' + str(pk))
+                    return redirect('/tablemodelview/add_records/' + str(pk))
                 else:
                     columns.append('"{}"'.format(column))
             columns = ','.join(columns)
@@ -621,7 +621,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                     flash(
                         "Failed in importing data with error: {}".format(e),
                         "danger")
-                    return redirect('/tablemodelview/upload_data/' + str(pk))
+                    return redirect('/tablemodelview/add_records/' + str(pk))
 
             transaction.commit()
             connection.close()
@@ -635,7 +635,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         # Get table column name
         # Render upload form
         return self.render_template(
-            'superset/upload_data.html',
+            'superset/add_records.html',
             table=table,
             columns=table.columns,
         )
