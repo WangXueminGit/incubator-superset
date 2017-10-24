@@ -29,6 +29,7 @@ from dateutil import relativedelta as rdelta
 
 from superset import app, utils, cache
 from superset.utils import DTTM_ALIAS, decode_base16_string
+from pandas.indexes.numeric import Int64Index
 
 config = app.config
 
@@ -478,13 +479,32 @@ class PivotTableViz(BaseViz):
         custom_column_orders = self.form_data.get('pivot_columns_sort')
         metric_under_column = self.form_data.get(
             'show_metrics_under_columns')
-        if metric_under_column:
+
+        def safe_get_index(label):
+            if label in self.form_data.get('metrics'):
+                return self.form_data.get('metrics').index(label)
+            else:
+                return label
+
+        def safe_get_value(index):
+            try:
+                index = int(index)
+            except:
+                return index
+            if type(index) is not int:
+                return index
+            elif index >= len(self.form_data.get('metrics')):
+                return index
+            else:
+                return self.form_data.get('metrics')[index]
+        # Renaming metrics into its specified order allowing for proper sorting
+        df = df.rename_axis(safe_get_index, axis=1)
+        # Checking if only metrics or only columns exist
+        if metric_under_column and type(df.columns) != Int64Index:
+            # Moving the metrics row down
             lenOfColumnLevels = len(df.columns.levels) - 1
             for i in range(lenOfColumnLevels):
                 df.columns = df.columns.swaplevel(i, i + 1)
-                df.sortlevel(0, axis=1, inplace=True)
-        else:
-            df = df[self.form_data.get('metrics')]
         # Setting default order
         index_sort_order = map(lambda x: x != time_column, df.columns.names)
         # Overwrite with custom order
@@ -494,6 +514,13 @@ class PivotTableViz(BaseViz):
                 index_sort_order[df.columns.names.index(col_name)] = col_order
         # Applying column ordering
         df = df.sort_index(axis=1, ascending=index_sort_order, sort_remaining=False)
+        # Renaming metrics header back to its original name
+        if metric_under_column and type(df.columns) != Int64Index:
+            df.columns = df.columns.swaplevel(0, len(df.columns.levels) - 1)
+            df = df.rename_axis(safe_get_value, axis=1)
+            df.columns = df.columns.swaplevel(0, len(df.columns.levels) - 1)
+        else:
+            df = df.rename_axis(safe_get_value, axis=1)
         return dict(
             columns=list(df.columns),
             html=df.to_html(
