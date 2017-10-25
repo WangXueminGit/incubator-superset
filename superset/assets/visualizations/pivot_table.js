@@ -441,7 +441,7 @@ module.exports = function(slice, payload) {
           fontOptionClass,
           bcColoringOptionClass);
         const perc = Math.round((val / maxes[columns[index]]) * 100);
-        var cellTotalColumn = columns[index];
+        var cellTotalColumn = column;
         if (Array.isArray(cellTotalColumn)) {
             cellTotalColumn = cellTotalColumn[0];
         }
