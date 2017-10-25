@@ -74,7 +74,7 @@ REDIS_HOST = get_env_variable('REDIS_HOST')
 REDIS_PORT = get_env_variable('REDIS_PORT')
 
 # The SQLAlchemy connection string.
-SQLALCHEMY_DATABASE_URI = "postgresql://%s:%s@%s:%s/%s" % (POSTGRES_PASSWORD,
+SQLALCHEMY_DATABASE_URI = "postgresql://%s:%s@%s:%s/%s" % (POSTGRES_USER,
                                                            POSTGRES_PASSWORD,
                                                            POSTGRES_HOST,
                                                            POSTGRES_PORT,
