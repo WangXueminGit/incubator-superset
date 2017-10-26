@@ -199,10 +199,12 @@ function tableVis(slice, payload) {
           bcColoringOptionClass = 'background-lightgray'
         }
       }
+    /*
       if (styling !== null) {
         coloringOptionClass = ''
         bcColoringOptionClass = ''
       }
+    */
       if (d.fontOption !== null) {
         if (d.fontOption === 'bold') {
           fontOptionClass = 'bold'
