@@ -505,15 +505,18 @@ class PivotTableViz(BaseViz):
             lenOfColumnLevels = len(df.columns.levels) - 1
             for i in range(lenOfColumnLevels):
                 df.columns = df.columns.swaplevel(i, i + 1)
-        # Setting default order
-        index_sort_order = map(lambda x: x != time_column, df.columns.names)
+        # Setting default order, if x is None, x refers to the metrics column which should be always ascending
+        index_sort_order = map(lambda x: x != time_column or x is None, df.columns.names)
         # Overwrite with custom order
         if custom_column_orders:
             columns_order = map(json.loads, custom_column_orders)
             for col_name, col_order in columns_order:
                 index_sort_order[df.columns.names.index(col_name)] = col_order
         # Applying column ordering
-        df = df.sort_index(axis=1, ascending=index_sort_order, sort_remaining=False)
+        if len(index_sort_order) == 1:
+            df = df.sort_index(axis=1, ascending=index_sort_order[0], sort_remaining=False)
+        else:
+            df = df.sort_index(axis=1, ascending=index_sort_order, sort_remaining=False)
         # Renaming metrics header back to its original name
         if metric_under_column and type(df.columns) != Int64Index:
             df.columns = df.columns.swaplevel(0, len(df.columns.levels) - 1)
