@@ -11,15 +11,15 @@
  * @author      Alexey Shildyakov (ashl1future@gmail.com)
  * @contact     ashl1future@gmail.com
  * @copyright   Alexey Shildyakov
- * 
+ *
  * License      MIT - http://datatables.net/license/mit
  *
  * This feature plug-in for DataTables automatically merges columns cells
  * based on it's values equality. It supports multi-column row grouping
- * in according to the requested order with dependency from each previous 
- * requested columns. Now it supports ordering and searching. 
+ * in according to the requested order with dependency from each previous
+ * requested columns. Now it supports ordering and searching.
  * Please see the example.html for details.
- * 
+ *
  * Rows grouping in DataTables can be enabled by using any one of the following
  * options:
  *
@@ -35,45 +35,45 @@
  *   described above.
  *
  * For more detailed information please see:
- *     
+ *
  */
 
 (function( factory ) {
-	"use strict";
+    "use strict";
 
-	if ( typeof define === 'function' && define.amd ) {
-		// AMD
-		define( ['jquery'], function ( $ ) {
-			return factory( $, window, document );
-		} );
-	}
-	else if ( typeof exports === 'object' ) {
-		// CommonJS
-		module.exports = function (root, $) {
-			if ( ! root ) {
-				root = window;
-			}
+    if ( typeof define === 'function' && define.amd ) {
+        // AMD
+        define( ['jquery'], function ( $ ) {
+            return factory( $, window, document );
+        } );
+    }
+    else if ( typeof exports === 'object' ) {
+        // CommonJS
+        module.exports = function (root, $) {
+            if ( ! root ) {
+                root = window;
+            }
 
-			if ( ! $ ) {
-				$ = typeof window !== 'undefined' ?
-					require('jquery') :
-					require('jquery')( root );
-			}
+            if ( ! $ ) {
+                $ = typeof window !== 'undefined' ?
+                    require('jquery') :
+                    require('jquery')( root );
+            }
 
-			return factory( $, root, root.document );
-		};
-	}
-	else {
-		// Browser
-		factory( jQuery, window, document );
-	}
+            return factory( $, root, root.document );
+        };
+    }
+    else {
+        // Browser
+        factory( jQuery, window, document );
+    }
 }
 (function($, window, document){
 
 ShowedDataSelectorModifier = {
-	order: 'current',
-	page: 'current',
-	search: 'applied',
+    order: 'current',
+    page: 'current',
+    search: 'applied',
 }
 
 GroupedColumnsOrderDir = 'asc';
@@ -84,58 +84,58 @@ GroupedColumnsOrderDir = 'asc';
  */
 var RowsGroup = function ( dt, columnsForGrouping )
 {
-	this.table = dt.table();
-	this.columnsForGrouping = columnsForGrouping;
-	 // set to True when new reorder is applied by RowsGroup to prevent order() looping
-	this.orderOverrideNow = false;
-	this.mergeCellsNeeded = false; // merge after init
+    this.table = dt.table();
+    this.columnsForGrouping = columnsForGrouping;
+     // set to True when new reorder is applied by RowsGroup to prevent order() looping
+    this.orderOverrideNow = false;
+    this.mergeCellsNeeded = false; // merge after init
     this.order = dt.table().order();
-	
-	var self = this;
-	dt.on('order.dt.rowsGroup', function ( e, settings) {
-		if (!self.orderOverrideNow) {
-			self.orderOverrideNow = true;
-			self._updateOrderAndDraw()
-		} else {
-			self.orderOverrideNow = false;
-		}
-	})
-	
-	dt.on('preDraw.dt.rowsGroup', function ( e, settings) {
-		if (self.mergeCellsNeeded) {
-			self.mergeCellsNeeded = false;
-			self._mergeCells()
-		}
-	})
-	
-	dt.on('column-visibility.dt.rowsGroup', function ( e, settings) {
-		self.mergeCellsNeeded = true;
-	})
 
-	dt.on('search.dt.rowsGroup', function ( e, settings) {
-		// This might to increase the time to redraw while searching on tables
-		//   with huge shown columns
-		self.mergeCellsNeeded = true;
-	})
+    var self = this;
+    dt.on('order.dt.rowsGroup', function ( e, settings) {
+        if (!self.orderOverrideNow) {
+            self.orderOverrideNow = true;
+            self._updateOrderAndDraw()
+        } else {
+            self.orderOverrideNow = false;
+        }
+    })
 
-	dt.on('page.dt.rowsGroup', function ( e, settings) {
-		self.mergeCellsNeeded = true;
-	})
+    dt.on('preDraw.dt.rowsGroup', function ( e, settings) {
+        if (self.mergeCellsNeeded) {
+            self.mergeCellsNeeded = false;
+            self._mergeCells()
+        }
+    })
 
-	dt.on('length.dt.rowsGroup', function ( e, settings) {
-		self.mergeCellsNeeded = true;
-	})
+    dt.on('column-visibility.dt.rowsGroup', function ( e, settings) {
+        self.mergeCellsNeeded = true;
+    })
 
-	dt.on('xhr.dt.rowsGroup', function ( e, settings) {
-		self.mergeCellsNeeded = true;
-	})
+    dt.on('search.dt.rowsGroup', function ( e, settings) {
+        // This might to increase the time to redraw while searching on tables
+        //   with huge shown columns
+        self.mergeCellsNeeded = true;
+    })
 
-	dt.on('destroy.dt.rowsGroup', function ( e ) {
-		dt.off('.rowsGroup');
-	})
+    dt.on('page.dt.rowsGroup', function ( e, settings) {
+        self.mergeCellsNeeded = true;
+    })
 
-	this._updateOrderAndDraw();
-	
+    dt.on('length.dt.rowsGroup', function ( e, settings) {
+        self.mergeCellsNeeded = true;
+    })
+
+    dt.on('xhr.dt.rowsGroup', function ( e, settings) {
+        self.mergeCellsNeeded = true;
+    })
+
+    dt.on('destroy.dt.rowsGroup', function ( e ) {
+        dt.off('.rowsGroup');
+    })
+
+    this._updateOrderAndDraw();
+
 /* Events sequence while Add row (also through Editor)
  * addRow() function
  *   draw() function
@@ -153,18 +153,18 @@ var RowsGroup = function ( dt, columnsForGrouping )
 
 
 RowsGroup.prototype = {
-	setMergeCells: function(){
-		this.mergeCellsNeeded = true;
-	},
+    setMergeCells: function(){
+        this.mergeCellsNeeded = true;
+    },
 
-	mergeCells: function()
-	{
-		this.setMergeCells();
-		this.table.draw();
-	},
+    mergeCells: function()
+    {
+        this.setMergeCells();
+        this.table.draw();
+    },
 
-	_getOrderWithGroupColumns: function (order, groupedColumnsOrderDir)
-	{
+    _getOrderWithGroupColumns: function (order, groupedColumnsOrderDir)
+    {
         // Check the table's order first, because for non-grouped column,
         // the order should be set by only one column,
         // if there are more than one nongroup order, remove them
@@ -180,15 +180,15 @@ RowsGroup.prototype = {
                 }
             }
         }
-		if (order.length === 1) {
+        if (order.length === 1) {
             // current sorting
             var resultOrder = this.order;
             var orderingColumn = order[0][0];
-			var previousOrderIndex = this.order.map(function(val){
-				return val[0];
+            var previousOrderIndex = this.order.map(function(val){
+                return val[0];
             })
-			var iColumn = previousOrderIndex.indexOf(orderingColumn);
-			if (iColumn >= 0 ) {
+            var iColumn = previousOrderIndex.indexOf(orderingColumn);
+            if (iColumn >= 0 ) {
                 // The column's order already in table's order, need update
                 resultOrder[iColumn][1] = order[0][1];
             }
@@ -227,83 +227,83 @@ RowsGroup.prototype = {
         }
         // previous sorting
         return order;
-	},
- 
-	// Workaround: the DT reset ordering to 'asc' from multi-ordering if user order on one column (without shift)
-	//   but because we always has multi-ordering due to grouped rows this happens every time
-	_getInjectedMonoSelectWorkaround: function(order)
-	{
-		if (order.length === 1) {
-			// got mono order - workaround here
-			var orderingColumn = order[0][0]
-			var previousOrder = this.order.map(function(val){
-				return val[0]
-			})
-			var iColumn = previousOrder.indexOf(orderingColumn);
-			if (iColumn >= 0) {
-				// assume change the direction, because we already has that in previos order
-				return [[orderingColumn, this._toogleDirection(this.order[iColumn][1])]]
-			} // else This is the new ordering column. Proceed as is.
-		} // else got milti order - work normal
-		return order;
-	},
-	
-	_mergeCells: function()
-	{
-		var columnsIndexes = this.table.columns(this.columnsForGrouping, ShowedDataSelectorModifier).indexes().toArray()
-		var showedRowsCount = this.table.rows(ShowedDataSelectorModifier)[0].length 
-		this._mergeColumn(0, showedRowsCount - 1, columnsIndexes)
-	},
-	
-	// the index is relative to the showed data
-	//    (selector-modifier = {order: 'current', page: 'current', search: 'applied'}) index
-	_mergeColumn: function(iStartRow, iFinishRow, columnsIndexes)
-	{
-		var columnsIndexesCopy = columnsIndexes.slice()
-		currentColumn = columnsIndexesCopy.shift()
-		currentColumn = this.table.column(currentColumn, ShowedDataSelectorModifier)
-		
-		var columnNodes = currentColumn.nodes()
-		var columnValues = currentColumn.data()
-		
-		var newSequenceRow = iStartRow,
-			iRow;
-		for (iRow = iStartRow + 1; iRow <= iFinishRow; ++iRow) {
-			
-			if (columnValues[iRow] === columnValues[newSequenceRow]) {
-				$(columnNodes[iRow]).hide()
-			} else {
-				$(columnNodes[newSequenceRow]).show()
-				$(columnNodes[newSequenceRow]).attr('rowspan', (iRow-1) - newSequenceRow + 1)
-				
-				if (columnsIndexesCopy.length > 0)
-					this._mergeColumn(newSequenceRow, (iRow-1), columnsIndexesCopy)
-				
-				newSequenceRow = iRow;
-			}
-			
-		}
-		$(columnNodes[newSequenceRow]).show()
-		$(columnNodes[newSequenceRow]).attr('rowspan', (iRow-1)- newSequenceRow + 1)
-		if (columnsIndexesCopy.length > 0)
-			this._mergeColumn(newSequenceRow, (iRow-1), columnsIndexesCopy)
-	},
-	
-	_toogleDirection: function(dir)
-	{
-		return dir == 'asc'? 'desc': 'asc';
-	},
- 
-	_updateOrderAndDraw: function()
-	{
-		this.mergeCellsNeeded = true;
-		
-		var currentOrder = this.table.order();
-		currentOrder = this._getInjectedMonoSelectWorkaround(currentOrder);
-		this.order = this._getOrderWithGroupColumns(currentOrder)
-		this.table.order($.extend(true, Array(), this.order))
-		this.table.draw()
-	},
+    },
+
+    // Workaround: the DT reset ordering to 'asc' from multi-ordering if user order on one column (without shift)
+    //   but because we always has multi-ordering due to grouped rows this happens every time
+    _getInjectedMonoSelectWorkaround: function(order)
+    {
+        if (order.length === 1) {
+            // got mono order - workaround here
+            var orderingColumn = order[0][0]
+            var previousOrder = this.order.map(function(val){
+                return val[0]
+            })
+            var iColumn = previousOrder.indexOf(orderingColumn);
+            if (iColumn >= 0) {
+                // assume change the direction, because we already has that in previos order
+                return [[orderingColumn, this._toogleDirection(this.order[iColumn][1])]]
+            } // else This is the new ordering column. Proceed as is.
+        } // else got milti order - work normal
+        return order;
+    },
+
+    _mergeCells: function()
+    {
+        var columnsIndexes = this.table.columns(this.columnsForGrouping, ShowedDataSelectorModifier).indexes().toArray()
+        var showedRowsCount = this.table.rows(ShowedDataSelectorModifier)[0].length
+        this._mergeColumn(0, showedRowsCount - 1, columnsIndexes)
+    },
+
+    // the index is relative to the showed data
+    //    (selector-modifier = {order: 'current', page: 'current', search: 'applied'}) index
+    _mergeColumn: function(iStartRow, iFinishRow, columnsIndexes)
+    {
+        var columnsIndexesCopy = columnsIndexes.slice()
+        currentColumn = columnsIndexesCopy.shift()
+        currentColumn = this.table.column(currentColumn, ShowedDataSelectorModifier)
+
+        var columnNodes = currentColumn.nodes()
+        var columnValues = currentColumn.data()
+
+        var newSequenceRow = iStartRow,
+            iRow;
+        for (iRow = iStartRow + 1; iRow <= iFinishRow; ++iRow) {
+
+            if (columnValues[iRow] === columnValues[newSequenceRow]) {
+                $(columnNodes[iRow]).hide()
+            } else {
+                $(columnNodes[newSequenceRow]).show()
+                $(columnNodes[newSequenceRow]).attr('rowspan', (iRow-1) - newSequenceRow + 1)
+
+                if (columnsIndexesCopy.length > 0)
+                    this._mergeColumn(newSequenceRow, (iRow-1), columnsIndexesCopy)
+
+                newSequenceRow = iRow;
+            }
+
+        }
+        $(columnNodes[newSequenceRow]).show()
+        $(columnNodes[newSequenceRow]).attr('rowspan', (iRow-1)- newSequenceRow + 1)
+        if (columnsIndexesCopy.length > 0)
+            this._mergeColumn(newSequenceRow, (iRow-1), columnsIndexesCopy)
+    },
+
+    _toogleDirection: function(dir)
+    {
+        return dir == 'asc'? 'desc': 'asc';
+    },
+
+    _updateOrderAndDraw: function()
+    {
+        this.mergeCellsNeeded = true;
+
+        var currentOrder = this.table.order();
+        currentOrder = this._getInjectedMonoSelectWorkaround(currentOrder);
+        this.order = this._getOrderWithGroupColumns(currentOrder)
+        this.table.order($.extend(true, Array(), this.order))
+        this.table.draw()
+    },
 };
 
 
@@ -312,27 +312,27 @@ $.fn.DataTable.RowsGroup = RowsGroup;
 
 // Automatic initialisation listener
 $(document).on( 'init.dt.rowsGroup', function ( e, settings ) {
-	if ( e.namespace !== 'dt' ) {
-		return;
-	}
+    if ( e.namespace !== 'dt' ) {
+        return;
+    }
 
-	var api = new $.fn.dataTable.Api( settings );
-	
-	if ( settings.oInit.rowsGroup ||
-		 $.fn.dataTable.defaults.rowsGroup )
-	{
-		options = settings.oInit.rowsGroup?
-			settings.oInit.rowsGroup:
-			$.fn.dataTable.defaults.rowsGroup;
-		var rowsGroup = new RowsGroup( api, options );
-		$.fn.dataTable.Api.register( 'rowsgroup.update()', function () {
-			rowsGroup.mergeCells();
-			return this;
-		} );
-		$.fn.dataTable.Api.register( 'rowsgroup.updateNextDraw()', function () {
-			rowsGroup.setMergeCells();
-			return this;
-		} );
-	}
+    var api = new $.fn.dataTable.Api( settings );
+
+    if ( settings.oInit.rowsGroup ||
+         $.fn.dataTable.defaults.rowsGroup )
+    {
+        options = settings.oInit.rowsGroup?
+            settings.oInit.rowsGroup:
+            $.fn.dataTable.defaults.rowsGroup;
+        var rowsGroup = new RowsGroup( api, options );
+        $.fn.dataTable.Api.register( 'rowsgroup.update()', function () {
+            rowsGroup.mergeCells();
+            return this;
+        } );
+        $.fn.dataTable.Api.register( 'rowsgroup.updateNextDraw()', function () {
+            rowsGroup.setMergeCells();
+            return this;
+        } );
+    }
 } );
 }));
