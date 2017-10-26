@@ -89,7 +89,7 @@ var RowsGroup = function ( dt, columnsForGrouping )
 	 // set to True when new reorder is applied by RowsGroup to prevent order() looping
 	this.orderOverrideNow = false;
 	this.mergeCellsNeeded = false; // merge after init
-	this.order = []
+    this.order = dt.table().order();
 	
 	var self = this;
 	dt.on('order.dt.rowsGroup', function ( e, settings) {
@@ -165,32 +165,68 @@ RowsGroup.prototype = {
 
 	_getOrderWithGroupColumns: function (order, groupedColumnsOrderDir)
 	{
-		if (groupedColumnsOrderDir === undefined)
-			groupedColumnsOrderDir = GroupedColumnsOrderDir
-			
-		var self = this;
-		var groupedColumnsIndexes = this.columnsForGrouping.map(function(columnSelector){
-			return self.table.column(columnSelector).index()
-		})
-		var groupedColumnsKnownOrder = order.filter(function(columnOrder){
-			return groupedColumnsIndexes.indexOf(columnOrder[0]) >= 0
-		})
-		var nongroupedColumnsOrder = order.filter(function(columnOrder){
-			return groupedColumnsIndexes.indexOf(columnOrder[0]) < 0
-		})
-		var groupedColumnsKnownOrderIndexes = groupedColumnsKnownOrder.map(function(columnOrder){
-			return columnOrder[0]
-		})
-		var groupedColumnsOrder = groupedColumnsIndexes.map(function(iColumn){
-			var iInOrderIndexes = groupedColumnsKnownOrderIndexes.indexOf(iColumn)
-			if (iInOrderIndexes >= 0)
-				return [iColumn, groupedColumnsKnownOrder[iInOrderIndexes][1]]
-			else
-				return [iColumn, groupedColumnsOrderDir]
-		})
-		
-		groupedColumnsOrder.push.apply(groupedColumnsOrder, nongroupedColumnsOrder)
-		return groupedColumnsOrder;
+        // Check the table's order first, because for non-grouped column,
+        // the order should be set by only one column,
+        // if there are more than one nongroup order, remove them
+        var nonGroupSortExists = false;
+        for (var k in this.order) {
+            if (this.columnsForGrouping.indexOf(this.order[k][0]) < 0) {
+                //for order in non-grouped column
+                if(!nonGroupSortExists) {
+                    nonGroupSortExists = true;
+                }
+                else {
+                    this.order.splice(k, 1);
+                }
+            }
+        }
+		if (order.length === 1) {
+            // current sorting
+            var resultOrder = this.order;
+            var orderingColumn = order[0][0];
+			var previousOrderIndex = this.order.map(function(val){
+				return val[0];
+            })
+			var iColumn = previousOrderIndex.indexOf(orderingColumn);
+			if (iColumn >= 0 ) {
+                // The column's order already in table's order, need update
+                resultOrder[iColumn][1] = order[0][1];
+            }
+            else {
+                if (this.columnsForGrouping.indexOf(orderingColumn) >= 0) {
+                    // The column is a grouped column, add it to table's order
+                    resultOrder.push(order[0]);
+                }
+                else {
+                    // The index of non group column which has order
+                    // If nongroupIndex = -1,
+                    // The previous order doesn't contain any order of nongroup column,
+                    // just push it into table's order
+                    var nongroupIndex = -1;
+                    for (var i in previousOrderIndex) {
+                        if (this.columnsForGrouping.indexOf(previousOrderIndex[i]) < 0) {
+                            nongroupIndex = previousOrderIndex[i];
+                        }
+                    }
+                    if (nongroupIndex == -1) {
+                        resultOrder.push(order[0]);
+                    }
+                    else {
+                        // delete the order one, add the new one
+                        for (var i in resultOrder) {
+                            if (resultOrder[i][0] == nongroupIndex) {
+                                resultOrder[i][0] = order[0][0];
+                                resultOrder[i][1] = order[0][1];
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+            return resultOrder;
+        }
+        // previous sorting
+        return order;
 	},
  
 	// Workaround: the DT reset ordering to 'asc' from multi-ordering if user order on one column (without shift)
