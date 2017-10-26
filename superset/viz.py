@@ -482,13 +482,13 @@ class PivotTableViz(BaseViz):
 
         def safe_get_index(label):
             if label in self.form_data.get('metrics'):
-                return self.form_data.get('metrics').index(label)
+                return '__%s' % self.form_data.get('metrics').index(label)
             else:
                 return label
 
         def safe_get_value(index):
             try:
-                index = int(index)
+                index = int(index.lstrip('__'))
             except:
                 return index
             if type(index) is not int:
