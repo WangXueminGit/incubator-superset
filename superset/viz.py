@@ -480,15 +480,17 @@ class PivotTableViz(BaseViz):
         metric_under_column = self.form_data.get(
             'show_metrics_under_columns')
 
+        metric_uuid_index = sorted([uuid.uuid4().hex for _ in self.form_data.get('metrics')])
+
         def safe_get_index(label):
             if label in self.form_data.get('metrics'):
-                return '__%s' % self.form_data.get('metrics').index(label)
+                return metric_uuid_index[self.form_data.get('metrics').index(label)]
             else:
                 return label
 
-        def safe_get_value(index):
+        def safe_get_value(uuid_label):
             try:
-                index = int(index.lstrip('__'))
+                index = metric_uuid_index.index(uuid_label)
             except:
                 return index
             if type(index) is not int:
