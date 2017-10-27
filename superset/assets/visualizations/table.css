@@ -26,3 +26,9 @@ table.table thead th.sorting:after, table.table thead th.sorting_asc:after, tabl
 .like-pre {
   white-space: pre-wrap;
 }
+
+/*
+table.datatable {
+  table-layout: fixed;
+}
+*/

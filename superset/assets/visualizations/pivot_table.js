@@ -9,9 +9,13 @@ from '../javascripts/modules/utils';
 import './pivot_table.css';
 dt(window, $);
 
-var imported = document.createElement('script');
-imported.src = "/static/assets/vendor/javascripts/dataTables.rowsGroup.js"
-document.head.appendChild(imported);
+var importedRowsGroup = document.createElement('script');
+importedRowsGroup.src = "/static/assets/vendor/javascripts/dataTables.rowsGroup.js"
+document.head.appendChild(importedRowsGroup);
+
+var importedColResize = document.createElement('script');
+importedColResize.src = "/static/assets/vendor/javascripts/dataTables.colResize.js";
+document.head.appendChild(importedColResize);
 
 var importedSortNum = document.createElement('script');
 importedSortNum.src = "/static/assets/vendor/javascripts/datatables.num-html.js";
@@ -258,6 +262,10 @@ module.exports = function(slice, payload) {
       "aoColumnDefs": [
         { "sType": "num-html", "aTargets": [ 0 ] }
       ],
+      "dom": 'Zlfrtip',
+      "colResize": {
+        "tableWidthFixed": true,
+      },
       paging: false,
       searching: false,
       bInfo: false,
@@ -519,6 +527,11 @@ module.exports = function(slice, payload) {
       "aoColumnDefs": [
         { "sType": "num-html", "aTargets": groupColumns }
       ],
+      "dom": 'Zlfrtip',
+      "colResize": {
+        "tableWidthFixed": true,
+      },
+      "sScrollX": "100%",
       paging: false,
       searching: false,
       bInfo: false,

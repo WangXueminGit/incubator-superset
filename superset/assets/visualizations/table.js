@@ -18,6 +18,10 @@ import $ from 'jquery';
 
 dt(window, $);
 
+var imported = document.createElement('script');
+imported.src = "/static/assets/vendor/javascripts/dataTables.colResize.js";
+document.head.appendChild(imported);
+
 function tableVis(slice, payload) {
   const container = $(slice.selector);
   const fC = d3.format('0,000');
@@ -316,6 +320,11 @@ function tableVis(slice, payload) {
     pageLength = parseInt(fd.page_length, 10);
   }
   const datatable = container.find('.dataTable').DataTable({
+    "dom": 'Zlfrtip',
+    "colResize": {
+      "tableWidthFixed": true,
+    },
+    "autoWidth": false,
     paging,
     pageLength,
     aaSorting: [],

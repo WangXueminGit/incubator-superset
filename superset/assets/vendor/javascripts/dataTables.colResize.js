@@ -248,7 +248,6 @@
                 this.s.dt.oApi._fnCallbackReg(this.s.dt, 'aoStateSaveParams', function (oS, oData) {
                     that._fnStateSave.call(that, oData);
                 }, "ColResize_State");
-
                 // State loading
                 this._fnStateLoad();
             },
@@ -420,7 +419,6 @@
              */
             "_fnMouseDown": function (e, nTh) {
                 var that = this;
-
                 that.s.isMousedown = true;
 
                 /* Store information about the mouse position */
@@ -701,9 +699,14 @@
              *  @private
              */
             "_fnSetColumnIndexes": function () {
-                $.each(this.s.dt.aoColumns, function (i, column) {
-                    $(column.nTh).attr('data-column-index', i);
-                });
+                var headerAo = this.s.dt.aoHeader;
+                for (var ind = 0; ind < headerAo.length; ind++) {
+                    //column = this.s.dt.aoHeader[i]
+                    $.each(headerAo[ind], function (i, column) {
+                        //$(column.nTh).attr('data-column-index', i);
+                        $(column.cell).attr('data-column-index', i);
+                    });
+                }
             }
         };
 
