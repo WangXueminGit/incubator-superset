@@ -98,7 +98,7 @@ module.exports = function(slice, payload) {
             basements[columnName] = columnConfiguration[metric][mode]
             .basement;
         }
-        }
+      }
     }
   }
   if (rowConfiguration.coloringOption) {
@@ -185,29 +185,7 @@ module.exports = function(slice, payload) {
   }
   const groups = fd.groupby.length;
   var arrForMax ={};
-  for (var j in columns) {
-    arrForMax[columns[j]] = [];
-  }
-  container.find('table tbody tr').each(function () {
-    if (hide) {
-      // Remove row contains "rowContains" for pivot table
-      if ($.inArray(this.cells[0].innerText, hide) !== -1) {
-        $(this).hide();
-      }
-    }
-    // If hideColumnAll is true, then hide the column who contains 'all'
-    // This section is used to hide 'td' elements
-    //$(this).find('td').addClass('text-right').each(function (index){
-    $(this).find('td').each(function (index){
-      var column = columns[index];
-      arrForMax[columns[index]].push(parseFloat(this.innerText));
-      if (hideColumnAll) {
-        if ($.inArray('All', column) !== -1) {
-          $(this).hide();
-        }
-      }
-    });
-  });
+
   // If hideColumnAll is true, then hide the column who contains 'all'
   // This section is used to hide 'th' elements
   if (hideColumnAll) {
@@ -222,7 +200,7 @@ module.exports = function(slice, payload) {
             var column = columns[acc];
             acc += $(this).prop('colSpan');
             if ($.inArray('All', column) !== -1) {
-              $(this).hide();
+              $(this).remove();
             }
           }
           else {
@@ -235,7 +213,7 @@ module.exports = function(slice, payload) {
               var column = columns[acc];
               acc += $(this).prop('colSpan');
               if ($.inArray('All', column) !== -1) {
-                $(this).hide();
+                $(this).remove();
               }
             }
           }
@@ -243,21 +221,82 @@ module.exports = function(slice, payload) {
       })
     });
   }
+  container.find('table tbody tr').each(function () {
+    // If hideColumnAll is true, then hide the column who contains 'all'
+    // This section is used to hide 'td' elements
+    //$(this).find('td').addClass('text-right').each(function (index){
+    $(this).find('td').each(function (index){
+      var column = columns[index];
+      if (hideColumnAll) {
+        if ($.inArray('All', column) !== -1) {
+          $(this).remove();
+        }
+      }
+    });
+  })
+  if (hideColumnAll) {
+    var l = columns.length;
+    for (var i=0; i<l; i++) {
+      if ($.inArray('All', columns[i]) !== -1) {
+        columns.splice(i, 1);
+        i--;
+        l--;
+      }
+    }
+  }
+  for (var j in columns) {
+    var maxKey = '';
+    for (var k in columns[j]) {
+      maxKey += columns[j][k];
+    }
+    arrForMax[maxKey] = [];
+  }
+  container.find('table tbody tr').each(function () {
+    if (hide) {
+      // Remove row contains "rowContains" for pivot table
+      if ($.inArray(this.cells[0].innerText, hide) !== -1) {
+        $(this).hide();
+      }
+    }
+    // If hideColumnAll is true, then hide the column who contains 'all'
+    // This section is used to hide 'td' elements
+    //$(this).find('td').addClass('text-right').each(function (index){
+    $(this).find('td').each(function (index){
+      var maxKey = '';
+      for (var k in columns[index]) {
+        maxKey += columns[index][k];
+      }
+      arrForMax[maxKey].push(parseFloat(this.innerText));
+    });
+  });
+
   var lengthOfarr = Object.keys(arrForMax).length;
   for (var q=0; q < lengthOfarr; q+=1) {
-    var l = arrForMax[columns[q]].length;
-    arrForMax[columns[q]].splice(l-1, 1);
+    var maxKey = '';
+    for (var k in columns[q]) {
+      maxKey += columns[q][k];
+    }
+    var l = arrForMax[maxKey].length;
+    arrForMax[maxKey].splice(l-1, 1);
   }
+
+
   const maxes = {};
   for (var n = 0; n < Object.keys(arrForMax).length; n += 1) {
-    maxes[columns[n]] = d3.max(arrForMax[columns[n]]);
+    var maxKey = '';
+    for (var k in columns[n]) {
+      maxKey += columns[n][k];
+    }
+    maxes[maxKey] = d3.max(arrForMax[maxKey]);
   }
+  console.log(maxes);
   if (fd.groupby.length === 1) {
     // When there is only 1 group by column,
     // we use the DataTable plugin to make the header fixed.
     // The plugin takes care of the scrolling so we don't need
     // overflow: 'auto' on the table.
     container.css('overflow', 'hidden');
+    container.find('table').attr('width', '100%');
     const table = container.find('table').DataTable({
       "aoColumnDefs": [
         { "sType": "num-html", "aTargets": [ 0 ] }
@@ -347,7 +386,11 @@ module.exports = function(slice, payload) {
             coloringOptionClass,
             fontOptionClass,
             bcColoringOptionClass, false, null);
-          const perc = Math.round((val / maxes[originalColumn]) * 100);
+          var maxKey = '';
+          for (var k in originalColumn) {
+            maxKey += originalColumn[k];
+          }
+          const perc = Math.round((val / maxes[maxKey]) * 100);
           var cellTotalColumn = column;
           if (Array.isArray(cellTotalColumn)) {
             cellTotalColumn = cellTotalColumn[0];
@@ -397,8 +440,6 @@ module.exports = function(slice, payload) {
     // When there is more than 1 group by column we just render the table, without using
     // the DataTable plugin, so we need to handle the scrolling ourselves.
     // In this case the header is not fixed.
-    container.css('overflow', 'auto');
-    container.css('height', `${height + 10}px`);
     container.find('table tbody tr').each(function () {
       var hasRowColor = false;
       for (var i in rowContains) {
@@ -467,7 +508,11 @@ module.exports = function(slice, payload) {
           coloringOptionClass,
           fontOptionClass,
           bcColoringOptionClass, hasRowColor, rowColor);
-        const perc = Math.round((val / maxes[columns[index]]) * 100);
+        var maxKey = '';
+        for (var k in columns[index]) {
+          maxKey += columns[index][k];
+        }
+        const perc = Math.round((val / maxes[maxKey]) * 100);
         var cellTotalColumn = column;
         if (Array.isArray(cellTotalColumn)) {
             cellTotalColumn = cellTotalColumn[0];
@@ -523,6 +568,7 @@ module.exports = function(slice, payload) {
     for (var i = 0; i < groups; i++) {
       groupColumns.push(i);
     }
+    container.find('table').attr('width', '100%');
     const table = container.find('table').DataTable({
       "aoColumnDefs": [
         { "sType": "num-html", "aTargets": groupColumns }
@@ -531,7 +577,9 @@ module.exports = function(slice, payload) {
       "colResize": {
         "tableWidthFixed": true,
       },
-      "sScrollX": "100%",
+      scrollY: height + 'px',
+      scrollCollapse: true,
+      scrollX: true,
       paging: false,
       searching: false,
       bInfo: false,

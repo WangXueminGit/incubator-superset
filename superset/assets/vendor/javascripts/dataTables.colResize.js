@@ -353,11 +353,11 @@
 
             "_fnSetupMouseListeners": function () {
                 var that = this;
-                $(that.s.dt.nTableWrapper).off("mouseenter.ColResize").on("mouseenter.ColResize", "th", function (e) {
+                $(that.s.dt.nTableWrapper).off("mouseenter.ColResize").on("mouseenter.ColResize", "thead tr th", function (e) {
                     e.preventDefault();
                     that._fnMouseEnter.call(that, e, this);
                 });
-                $(that.s.dt.nTableWrapper).off("mouseleave.ColResize").on("mouseleave.ColResize", "th", function (e) {
+                $(that.s.dt.nTableWrapper).off("mouseleave.ColResize").on("mouseleave.ColResize", "thead tr th", function (e) {
                     e.preventDefault();
                     that._fnMouseLeave.call(that, e, this);
                 });
@@ -682,10 +682,11 @@
                 }
 
                 $(this.s.dt.nTHead).find('*').off('.ColResize');
-
-                $.each(this.s.dt.aoColumns, function (i, column) {
-                    $(column.nTh).removeAttr('data-column-index');
-                });
+                for (var ind = 0; ind < headerAo.length; ind++) {
+                    $.each(headerAo[ind], function (i, column) {
+                        $(column.cell).removeAttr('data-column-index');
+                    });
+                }
 
                 this.s.dt._colResize = null;
                 this.s = null;

@@ -165,14 +165,35 @@ RowsGroup.prototype = {
 
     _getOrderWithGroupColumns: function (order, groupedColumnsOrderDir)
     {
-        // Check the table's order first, because for non-grouped column,
+        // The default order
+        if (groupedColumnsOrderDir === undefined) {
+            groupedColumnsOrderDir = GroupedColumnsOrderDir;
+        }
+        // if there are some grouped columns have no order,
+        // then give them a default value
+        // Check the table's order, because for non-grouped column,
         // the order should be set by only one column,
         // if there are more than one nongroup order, remove them
+        // if all nongrouped columns don't have order,
+        // then give the first an order
+        var self = this;
+        var groupedColumnsknownOrder = this.order.filter(function(columnOrder){
+            return self.columnsForGrouping.indexOf(columnOrder[0]) >= 0;
+        });
+        var groupedColumnsKnownOrderIndexes = groupedColumnsknownOrder.map(function(columnOrder){
+            return columnOrder[0];
+        });
+        var groupedColumnsUnknownOrderIndexes = this.columnsForGrouping.filter(function(columnOrder){
+            return groupedColumnsKnownOrderIndexes.indexOf(columnOrder) < 0;
+        })
+        for (var h in groupedColumnsUnknownOrderIndexes) {
+            this.order.push([groupedColumnsUnknownOrderIndexes[h], groupedColumnsOrderDir]);
+        }
         var nonGroupSortExists = false;
         for (var k in this.order) {
             if (this.columnsForGrouping.indexOf(this.order[k][0]) < 0) {
                 //for order in non-grouped column
-                if(!nonGroupSortExists) {
+                if (!nonGroupSortExists) {
                     nonGroupSortExists = true;
                 }
                 else {
@@ -180,9 +201,18 @@ RowsGroup.prototype = {
                 }
             }
         }
+        // set the first nongrouped column an default order.
+        var firstNonGroupedColumn = 0;
+        if (this.columnsForGrouping.length > 0){
+            firstNonGroupedColumn = this.columnsForGrouping[this.columnsForGrouping.length - 1] + 1;
+        }
+        if (!nonGroupSortExists) {
+            this.order.push([firstNonGroupedColumn, groupedColumnsOrderDir]);
+        }
+        // current sorting
+        var resultOrder = this.order;
+        // new sorting by user
         if (order.length === 1) {
-            // current sorting
-            var resultOrder = this.order;
             var orderingColumn = order[0][0];
             var previousOrderIndex = this.order.map(function(val){
                 return val[0];
@@ -223,16 +253,20 @@ RowsGroup.prototype = {
                     }
                 }
             }
-            return resultOrder;
+        } else {
+            // previous sorting
+            resultOrder = order;
         }
-        // previous sorting
-        return order;
+        return resultOrder;
     },
 
     // Workaround: the DT reset ordering to 'asc' from multi-ordering if user order on one column (without shift)
-    //   but because we always has multi-ordering due to grouped rows this happens every time
+    // but because we always has multi-ordering due to grouped rows this happens every time
     _getInjectedMonoSelectWorkaround: function(order)
     {
+        if (this.columnsForGrouping.length == 0) {
+            return order;
+        }
         if (order.length === 1) {
             // got mono order - workaround here
             var orderingColumn = order[0][0]

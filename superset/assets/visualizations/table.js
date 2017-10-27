@@ -324,7 +324,6 @@ function tableVis(slice, payload) {
     "colResize": {
       "tableWidthFixed": true,
     },
-    "autoWidth": false,
     paging,
     pageLength,
     aaSorting: [],
@@ -353,6 +352,7 @@ function tableVis(slice, payload) {
       }
     },
   });
+
   fixDataTableBodyHeight(container.find('.dataTables_wrapper'), height);
   // Sorting table by main column
   // if (metrics.length > 0) {
