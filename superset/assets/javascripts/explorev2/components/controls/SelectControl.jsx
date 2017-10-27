@@ -12,11 +12,13 @@ const propTypes = {
   multi: PropTypes.bool,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
+  hiddenChoices: PropTypes.array,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.array]),
 };
 
 const defaultProps = {
   choices: [],
+  hiddenChoices: [],
   clearable: true,
   description: null,
   freeForm: false,
@@ -47,6 +49,9 @@ export default class SelectControl extends React.PureComponent {
   }
   componentWillReceiveProps(nextProps) {
     if (nextProps.choices !== this.props.choices) {
+      if (this.props.name === "pivot_columns_sort"){
+        this.handleOptionChange(this.props, nextProps);
+      }
       const options = this.getOptions(nextProps);
       this.setState({ options });
     }
@@ -59,9 +64,32 @@ export default class SelectControl extends React.PureComponent {
     }
     this.props.onChange(optionValue);
   }
-  getOptions(props) {
-    // Accepts different formats of input
-    const options = props.choices.map((c) => {
+  handleOptionChange(props, nextProps) {
+    const nextPropsChoices = nextProps.choices
+    const nextPropsChoicesLabels = nextProps.choices.map(o => o[0])
+    const nextPropsValue = nextProps.value
+    // Remove obsolete selections
+    nextPropsValue.forEach(value => {
+      if (!nextPropsChoicesLabels.includes(value)) {
+        nextProps.value.splice(value, 1);
+      }
+    })
+    // Update choices based on current values
+    nextProps.hiddenChoices.length = 0
+    let hiddenChoices =  new Set()
+    nextPropsValue.forEach(value => {
+      let valueJSON = JSON.parse(value);
+      nextPropsChoices.forEach(choice => {
+        let choiceJSON = JSON.parse(choice[0]);
+        if (valueJSON[0] === choiceJSON[0] && valueJSON[1] !== choiceJSON[1]) {
+          hiddenChoices.add(choice);
+        }
+      })
+    })
+    hiddenChoices.forEach(value => {nextProps.hiddenChoices.push(value)})
+  }
+  mapOptions(choices) {
+    return choices.map(c => {
       let option;
       if (Array.isArray(c)) {
         const label = c.length > 1 ? c[1] : c[0];
@@ -83,6 +111,11 @@ export default class SelectControl extends React.PureComponent {
       }
       return option;
     });
+  }
+  getOptions(props) {
+    // Accepts different formats of input
+    const options = this.mapOptions(props.choices)
+    const mappedHiddenOptions = this.mapOptions(props.hiddenChoices)
     if (props.freeForm) {
       // For FreeFormSelect, insert value into options if not exist
       const values = options.map(c => c.value);
@@ -98,7 +131,16 @@ export default class SelectControl extends React.PureComponent {
         });
       }
     }
-    return options;
+    const visibleOptions = options.filter(option => {
+      let visible = true;
+      mappedHiddenOptions.forEach((hiddenOption) => {
+        if (option.value === hiddenOption.value && option.label === hiddenOption.label) {
+          visible = false;
+        }
+      })
+      return visible;
+    })
+    return visibleOptions;
   }
   renderOption(opt) {
     if (opt.backgroundColor) {
