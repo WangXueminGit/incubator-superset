@@ -489,16 +489,11 @@ class PivotTableViz(BaseViz):
                 return label
 
         def safe_get_value(uuid_label):
-            try:
-                index = metric_uuid_index.index(uuid_label)
-            except:
-                return index
-            if type(index) is not int:
-                return index
-            elif index >= len(self.form_data.get('metrics')):
-                return index
+            if uuid_label in metric_uuid_index:
+                return self.form_data.get('metrics')[metric_uuid_index.index(uuid_label)]
             else:
-                return self.form_data.get('metrics')[index]
+                return uuid_label
+
         # Renaming metrics into its specified order allowing for proper sorting
         df = df.rename_axis(safe_get_index, axis=1)
         # Checking if only metrics or only columns exist
