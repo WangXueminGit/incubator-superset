@@ -140,7 +140,7 @@ module.exports = function(slice, payload) {
     }
   }
   var addClass = function (obj, base, val, compare, coloringOptionClass,
-    fontOptionClass, bcColoringOptionClass) {
+    fontOptionClass, bcColoringOptionClass, hasRowColor, rowColor) {
     if (coloringOptionClass == null) {
       coloringOptionClass = '';
     }
@@ -152,9 +152,15 @@ module.exports = function(slice, payload) {
     }
     if (compare !== null) {
       if (checkAddclassOrnot(base, val, compare)) {
+        if (coloringOptionClass !== '' && hasRowColor) {
+          obj.removeClass(rowColor);
+        }
         obj.addClass(coloringOptionClass + ' ' +
           fontOptionClass);
       } else {
+        if (bcColoringOptionClass !== '' && hasRowColor) {
+          obj.removeClass(rowColor);
+        }
         obj.addClass(bcColoringOptionClass);
       }
     }
@@ -162,12 +168,12 @@ module.exports = function(slice, payload) {
   // The function will add class to the certain td object
   // to reflect the configuration
   var addClassAccordingConfig = function (obj, base, val, compare,
-    coloringOptionClass, fontOptionClass, bcColoringOptionClass) {
+    coloringOptionClass, fontOptionClass, bcColoringOptionClass, hasRowColor, rowColor) {
     if (checkBaseIsFloat(base)) {
       val = parseFloat(val)
     }
     addClass(obj, base, val, compare, coloringOptionClass,
-      fontOptionClass, bcColoringOptionClass);
+      fontOptionClass, bcColoringOptionClass, hasRowColor, rowColor);
   }
   const groups = fd.groupby.length;
   var arrForMax ={};
@@ -323,7 +329,7 @@ module.exports = function(slice, payload) {
             comparisionOptions[column],
             coloringOptionClass,
             fontOptionClass,
-            bcColoringOptionClass);
+            bcColoringOptionClass, false, null);
           const perc = Math.round((val / maxes[originalColumn]) * 100);
           var cellTotalColumn = column;
           if (Array.isArray(cellTotalColumn)) {
@@ -377,11 +383,13 @@ module.exports = function(slice, payload) {
     container.css('overflow', 'auto');
     container.css('height', `${height + 10}px`);
     container.find('table tbody tr').each(function () {
+      var hasRowColor = false;
       for (var i in rowContains) {
         for (var j in this.cells) {
           if (this.cells[j].innerText == rowContains[i]) {
             // remove the class of rowcolor and rowfont when this cell's
             // rowspan is more than 1
+            hasRowColor = true;
             $(this).find('td, th').each(function (index) {
               if (!($(this).attr('rowspan') > 1)) {
                 $(this).addClass(rowColor);
@@ -439,7 +447,7 @@ module.exports = function(slice, payload) {
           comparisionOptions[column],
           coloringOptionClass,
           fontOptionClass,
-          bcColoringOptionClass);
+          bcColoringOptionClass, hasRowColor, rowColor);
         const perc = Math.round((val / maxes[columns[index]]) * 100);
         var cellTotalColumn = column;
         if (Array.isArray(cellTotalColumn)) {
@@ -453,6 +461,24 @@ module.exports = function(slice, payload) {
         $(this).css('background-image',progressBarStyle);
         $(this).addClass('text-' + textAlign);
       });
+/*
+      for (var i in rowContains) {
+        for (var j in this.cells) {
+          if (this.cells[j].innerText == rowContains[i]) {
+            // remove the class of rowcolor and rowfont when this cell's
+            // rowspan is more than 1
+            $(this).find('td, th').each(function (index) {
+              if (!($(this).attr('rowspan') > 1)) {
+                $(this).addClass(rowColor);
+                $(this).addClass(rowFont);
+              }
+            });
+          }
+          continue;
+        }
+        continue;
+      }
+*/
     });
 
     // Add for make rowsgroup plugin can be used which means datatable can be used
