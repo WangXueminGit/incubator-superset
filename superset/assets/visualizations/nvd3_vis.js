@@ -67,6 +67,7 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
 };
 
 const showEachBarValue = function (svg, chart, data, stacked, axisFormat, min) {
+  svg.select('g.nv-barsWrap-value-on-bar').remove();
   const format = d3.format(axisFormat || '.3s');
   const countSeriesDisplayed = data.length;
   const rectsToBeLabeled = svg.selectAll('g.nv-group').selectAll('rect.positive');
@@ -538,7 +539,7 @@ function nvd3Vis(slice, payload) {
         }, animationTime);
       }
       if (fd.show_bar_value_on_the_bar) {
-        svg.select('g.nv-barsWrap-value').remove();
+        svg.select('g.nv-barsWrap-value-on-bar').remove();
         setTimeout(function () {
           showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format, fd.hide_value_below);
         }, animationTime);
@@ -567,7 +568,7 @@ function nvd3Vis(slice, payload) {
         }, animationTime);
       }
       if (fd.show_bar_value_on_the_bar) {
-        svg.select('g.nv-barsWrap-value').remove();
+        svg.select('g.nv-barsWrap-value-on-bar').remove();
         setTimeout(function () {
           showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format, fd.hide_value_below);
         }, animationTime);
