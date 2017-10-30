@@ -54,23 +54,6 @@ export const sections = {
       ],
     },
   ],
-  column_configuration: [
-    {
-      label: 'Column Configuration',
-      description: 'Advanced configuration on columns',
-      controlSetRows: [['column_configuration']]
-    }
-  ],
-  row_configuration: [
-    {
-      label: 'Row Configuration',
-      description: 'Advanced configuration on rows',
-      controlSetRows: [
-          ['row_configuration'],
-          ['slice_state'],
-        ],
-    }
-  ],
   filters: [
     {
       label: 'Filters',
@@ -86,13 +69,6 @@ export const sections = {
         'Leave the value control empty to filter empty strings or nulls',
       controlSetRows: [['having_filters']],
     },
-  ],
-  styling: [
-    {
-      label: 'Table Progress Bar Configuration',
-      description: 'Add styling rules to the visualization',
-      controlSetRows: [['styling']],
-    }
   ],
 };
 
@@ -298,6 +274,26 @@ const visTypes = {
           ['include_search', 'table_filter'],
         ],
       },
+      {
+        label: 'Column Configuration',
+        description: 'Advanced configuration on columns',
+        controlSetRows: [
+          ['column_configuration']
+        ]
+      },
+      {
+        label: 'Row Configuration',
+        description: 'Advanced configuration on rows',
+        controlSetRows: [
+          ['row_configuration'],
+          ['slice_state'],
+        ],
+      },
+      {
+        label: 'Table Progress Bar Configuration',
+        description: 'Add styling rules to the visualization',
+        controlSetRows: [['styling']],
+      },
     ],
     controlOverrides: {
       metrics: {
@@ -333,6 +329,26 @@ const visTypes = {
           ['metrics', 'pandas_aggfunc'],
           ['show_metrics_under_columns'],
         ],
+      },
+      {
+        label: 'Column Configuration',
+        description: 'Advanced configuration on columns',
+        controlSetRows: [
+          ['column_configuration']
+        ]
+      },
+      {
+        label: 'Row Configuration',
+        description: 'Advanced configuration on rows',
+        controlSetRows: [
+          ['row_configuration'],
+          ['slice_state'],
+        ],
+      },
+      {
+        label: 'Table Progress Bar Configuration',
+        description: 'Add styling rules to the visualization',
+        controlSetRows: [['styling']],
       },
     ],
   },
@@ -814,10 +830,7 @@ export function sectionsToRender(vizType, datasourceType) {
     sections.datasourceAndVizType,
     datasourceType === 'table' ? sections.sqlaTimeSeries : sections.druidTimeSeries,
     viz.controlPanelSections,
-    sections.column_configuration,
-    sections.row_configuration,
     datasourceType === 'table' ? sections.sqlClause : [],
     datasourceType === 'table' ? sections.filters[0] : sections.filters,
-    datasourceType === 'table' ? sections.styling : null,
   );
 }
