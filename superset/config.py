@@ -18,14 +18,17 @@ from dateutil import tz
 from flask_appbuilder.security.manager import AUTH_OAUTH
 from werkzeug.contrib.cache import RedisCache
 
-def get_env_variable(var_name):
+def get_env_variable(var_name, default=None):
     """Get the environment variable or raise exception."""
     try:
         return os.environ[var_name]
     except KeyError:
-        error_msg = "The environment variable {} was missing, abort..."\
-                    .format(var_name)
-        raise EnvironmentError(error_msg)
+        if default is not None:
+            return default
+        else:
+            error_msg = "The environment variable {} was missing, abort..."\
+                        .format(var_name)
+            raise EnvironmentError(error_msg)
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATA_DIR = os.path.join(os.path.expanduser('~'), '.superset')
@@ -53,7 +56,8 @@ WEBSHOT_URI = "http://%s:%s" % (WEBSHOT_HOST, WEBSHOT_PORT)
 SUPERSET_WEBSERVER_ADDRESS = 'localhost'
 SUPERSET_WEBSERVER_PORT = 8088
 
-SUPERSET_WEBSERVER_TIMEOUT = 900
+SUPERSET_WEBSERVER_TIMEOUT = get_env_variable('SUPERSET_WEBSERVER_TIMEOUT',
+                                              1800)
 CUSTOM_SECURITY_MANAGER = None
 # ---------------------------------------------------------
 
