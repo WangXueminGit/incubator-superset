@@ -16,6 +16,7 @@ import time
 import traceback
 import zipfile
 
+from codecs import BOM_UTF8
 from slugify import slugify
 import sqlalchemy as sqla
 
@@ -588,7 +589,7 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
             # Not all data sources are dataframes, thus these cannot be downloaded as csv
             if type(slice_viz.get_df()) == pd.DataFrame:
                 slice_csv = slice_viz.get_csv()
-                zf.writestr('%s.csv' % slice_name, slice_csv)
+                zf.writestr('%s.csv' % slice_name, BOM_UTF8 + slice_csv)
         zf.close()
         zsio.seek(0)
         return Response(
@@ -1174,7 +1175,7 @@ class Superset(BaseSupersetView):
 
         if request.args.get("csv") == "true":
             return Response(
-                viz_obj.get_csv(),
+                BOM_UTF8 + viz_obj.get_csv(),
                 status=200,
                 headers=generate_download_headers("csv"),
                 mimetype="application/csv")
