@@ -1,5 +1,10 @@
 ## Change Log by Shopee Lumos
 
+### 2017.10.2
+
+- [8adc71](https://git.garena.com/shopee-data/lumos-superset/commit/8adc714bfd537be4d05e0feed518c9446c3aa0bd) Implemented export dashboard/slice as csv feature
+- [efb75f](https://git.garena.com/shopee-data/lumos-superset/commit/efb75fb5a1d9e46379dc2b4fd533764c80069511) Implementated slice duplication upon dashboard duplication
+
 ### 2017.10.1
 
 Based on superset
