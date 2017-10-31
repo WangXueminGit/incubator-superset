@@ -335,7 +335,11 @@ class BaseViz(object):
         return content
 
     def get_csv(self):
-        df = self.get_df()
+        payload = self.get_payload()
+        if payload and 'records' in payload['data']:
+            df = pd.DataFrame(payload['data']['records'])
+        else:
+            df = self.get_df()
         include_index = not isinstance(df.index, pd.RangeIndex)
         return df.to_csv(index=include_index, encoding="utf-8")
 
