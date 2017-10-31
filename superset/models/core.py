@@ -307,6 +307,12 @@ dashboard_user = Table(
     Column('dashboard_id', Integer, ForeignKey('dashboards.id'))
 )
 
+dashboard_guest = Table(
+    'dashboard_guest', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('user_id', Integer, ForeignKey('ab_user.id')),
+    Column('dashboard_id', Integer, ForeignKey('dashboards.id'))
+)
 
 class Dashboard(Model, AuditMixinNullable, ImportMixin):
 
@@ -323,6 +329,7 @@ class Dashboard(Model, AuditMixinNullable, ImportMixin):
     slices = relationship(
         'Slice', secondary=dashboard_slices, backref='dashboards')
     owners = relationship("User", secondary=dashboard_user)
+    guests = relationship("User", secondary=dashboard_guest)
 
     export_fields = ('dashboard_title', 'position_json', 'json_metadata',
                      'description', 'css', 'slug')
