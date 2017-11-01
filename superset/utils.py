@@ -753,3 +753,6 @@ def decode_base16_string(text):
         return base64.b16decode(text)
     except:
         return text
+
+def escape_filename(filename):
+    return re.sub(r'[":<>|/\\?*]', '__', filename)

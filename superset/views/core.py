@@ -42,7 +42,8 @@ from superset import (
     sm, sql_lab, results_backend, security,
 )
 from superset.legacy import cast_form_data
-from superset.utils import has_access, QueryStatus, SupersetSecurityException
+from superset.utils import (has_access, QueryStatus, escape_filename,
+                            SupersetSecurityException)
 from superset.connectors.connector_registry import ConnectorRegistry
 import superset.models.core as models
 from superset.models.sql_lab import Query
@@ -589,7 +590,8 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
             # Not all data sources are dataframes, thus these cannot be downloaded as csv
             if type(slice_viz.get_df()) == pd.DataFrame:
                 slice_csv = slice_viz.get_csv()
-                zf.writestr('%s.csv' % slice_name, BOM_UTF8 + slice_csv)
+                zf.writestr('%s.csv' % escape_filename(slice_name),
+                            BOM_UTF8 + slice_csv)
         zf.close()
         zsio.seek(0)
         return Response(
