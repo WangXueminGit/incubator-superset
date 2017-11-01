@@ -1,5 +1,14 @@
 ## Change Log by Shopee Lumos
 
+### 2017.11.1
+
+- [9fb228](https://git.garena.com/shopee-data/lumos-superset/commit/9fb228287a40ed812ede204533b6b69bf2d43e62) Escape csv filename to safe characters.
+- [eb2545](https://git.garena.com/shopee-data/lumos-superset/commit/eb25454f64069c0776b3355c91ee5856da824669) Added cache to download csv feature
+- [23e254](https://git.garena.com/shopee-data/lumos-superset/commit/23e254ba44ac810a35f2cac81942d47b9c24e54c) Fix the bug of making the column color config take priority over the row color configuration.
+- [817208](https://git.garena.com/shopee-data/lumos-superset/commit/8172086c25ed522c6a42e562d43aab2fa6932c78) Fix invalid options and values caused by column order select in pivot table
+- [ff2356](https://git.garena.com/shopee-data/lumos-superset/commit/ff23568991b4319bcc394a58943d6cec93d9401e) Set gunicorn worker timeout via environment variables.
+- [096b29](https://git.garena.com/shopee-data/lumos-superset/commit/096b2995f06df82840e69ec8137d94280639dadf) Fix the bug of showing the row and column config in every viz type.
+
 ### 2017.10.2
 
 - [8adc71](https://git.garena.com/shopee-data/lumos-superset/commit/8adc714bfd537be4d05e0feed518c9446c3aa0bd) Implemented export dashboard/slice as csv feature
