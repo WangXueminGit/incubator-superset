@@ -129,7 +129,7 @@ class BaseViz(object):
                 if self.datasource.offset:
                     df[DTTM_ALIAS] += timedelta(hours=self.datasource.offset)
             df.replace([np.inf, -np.inf], np.nan)
-            df = df.fillna(0)
+            # df = df.fillna(0)
 
         for hex_column in [column.column_name for column in self.datasource.columns if column.is_hex]:
             if hex_column in df.columns:

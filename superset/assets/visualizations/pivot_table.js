@@ -274,7 +274,7 @@ module.exports = function(slice, payload) {
                              settings.oInit.sliceId, JSON.stringify(data))
       },
       stateLoadCallback: function(settings) {
-        if (('slice_state' in settings.oInit.slice.formData) && 
+        if (('slice_state' in settings.oInit.slice.formData) &&
             (settings.oInit.slice.formData['slice_state']!==undefined)) {
           console.log("state load for datatable_slice_state_" +
                     settings.oInit.sliceId);
@@ -306,9 +306,11 @@ module.exports = function(slice, payload) {
                 this).html();
             $(this).data('originalvalue',
               val);
-            $(this).html(d3.format(
+            if (val.length > 0) {
+              $(this).html(d3.format(
               formatting[column])
               (val));
+            }
           }
           var val = $(this).data(
             'originalvalue') || $(this)
@@ -426,8 +428,10 @@ module.exports = function(slice, payload) {
           const val = $(this).data(
             'originalvalue') || $(this).html();
           $(this).data('originalvalue', val);
-          $(this).html(d3.format(formatting[
+          if (val.length > 0) {
+            $(this).html(d3.format(formatting[
             column])(val));
+          }
         }
         var val = $(this).data('originalvalue') ||
           $(this).html();
@@ -529,7 +533,7 @@ module.exports = function(slice, payload) {
                              settings.oInit.sliceId, JSON.stringify(data))
       },
       stateLoadCallback: function(settings) {
-        if (('slice_state' in settings.oInit.slice.formData) && 
+        if (('slice_state' in settings.oInit.slice.formData) &&
             (settings.oInit.slice.formData['slice_state']!==undefined)) {
           console.log("state load for datatable_slice_state_" +
                     settings.oInit.sliceId);
