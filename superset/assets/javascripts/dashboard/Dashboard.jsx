@@ -140,16 +140,16 @@ export function dashboardContainer(dashboard, datasources, userid) {
       try {
         const filters = JSON.parse(px.getParam('preselect_filters') || '{}');
         for (const sliceId in filters) {
-          for (const col in filters[sliceId]) {
-            this.setFilter(sliceId, col, filters[sliceId][col], false, false);
+          for (const col in filters[sliceId]['columns']) {
+            this.setFilter(sliceId, filters[sliceId]['datasourceId'], col, filters[sliceId]['columns'][col], false, false);
           }
         }
       } catch (e) {
         // console.error(e);
       }
     },
-    setFilter(sliceId, col, vals, refresh) {
-      this.addFilter(sliceId, col, vals, false, refresh);
+    setFilter(sliceId, dashboardId, col, vals, refresh) {
+      this.addFilter(sliceId, dashboardId, col, vals, false, refresh);
     },
     done(slice) {
       const refresh = slice.getWidgetHeader().find('.refresh');
@@ -189,7 +189,7 @@ export function dashboardContainer(dashboard, datasources, userid) {
         }
       }
     },
-    effectiveExtraFilters(sliceId) {
+    effectiveExtraFilters(sliceId, datasourceId) {
       const f = [];
       const immuneSlices = this.metadata.filter_immune_slices || [];
       if (sliceId && immuneSlices.includes(sliceId)) {
@@ -206,23 +206,27 @@ export function dashboardContainer(dashboard, datasources, userid) {
         immuneToFields = this.metadata.filter_immune_slice_fields[sliceId];
       }
       for (const filteringSliceId in this.filters) {
-        if (filteringSliceId === sliceId.toString()) {
+        if (
+          filteringSliceId
+            === sliceId.toString() ||
+          this.filters[filteringSliceId]['datasourceId']
+            !== datasourceId){
           // Filters applied by the slice don't apply to itself
           continue;
         }
-        for (const field in this.filters[filteringSliceId]) {
+        for (const field in this.filters[filteringSliceId]['columns']) {
           if (!immuneToFields.includes(field)) {
             f.push({
               col: field,
               op: 'in',
-              val: this.filters[filteringSliceId][field],
+              val: this.filters[filteringSliceId]['columns'][field],
             });
           }
         }
       }
       return f;
     },
-    addFilter(sliceId, col, vals, merge = true, refresh = true) {
+    addFilter(sliceId, datasourceId, col, vals, merge = true, refresh = true) {
       if (
         this.getSlice(sliceId) && (
           ['__from', '__to']
@@ -232,22 +236,22 @@ export function dashboardContainer(dashboard, datasources, userid) {
       ) {
         if (!(sliceId in this.filters)) {
           this.filters[sliceId] = {};
+          this.filters[sliceId]['columns'] = {}
+          this.filters[sliceId]['datasourceId'] = datasourceId
         }
-        if (!(col in this.filters[sliceId]) || !merge) {
-          this.filters[sliceId][col] = vals;
-
-          // d3.merge pass in array of arrays while some value form filter components
-          // from and to filter box require string to be process and return
-        } else if (this.filters[sliceId][col] instanceof Array) {
-          this.filters[sliceId][col] = d3.merge([this.filters[sliceId][col], vals]);
+        if (!(col in this.filters[sliceId]['columns']) || !merge) {
+          this.filters[sliceId]['columns'][col] = vals;
+        }
+        else if (this.filters[sliceId]['columns'][col] instanceof Array) {
+          this.filters[sliceId]['columns'][col] = d3.merge([this.filters[sliceId]['columns'][col], vals]);
         } else {
-          this.filters[sliceId][col] = d3.merge([[this.filters[sliceId][col]], vals])[0] || '';
+          this.filters[sliceId][col] = d3.merge([[this.filters[sliceId]['columns'][col]], vals])[0] || '';
         }
         if (refresh) {
-          this.refreshExcept(sliceId);
+          this.refreshExcept(sliceId, datasourceId);
         }
+        this.updateFilterParamsInUrl();
       }
-      this.updateFilterParamsInUrl();
     },
     readFilters() {
       // Returns a list of human readable active filters
@@ -320,10 +324,10 @@ export function dashboardContainer(dashboard, datasources, userid) {
       }.bind(this);
       fetchAndRender();
     },
-    refreshExcept(sliceId) {
+    refreshExcept(sliceId, datasourceId) {
       const immune = this.metadata.filter_immune_slices || [];
       this.sliceObjects.forEach((slice) => {
-        if (slice.data.slice_id !== sliceId && immune.indexOf(slice.data.slice_id) === -1) {
+        if (slice.data.slice_id !== sliceId && slice.datasource.id === datasourceId && immune.indexOf(slice.data.slice_id) === -1) {
           slice.render();
           const sliceSeletor = $(`#${slice.data.slice_id}-cell`);
           sliceSeletor.addClass('slice-cell-highlight');
@@ -333,24 +337,24 @@ export function dashboardContainer(dashboard, datasources, userid) {
         }
       });
     },
-    clearFilters(sliceId) {
+    clearFilters(sliceId, datasourceId) {
       delete this.filters[sliceId];
-      this.refreshExcept(sliceId);
+      this.refreshExcept(sliceId, datasourceId);
       this.updateFilterParamsInUrl();
     },
-    removeFilter(sliceId, col, vals) {
+    removeFilter(sliceId, datasourceId, col, vals) {
       if (sliceId in this.filters) {
-        if (col in this.filters[sliceId]) {
+        if (col in this.filters[sliceId]['columns']) {
           const a = [];
-          this.filters[sliceId][col].forEach(function (v) {
+          this.filters[sliceId]['columns'][col].forEach(function (v) {
             if (vals.indexOf(v) < 0) {
               a.push(v);
             }
           });
-          this.filters[sliceId][col] = a;
+          this.filters[sliceId]['columns'][col] = a;
         }
       }
-      this.refreshExcept(sliceId);
+      this.refreshExcept(sliceId, datasourceId);
       this.updateFilterParamsInUrl();
     },
     getSlice(sliceId) {

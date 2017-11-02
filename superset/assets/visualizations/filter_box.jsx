@@ -43,7 +43,7 @@ class FilterBox extends React.Component {
       selectedValues: props.origSelectedValues,
       hasChanged: false,
       startDate: null,
-      endDate: null
+      endDate: null,
     };
     this.updateDateStatus();
   }
@@ -79,8 +79,7 @@ class FilterBox extends React.Component {
     this.props.onChange(fltr, vals, false, this.props.instantFiltering);
   }
   changeDateFilter(filter, option) {
-    let val = null,
-      mom = null;
+    let val = null, mom = null;
     if (option) {
       val = option.format('YYYY-MM-DD');
       if (filter === '__to') {
@@ -207,7 +206,7 @@ function filterBox(slice, payload) {
       onChange={slice.addFilter}
       showDateFilter={fd.date_filter}
       datasource={slice.datasource}
-      origSelectedValues={slice.getFilters() || {}}
+      origSelectedValues={slice.getFilters() ? slice.getFilters().columns : {}}
       instantFiltering={fd.instant_filtering}
     />,
     document.getElementById(slice.containerId),

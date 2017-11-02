@@ -61,6 +61,7 @@ const px = function () {
     const selector = '#' + containerId;
     const container = $(selector);
     const sliceId = data.slice_id;
+    const datasourceId = datasource.id;
     const formData = applyDefaultFormData(data.form_data);
     slice = {
       data,
@@ -79,16 +80,11 @@ const px = function () {
         };
         return Mustache.render(s, context);
       },
-      jsonEndpoint() {
-        return this.endpoint('json');
+      jsonEndpoint(data) {
+        return this.endpoint(data, 'json');
       },
-      endpoint(endpointType = 'json') {
-        const formDataExtra = Object.assign({}, formData);
-        const flts = controller.effectiveExtraFilters(sliceId);
-        if (flts) {
-          formDataExtra.extra_filters = flts;
-        }
-        let endpoint = getExploreUrl(formDataExtra, endpointType, this.force, null, true);
+      endpoint(data, endpointType = 'json') {
+        let endpoint = getExploreUrl(data, endpointType, this.force, null, true);
         if (endpoint.charAt(0) !== '/') {
           // Known issue for IE <= 11:
           // https://connect.microsoft.com/IE/feedbackdetail/view/1002846/pathname-incorrect-for-out-of-document-elements
@@ -202,10 +198,12 @@ const px = function () {
         } else {
           this.force = force;
         }
+        const formDataExtra = Object.assign({}, formData);
+        formDataExtra.extra_filters = controller.effectiveExtraFilters(sliceId, datasourceId);
         token.find('img.loading').show();
         container.fadeTo(0.5, 0.25);
         container.css('height', this.height());
-        $.getJSON(this.jsonEndpoint(), (queryResponse) => {
+        $.getJSON(this.jsonEndpoint(formDataExtra), (queryResponse) => {
           try {
             vizMap[formData.viz_type](this, queryResponse);
             this.done(queryResponse);
@@ -222,19 +220,19 @@ const px = function () {
         this.render();
       },
       addFilter(col, vals, merge = true, refresh = true) {
-        controller.addFilter(sliceId, col, vals, merge, refresh);
+        controller.addFilter(sliceId, datasourceId, col, vals, merge, refresh);
       },
       setFilter(col, vals, refresh = true) {
-        controller.setFilter(sliceId, col, vals, refresh);
+        controller.setFilter(sliceId, dashboardId, col, vals, refresh);
       },
       getFilters() {
         return controller.filters[sliceId];
       },
       clearFilter() {
-        controller.clearFilter(sliceId);
+        controller.clearFilter(sliceId, datasourceId);
       },
       removeFilter(col, vals) {
-        controller.removeFilter(sliceId, col, vals);
+        controller.removeFilter(sliceId, datasourceId, col, vals);
       },
     };
     return slice;
