@@ -17,8 +17,11 @@ const utils = require('../modules/utils');
 
 appSetup();
 
-export function getInitialState(boostrapData) {
-  const dashboard = Object.assign({}, utils.controllerInterface, boostrapData.dashboard_data);
+export function getInitialState(bootstrapData) {
+  const dashboard = Object.assign(
+    {},
+    utils.controllerInterface,
+    bootstrapData.dashboard_data);
   dashboard.firstLoad = true;
 
   dashboard.posDict = {};
@@ -28,7 +31,7 @@ export function getInitialState(boostrapData) {
     });
   }
   dashboard.refreshTimer = null;
-  const state = Object.assign({}, boostrapData, { dashboard });
+  const state = Object.assign({}, bootstrapData, { dashboard });
   return state;
 }
 
@@ -101,13 +104,11 @@ export function dashboardContainer(dashboard, datasources, userid) {
   return Object.assign({}, dashboard, {
     type: 'dashboard',
     filters: {},
-    groupBy: [],
     slicesDone: [],
     curUserId: userid,
     init() {
       this.sliceObjects = [];
       dashboard.slices.forEach((data) => {
-        this.loadPreSelectFilters();
         if (data.error) {
           const html = `<div class="alert alert-danger">${data.error}</div>`;
           $(`#slice_${data.slice_id}`).find('.token').html(html);
@@ -119,6 +120,8 @@ export function dashboardContainer(dashboard, datasources, userid) {
           this.sliceObjects.push(slice);
         }
       });
+      this.loadPreSelectFilters();
+      this.renderSlices(this.sliceObjects);
       // if (typeof window.callPhantom !== "function") {
       this.startPeriodicRender(0);
       // }
@@ -203,6 +206,10 @@ export function dashboardContainer(dashboard, datasources, userid) {
         immuneToFields = this.metadata.filter_immune_slice_fields[sliceId];
       }
       for (const filteringSliceId in this.filters) {
+        if (filteringSliceId === sliceId.toString()) {
+          // Filters applied by the slice don't apply to itself
+          continue;
+        }
         for (const field in this.filters[filteringSliceId]) {
           if (!immuneToFields.includes(field)) {
             f.push({
@@ -215,50 +222,30 @@ export function dashboardContainer(dashboard, datasources, userid) {
       }
       return f;
     },
-    effectiveExtraGroupBy(sliceId) {
-      const f = [];
-      const immuneSlices = this.metadata.filter_immune_slices || [];
-      if (sliceId && immuneSlices.includes(sliceId)) {
-        // The slice is immune to dashboard fiterls
-        return f;
-      }
-
-      // Building a list of fields the slice is immune to filters on
-      let immuneToFields = [];
-      if (
-            sliceId &&
-            this.metadata.filter_immune_slice_fields &&
-            this.metadata.filter_immune_slice_fields[sliceId]) {
-        immuneToFields = this.metadata.filter_immune_slice_fields[sliceId];
-      }
-      for (const groupBySliceId in this.groupBy) {
-        for (const field in this.groupBy[groupBySliceId]) {
-          if (!immuneToFields.includes(field)) {
-            f.push(this.groupBy[groupBySliceId][field]['value']);
-          }
-        }
-      }
-      return f;
-    },
     addFilter(sliceId, col, vals, merge = true, refresh = true) {
-      if (!(sliceId in this.filters)) {
-        this.filters[sliceId] = {};
-      }
-      if (!merge || !(col in this.filters[sliceId])) {
-        this.filters[sliceId][col] = vals;
-      }
-      else {
-        this.filters[sliceId][col] = d3.merge([this.filters[sliceId][col] || [], vals]);
-      }
-      if (refresh) {
-        this.refreshExcept(sliceId);
-      }
-      this.updateFilterParamsInUrl();
-    },
-    addGroupByFilter(sliceId, vals, refresh = true) {
-      this.groupBy[sliceId] = vals || [];
-      if (refresh) {
-        this.refreshExcept(sliceId);
+      if (
+        this.getSlice(sliceId) && (
+          ['__from', '__to']
+            .indexOf(col) >= 0 ||
+            this.getSlice(sliceId).formData.groupby.indexOf(col) !== -1
+        )
+      ) {
+        if (!(sliceId in this.filters)) {
+          this.filters[sliceId] = {};
+        }
+        if (!(col in this.filters[sliceId]) || !merge) {
+          this.filters[sliceId][col] = vals;
+
+          // d3.merge pass in array of arrays while some value form filter components
+          // from and to filter box require string to be process and return
+        } else if (this.filters[sliceId][col] instanceof Array) {
+          this.filters[sliceId][col] = d3.merge([this.filters[sliceId][col], vals]);
+        } else {
+          this.filters[sliceId][col] = d3.merge([[this.filters[sliceId][col]], vals])[0] || '';
+        }
+        if (refresh) {
+          this.refreshExcept(sliceId);
+        }
       }
       this.updateFilterParamsInUrl();
     },
@@ -290,6 +277,22 @@ export function dashboardContainer(dashboard, datasources, userid) {
         clearTimeout(this.refreshTimer);
         this.refreshTimer = null;
       }
+    },
+    renderSlices(slices, force = false, interval = 0) {
+      if (!interval) {
+        slices.forEach(slice => slice.render(force));
+        return;
+      }
+      const meta = this.metadata;
+      const refreshTime = Math.max(interval, meta.stagger_time || 5000); // default 5 seconds
+      if (typeof meta.stagger_refresh !== 'boolean') {
+        meta.stagger_refresh = meta.stagger_refresh === undefined ?
+          true : meta.stagger_refresh === 'true';
+      }
+      const delay = meta.stagger_refresh ? refreshTime / (slices.length - 1) : 0;
+      slices.forEach((slice, i) => {
+        setTimeout(() => slice.render(force), delay * i);
+      });
     },
     startPeriodicRender(interval) {
       this.stopPeriodicRender();

@@ -673,13 +673,12 @@ const visTypes = {
         controlSetRows: [
           ['date_filter', 'instant_filtering'],
           ['groupby'],
-          ['filterby'],
           ['metric'],
         ],
       },
     ],
     controlOverrides: {
-      filterby: {
+      groupby: {
         label: 'Filter controls',
         description: 'The controls you want to filter on its value',
         default: [],

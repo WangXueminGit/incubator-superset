@@ -85,12 +85,8 @@ const px = function () {
       endpoint(endpointType = 'json') {
         const formDataExtra = Object.assign({}, formData);
         const flts = controller.effectiveExtraFilters(sliceId);
-        const groupBy = controller.effectiveExtraGroupBy(sliceId);
         if (flts) {
           formDataExtra.extra_filters = flts;
-        }
-        if (groupBy) {
-          formDataExtra.extra_groupby = groupBy;
         }
         let endpoint = getExploreUrl(formDataExtra, endpointType, this.force, null, true);
         if (endpoint.charAt(0) !== '/') {
@@ -227,9 +223,6 @@ const px = function () {
       },
       addFilter(col, vals, merge = true, refresh = true) {
         controller.addFilter(sliceId, col, vals, merge, refresh);
-      },
-      addGroupByFilter(vals, refresh = true) {
-        controller.addGroupByFilter(sliceId, vals, refresh);
       },
       setFilter(col, vals, refresh = true) {
         controller.setFilter(sliceId, col, vals, refresh);

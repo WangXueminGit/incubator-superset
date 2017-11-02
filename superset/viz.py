@@ -148,11 +148,6 @@ class BaseViz(object):
         extra_filters = self.form_data.get('extra_filters', [])
         return {f['col']: f['val'] for f in extra_filters}
 
-    def get_extra_groupby(self):
-        extra_filters = self.form_data.get('extra_filters', [])
-        extra_groupby = self.form_data.get('extra_groupby', []) + [f['col'] for f in extra_filters]
-        return extra_groupby
-
     def query_obj(self):
         """Building a query object"""
         form_data = self.form_data
@@ -163,7 +158,7 @@ class BaseViz(object):
         # to the slice definition. We use those for dynamic interactive
         # filters like the ones emitted by the "Filter Box" visualization
         extra_filters = self.get_extra_filters()
-        extra_groupby = self.get_extra_groupby()
+
         granularity = (
             form_data.get("granularity") or form_data.get("granularity_sqla")
         )
@@ -189,7 +184,7 @@ class BaseViz(object):
 
         until = extra_filters.get('__to') or form_data.get("until", "now")
         to_dttm = utils.parse_human_datetime(until)
-        if from_dttm > to_dttm:
+        if from_dttm and to_dttm and from_dttm > to_dttm:
             raise Exception("From date cannot be larger than to date")
 
         # extras are used to query elements specific to a datasource type
@@ -197,13 +192,12 @@ class BaseViz(object):
         extras = {
             'where': form_data.get("where", ''),
             'having': form_data.get("having", ''),
-            'having_druid': form_data.get('having_filters') \
-                if 'having_filters' in form_data else [],
+            'having_druid': form_data.get('having_filters', []),
             'time_grain_sqla': form_data.get("time_grain_sqla", ''),
             'druid_time_origin': form_data.get("druid_time_origin", ''),
         }
-        filters = form_data['filters'] if 'filters' in form_data \
-                else []
+        filters = form_data.get('filters', [])
+
         for col, vals in self.get_extra_filters().items():
             if not (col and vals) or col.startswith('__'):
                 continue
@@ -219,7 +213,7 @@ class BaseViz(object):
             'from_dttm': from_dttm,
             'to_dttm': to_dttm,
             'is_timeseries': self.is_timeseries,
-            'groupby': groupby + extra_groupby,
+            'groupby': groupby,
             'metrics': metrics,
             'row_limit': row_limit,
             'filter': filters,
@@ -967,16 +961,24 @@ class NVD3TimeSeriesViz(NVD3Viz):
             chart_data.append(d)
         return chart_data
 
-    def get_data(self, df):
+    def process_data(self, df, aggregate=False):
         fd = self.form_data
         df = df.fillna(0)
         if fd.get("granularity") == "all":
-            raise Exception("Pick a time granularity for your time series")
+            raise Exception(_("Pick a time granularity for your time series"))
 
-        df = df.pivot_table(
-            index=DTTM_ALIAS,
-            columns=fd.get('groupby')+fd.get('extra_groupby', []),
-            values=fd.get('metrics'))
+        if not aggregate:
+            df = df.pivot_table(
+                index=DTTM_ALIAS,
+                columns=fd.get('groupby'),
+                values=fd.get('metrics'))
+        else:
+            df = df.pivot_table(
+                index=DTTM_ALIAS,
+                columns=fd.get('groupby'),
+                values=fd.get('metrics'),
+                fill_value=0,
+                aggfunc=sum)
 
         fm = fd.get("resample_fillmethod")
         if not fm:
@@ -997,18 +999,25 @@ class NVD3TimeSeriesViz(NVD3Viz):
             dft = df.T
             df = (dft / dft.sum()).T
 
-        rolling_periods = fd.get("rolling_periods")
         rolling_type = fd.get("rolling_type")
+        rolling_periods = int(fd.get("rolling_periods") or 0)
+        min_periods = int(fd.get("min_periods") or 0)
 
         if rolling_type in ('mean', 'std', 'sum') and rolling_periods:
+            kwargs = dict(
+                arg=df,
+                window=rolling_periods,
+                min_periods=min_periods)
             if rolling_type == 'mean':
-                df = pd.rolling_mean(df, int(rolling_periods), min_periods=0)
+                df = pd.rolling_mean(**kwargs)
             elif rolling_type == 'std':
-                df = pd.rolling_std(df, int(rolling_periods), min_periods=0)
+                df = pd.rolling_std(**kwargs)
             elif rolling_type == 'sum':
-                df = pd.rolling_sum(df, int(rolling_periods), min_periods=0)
+                df = pd.rolling_sum(**kwargs)
         elif rolling_type == 'cumsum':
             df = df.cumsum()
+        if min_periods:
+            df = df[min_periods:]
 
         num_period_compare = fd.get("num_period_compare")
         if num_period_compare:
@@ -1022,7 +1031,11 @@ class NVD3TimeSeriesViz(NVD3Viz):
                 df = df / df.shift(num_period_compare)
 
             df = df[num_period_compare:]
+        return df
 
+    def get_data(self, df):
+        fd = self.form_data
+        df = self.process_data(df)
         chart_data = self.to_series(df)
 
         time_compare = fd.get('time_compare')
@@ -1036,10 +1049,11 @@ class NVD3TimeSeriesViz(NVD3Viz):
 
             df2 = self.get_df(query_object)
             df2[DTTM_ALIAS] += delta
-            df2 = df2.pivot_table(
-                index=DTTM_ALIAS,
-                columns=fd.get('groupby')+fd.get('extra_groupby', []),
-                values=fd.get('metrics'))
+            df2 = self.process_data(df2)
+            # df2 = df2.pivot_table(
+            #     index=DTTM_ALIAS,
+            #     columns=fd.get('groupby')+fd.get('extra_groupby', []),
+            #     values=fd.get('metrics'))
             chart_data += self.to_series(
                 df2, classed='superset', title_suffix="---")
             chart_data = sorted(chart_data, key=lambda x: x['key'])
@@ -1495,8 +1509,7 @@ class FilterBoxViz(BaseViz):
     def query_obj(self):
         qry = super(FilterBoxViz, self).query_obj()
         groupby = self.form_data.get('groupby')
-        filterby = self.form_data.get('filterby')
-        if len(groupby) < 1 and len(filterby) < 1 and not self.form_data.get('date_filter'):
+        if len(groupby) < 1 and not self.form_data.get('date_filter'):
             raise Exception("Pick at least one filter field")
         qry['metrics'] = [
             self.form_data['metric']]
@@ -1505,7 +1518,7 @@ class FilterBoxViz(BaseViz):
 
     def get_data(self, df):
         qry = self.query_obj()
-        filters = [g for g in self.form_data['filterby']]
+        filters = [g for g in self.form_data['groupby']]
         d = {}
         for flt in filters:
             qry['groupby'] = [flt]

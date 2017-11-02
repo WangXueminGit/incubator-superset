@@ -64,10 +64,16 @@ class TableColumn(Model, BaseColumn):
 
     def get_time_filter(self, start_dttm, end_dttm):
         col = self.sqla_col.label('__time')
-        return and_(
-            col >= text(self.dttm_sql_literal(start_dttm)),
-            col < text(self.dttm_sql_literal(end_dttm)),
-        )
+        time_filter_l = []
+        if start_dttm:
+            time_filter_l.append(
+                col >= text(self.dttm_sql_literal(start_dttm))
+            )
+        if end_dttm:
+            time_filter_l.append(
+                col <= text(self.dttm_sql_literal(end_dttm))
+            )
+        return and_(*time_filter_l)
 
     def get_timestamp_expression(self, time_grain):
         """Getting the time component of the query"""
@@ -367,8 +373,6 @@ class SqlaTable(Model, BaseDatasource):
             columns=None,
             form_data=None):
         """Querying any sqla table from this common interface"""
-        from_dttm = from_dttm.date()
-        to_dttm = to_dttm.date()
 
         template_kwargs = {
             'from_dttm': from_dttm,
