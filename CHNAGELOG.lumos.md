@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2017.11.2
+
+- [b07504](https://git.garena.com/shopee-data/lumos-superset/commit/b0750493896adc17bf8d6951e9c5fafbe9598a14) Make the grouped column sorted in numberic way.
+
 ### 2017.11.1
 
 - [9fb228](https://git.garena.com/shopee-data/lumos-superset/commit/9fb228287a40ed812ede204533b6b69bf2d43e62) Escape csv filename to safe characters.
