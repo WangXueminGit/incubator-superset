@@ -13,6 +13,10 @@ var imported = document.createElement('script');
 imported.src = "/static/assets/vendor/javascripts/dataTables.rowsGroup.js"
 document.head.appendChild(imported);
 
+var importedSortNum = document.createElement('script');
+importedSortNum.src = "/static/assets/vendor/javascripts/datatables.num-html.js";
+document.head.appendChild(importedSortNum);
+
 module.exports = function(slice, payload) {
   const container = slice.container;
   const fd = slice.formData;
@@ -251,6 +255,9 @@ module.exports = function(slice, payload) {
     // overflow: 'auto' on the table.
     container.css('overflow', 'hidden');
     const table = container.find('table').DataTable({
+      "aoColumnDefs": [
+        { "sType": "num-html", "aTargets": [ 0 ] }
+      ],
       paging: false,
       searching: false,
       bInfo: false,
@@ -500,7 +507,14 @@ module.exports = function(slice, payload) {
         count--;
       }
     });
+    var groupColumns = [];
+    for (var i = 0; i < groups; i++) {
+      groupColumns.push(i);
+    }
     const table = container.find('table').DataTable({
+      "aoColumnDefs": [
+        { "sType": "num-html", "aTargets": groupColumns }
+      ],
       paging: false,
       searching: false,
       bInfo: false,
