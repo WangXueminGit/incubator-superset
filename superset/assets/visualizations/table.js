@@ -141,7 +141,7 @@ function tableVis(slice, payload) {
     .append('tr')
     .selectAll('td')
     .data(row => data.columns.map((c) => {
-      const val = row[c];
+      var val = row[c];
       let html = val;
       const isMetric = metrics.indexOf(c.toLowerCase()) >= 0;
       if (c === 'timestamp') {
@@ -151,7 +151,9 @@ function tableVis(slice, payload) {
         html = `<span class="like-pre">${val}</span>`;
       }
       if (formatting[c]) {
-        html = d3.format(formatting[c])(val);
+        if (val.length > 0) {
+          html = d3.format(formatting[c])(val);
+        }
       }
       return {
         col: c,
