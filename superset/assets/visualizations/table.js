@@ -151,7 +151,7 @@ function tableVis(slice, payload) {
         html = `<span class="like-pre">${val}</span>`;
       }
       if (formatting[c]) {
-        if (val.length > 0) {
+        if (val.toString().length > 0) {
           html = d3.format(formatting[c])(val);
         }
       }
