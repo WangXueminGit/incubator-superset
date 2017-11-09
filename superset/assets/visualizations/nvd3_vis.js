@@ -24,6 +24,7 @@ const BREAKPOINTS = {
 };
 
 const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
+  svg.select('g.nv-barsWrap-value').remove();
   const format = d3.format(axisFormat || '.3s');
   const countSeriesDisplayed = data.length;
 
