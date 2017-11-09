@@ -1159,8 +1159,8 @@ class Superset(BaseSupersetView):
 
     @log_this
     @has_access_api
-    @expose("/explore_json/<mode>/<datasource_type>/<datasource_id>/")
-    def explore_json_advanced(self, mode, datasource_type, datasource_id):
+    @expose("/explore_json/<datasource_type>/<datasource_id>/")
+    def explore_json(self, datasource_type, datasource_id):
         try:
             viz_obj = self.get_viz(
                 datasource_type=datasource_type,
@@ -1172,7 +1172,7 @@ class Superset(BaseSupersetView):
                 utils.error_msg_from_exception(e),
                 stacktrace=traceback.format_exc())
 
-        if mode != 'secure' and not self.datasource_access(viz_obj.datasource):
+        if not self.datasource_access(viz_obj.datasource):
             return json_error_response(DATASOURCE_ACCESS_ERR, status=404)
 
         if request.args.get("csv") == "true":
@@ -1209,12 +1209,6 @@ class Superset(BaseSupersetView):
             status = 400
 
         return json_success(viz_obj.json_dumps(payload), status=status)
-
-    @log_this
-    @has_access_api
-    @expose("/explore_json/<datasource_type>/<datasource_id>/")
-    def explore_json(self, datasource_type, datasource_id):
-        return self.explore_json_advanced('default', datasource_type, datasource_id)
 
     @expose("/import_dashboards", methods=['GET', 'POST'])
     @log_this
@@ -1909,11 +1903,11 @@ class Superset(BaseSupersetView):
         """Server side rendering for a dashboard"""
         session = db.session()
         qry = session.query(models.Dashboard)
-        # Disable getting dashboard by ID
-        # if dashboard_id.isdigit():
-        #     qry = qry.filter_by(id=int(dashboard_id))
-        # else:
-        qry = qry.filter_by(slug=dashboard_id)
+
+        if dashboard_id.isdigit():
+            qry = qry.filter_by(id=int(dashboard_id))
+        else:
+            qry = qry.filter_by(slug=dashboard_id)
 
         dash = qry.one()
         datasources = set()
@@ -1921,15 +1915,15 @@ class Superset(BaseSupersetView):
             datasource = slc.datasource
             if datasource:
                 datasources.add(datasource)
-        # Disable check to enable public view on Dashboard
-        # for datasource in datasources:
-        #     if datasource and not self.datasource_access(datasource):
-        #         flash(
-        #             __(get_datasource_access_error_msg(datasource.name)),
-        #             "danger")
-        #         return redirect(
-        #             'superset/request_access/?'
-        #             'dashboard_id={dash.id}&'.format(**locals()))
+
+        for datasource in datasources:
+            if datasource and not self.datasource_access(datasource):
+                flash(
+                    __(get_datasource_access_error_msg(datasource.name)),
+                    "danger")
+                return redirect(
+                    'superset/request_access/?'
+                    'dashboard_id={dash.id}&'.format(**locals()))
 
         # Hack to log the dashboard_id properly, even when getting a slug
         @log_this

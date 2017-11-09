@@ -66,7 +66,7 @@ class ExportMailModal extends React.PureComponent {
     this.setState({working: true});
     $.ajax({
       type: 'POST',
-      url: '/superset/export/dashboard/' + (dashboard.slug || dashboard.id) + '/' + exportType,
+      url: '/superset/export/dashboard/' + dashboard.id + '/' + exportType,
       data: data,
       success(resp) {
         $this.setState({working: false});

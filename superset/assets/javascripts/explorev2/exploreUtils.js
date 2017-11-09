@@ -1,7 +1,7 @@
 /* eslint camelcase: 0 */
 import URI from 'urijs';
 
-export function getExploreUrl(form_data, endpointType = 'base', force = false, curUrl = null, secure = false) {
+export function getExploreUrl(form_data, endpointType = 'base', force = false, curUrl = null) {
   if (!form_data.datasource) {
     return null;
   }
@@ -19,9 +19,6 @@ export function getExploreUrl(form_data, endpointType = 'base', force = false, c
   let directory = '/superset/explore/';
   if (['json', 'csv', 'query'].indexOf(endpointType) >= 0) {
     directory = '/superset/explore_json/';
-  }
-  if (secure) {
-    directory += 'secure/';
   }
   const [datasource_id, datasource_type] = form_data.datasource.split('__');
   directory += `${datasource_type}/${datasource_id}/`;

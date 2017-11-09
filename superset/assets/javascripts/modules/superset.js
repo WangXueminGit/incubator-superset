@@ -84,7 +84,7 @@ const px = function () {
         return this.endpoint(data, 'json');
       },
       endpoint(data, endpointType = 'json') {
-        let endpoint = getExploreUrl(data, endpointType, this.force, null, true);
+        let endpoint = getExploreUrl(data, endpointType, this.force, null);
         if (endpoint.charAt(0) !== '/') {
           // Known issue for IE <= 11:
           // https://connect.microsoft.com/IE/feedbackdetail/view/1002846/pathname-incorrect-for-out-of-document-elements
