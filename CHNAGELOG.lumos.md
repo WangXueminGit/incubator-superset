@@ -1,5 +1,14 @@
 ## Change Log by Shopee Lumos
 
+### 2017.11.3
+
+- [ea8f75](https://git.garena.com/shopee-data/lumos-superset/commit/ea8f75cdbc77b6db6271959e76d60ae4353a62d3) Fix the bug of making number refresh properly in bar chart.
+- [c37129](https://git.garena.com/shopee-data/lumos-superset/commit/c37129ef86b9779f3663807245af3dbcdb4f6bcc) Fix the check method in table view for formatting the non-null value.
+- [354834](https://git.garena.com/shopee-data/lumos-superset/commit/3548348ba3e6abfa4dd808cc3db7c9ad99d1256e) Fix the bug of showing blank with null value.
+- [d4087d](https://git.garena.com/shopee-data/lumos-superset/commit/d4087d53880384cf047d944e69c99ad99509f49e) Fix filterboxes affecting slices made from other views.
+- [41feeb](https://git.garena.com/shopee-data/lumos-superset/commit/41feeb98672353c6a6868fe9406ff3f6db65507a) Reverted filter box related code to upstream
+- [dbdbfb](https://git.garena.com/shopee-data/lumos-superset/commit/dbdbfb7f9d87c545787c0f1197b7fa56df7a92c4) Fix the bug of showing `0` for `null` value in pivot table.
+
 ### 2017.11.2
 
 - [b07504](https://git.garena.com/shopee-data/lumos-superset/commit/b0750493896adc17bf8d6951e9c5fafbe9598a14) Make the grouped column sorted in numberic way.
