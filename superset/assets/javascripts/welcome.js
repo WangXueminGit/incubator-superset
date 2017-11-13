@@ -17,10 +17,15 @@ function modelViewTable(selector, modelView, orderCol, order) {
   url += '?_oc_' + modelView + '=' + orderCol;
   url += '&_od_' + modelView + '=' + order;
   $.getJSON(url, function (data) {
-    const columns = ['dashboard_link', 'creator', 'modified'];
+    const columns = ['dashboard_link', 'owners', 'modified'];
     const tableData = $.map(data.result, function (el) {
       const row = $.map(columns, function (col) {
-        return el[col];
+        if (el[col] instanceof Array) {
+          return el[col].join(', ');
+        }
+        else {
+          return el[col];
+        }
       });
       return [row];
     });

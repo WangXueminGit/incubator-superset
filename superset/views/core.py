@@ -476,7 +476,7 @@ appbuilder.add_view_no_menu(SliceAddView)
 
 class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
     datamodel = SQLAInterface(models.Dashboard)
-    list_columns = ['dashboard_link', 'creator', 'modified']
+    list_columns = ['dashboard_link', 'owners', 'modified']
     edit_columns = [
         'dashboard_title', 'slug', 'slices', 'owners', 'guests',
         'position_json', 'css', 'json_metadata']
@@ -611,11 +611,11 @@ appbuilder.add_view(
 
 
 class DashboardModelViewAsync(DashboardModelView):  # noqa
-    list_columns = ['dashboard_link', 'creator', 'modified', 'dashboard_title']
+    list_columns = ['dashboard_link', 'owners', 'modified', 'dashboard_title']
     label_columns = {
         'dashboard_link': _('Dashboard'),
         'dashboard_title': _('Title'),
-        'creator': _('Creator'),
+        'owners': _('Owners'),
         'modified': _('Modified'),
     }
 
