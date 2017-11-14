@@ -21,10 +21,15 @@ from slugify import slugify
 import sqlalchemy as sqla
 
 from flask import (
-    g, request, redirect, flash, Response, render_template, Markup)
+    g, request, redirect, flash, Response, render_template, Markup,
+    jsonify, make_response)
+
 from flask_appbuilder import expose
+from flask_appbuilder.urltools import *
+from flask_appbuilder.baseviews import expose_api
 from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
+from flask_appbuilder.security.decorators import permission_name
 from flask_appbuilder.security.sqla import models as ab_models
 from flask_appbuilder.security.sqla.models import User, Role
 
@@ -618,6 +623,38 @@ class DashboardModelViewAsync(DashboardModelView):  # noqa
         'owners': _('Owners'),
         'modified': _('Modified'),
     }
+
+    @expose_api(name='read', url='/api/read', methods=['GET'])
+    @has_access_api
+    @permission_name('list')
+    def api_read(self):
+        # Get arguments for ordering
+        if get_order_args().get(self.__class__.__name__):
+            order_column, order_direction = get_order_args().get(self.__class__.__name__)
+        else:
+            order_column, order_direction = '', ''
+        page = get_page_args().get(self.__class__.__name__)
+        page_size = get_page_size_args().get(self.__class__.__name__)
+
+        count, lst = self.datamodel.query(None, order_column,
+                                          order_direction, page=page,
+                                          page_size=page_size)
+        lst = [x for x in lst if (g.user in x.owners) or (g.user in x.guests)]
+        count = len(lst)
+        result = self.datamodel.get_values_json(lst, self.list_columns)
+        pks = self.datamodel.get_keys(lst)
+        ret_json = jsonify(label_columns=self._label_columns_json(),
+                           list_columns=self.list_columns,
+                           order_columns=self.order_columns,
+                           page=page,
+                           page_size=page_size,
+                           count=count,
+                           modelview_name=self.__class__.__name__,
+                           pks=pks,
+                           result=result)
+        response = make_response(ret_json, 200)
+        response.headers['Content-Type'] = "application/json"
+        return response
 
 
 appbuilder.add_view_no_menu(DashboardModelViewAsync)
