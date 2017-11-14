@@ -25,7 +25,6 @@ from flask import (
 from flask_appbuilder import expose
 from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
-from flask_appbuilder.security.decorators import has_access_api
 from flask_appbuilder.security.sqla import models as ab_models
 from flask_appbuilder.security.sqla.models import User, Role
 
@@ -42,7 +41,8 @@ from superset import (
     sm, sql_lab, results_backend, security,
 )
 from superset.legacy import cast_form_data
-from superset.utils import (has_access, QueryStatus, escape_filename,
+from superset.utils import (has_access, has_access_api,
+                            QueryStatus, escape_filename,
                             SupersetSecurityException)
 from superset.connectors.connector_registry import ConnectorRegistry
 import superset.models.core as models

@@ -50,6 +50,7 @@ SUPERSET_CELERY_WORKERS = 32
 
 WEBSHOT_HOST = get_env_variable('WEBSHOT_HOST')
 WEBSHOT_PORT = get_env_variable('WEBSHOT_PORT')
+WEBSHOT_SECRET_TOKEN = get_env_variable('WEBSHOT_SECRET_TOKEN')
 
 WEBSHOT_URI = "http://%s:%s" % (WEBSHOT_HOST, WEBSHOT_PORT)
 
@@ -245,9 +246,6 @@ DEFAULT_MODULE_DS_MAP = OrderedDict([
 ADDITIONAL_MODULE_DS_MAP = {}
 ADDITIONAL_MIDDLEWARE = []
 
-# For automator access to screenshot
-SHOPEE_SUPERSET_AUTH_USERNAME = 'superset_automator'
-SHOPEE_SUPERSET_AUTH_PASSWORD = 'DmkJKha9ZHrzrHERx77uwtwy-bDFTpy8jUUbXuZjT4kGAF9tN-wD2mpd43wkvpLDMygnNHjj8R'
 
 """
 1) http://docs.python-guide.org/en/latest/writing/logging/

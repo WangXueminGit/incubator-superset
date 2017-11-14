@@ -37,7 +37,6 @@ from flask_appbuilder.const import (
 
 from flask import request, session, jsonify
 from werkzeug.http import parse_authorization_header
-from superset.config import SHOPEE_SUPERSET_AUTH_USERNAME, SHOPEE_SUPERSET_AUTH_PASSWORD
 
 from flask_cache import Cache
 from flask_appbuilder._compat import as_unicode
@@ -47,6 +46,8 @@ from past.builtins import basestring
 from pydruid.utils.having import Having
 from sqlalchemy import event, exc
 from sqlalchemy.types import TypeDecorator, TEXT
+
+from superset import config
 
 log = logging.getLogger('MARKDOWN').setLevel(logging.INFO)
 
@@ -80,15 +81,11 @@ class SupersetTemplateException(SupersetException):
 
 
 def can_access(sm, permission_name, view_name, user):
-    """Protecting from has_access failing from missing perms/view"""
-    # basic_auth = request.headers.get('Authorization', None)
-    # basic_auth_hack = 'basic_auth_session' in session
-    # if basic_auth is not None:
-    #     basic_auth_credential = parse_authorization_header(basic_auth)
-    #     basic_auth_hack = basic_auth_credential.username == SHOPEE_SUPERSET_AUTH_USERNAME and basic_auth_credential.password == SHOPEE_SUPERSET_AUTH_PASSWORD
-
+    is_user_webshot = request.headers.get('Authorization') == \
+                      config.WEBSHOT_SECRET_TOKEN
     return (
         sm.is_item_public(permission_name, view_name) or
+        is_user_webshot or
         (not user.is_anonymous() and
          sm._has_view_access(user, permission_name, view_name))
     )
@@ -591,16 +588,13 @@ def has_access(f):
         permission_str = f.__name__
 
     def wraps(self, *args, **kwargs):
-        # basic_auth = request.headers.get('Authorization', None)
-        # basic_auth_hack = 'basic_auth_session' in session
-        #
-        # if basic_auth is not None:
-        #     basic_auth_credential = parse_authorization_header(basic_auth)
-        #     basic_auth_hack = basic_auth_credential.username == SHOPEE_SUPERSET_AUTH_USERNAME and basic_auth_credential.password == SHOPEE_SUPERSET_AUTH_PASSWORD
-        #     session['basic_auth_session'] = True
-
         permission_str = PERMISSION_PREFIX + f._permission_name
-        if self.appbuilder.sm.has_access(
+
+        if (permission_str in ('can_dashboard', 'can_explore_json') and
+            request.headers.get('Authorization') == \
+                              config.WEBSHOT_SECRET_TOKEN):
+            return f(self, *args, **kwargs)
+        elif self.appbuilder.sm.has_access(
                 permission_str, self.__class__.__name__):
             return f(self, *args, **kwargs)
         else:
@@ -630,9 +624,14 @@ def has_access_api(f):
         permission_str = f.__name__
 
     def wraps(self, *args, **kwargs):
-        # basic_auth_hack = 'basic_auth_session' in session
         permission_str = PERMISSION_PREFIX + f._permission_name
-        if self.appbuilder.sm.has_access(permission_str, self.__class__.__name__):
+
+        if (permission_str in ('can_dashboard', 'can_explore_json') and
+            request.headers.get('Authorization') == \
+                              config.WEBSHOT_SECRET_TOKEN):
+            return f(self, *args, **kwargs)
+        elif self.appbuilder.sm.has_access(
+                permission_str, self.__class__.__name__):
             return f(self, *args, **kwargs)
         else:
             logging.warning(LOGMSG_ERR_SEC_ACCESS_DENIED.format(permission_str, self.__class__.__name__))
