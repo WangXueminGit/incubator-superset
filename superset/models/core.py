@@ -345,7 +345,7 @@ class Dashboard(Model, AuditMixinNullable, ImportMixin):
 
     @property
     def url(self):
-        return "/superset/dashboard/{}/".format(self.slug or self.id)
+        return "/superset/dashboard/{}/".format(self.id or self.slug)
 
     @property
     def datasources(self):
