@@ -462,6 +462,7 @@ class PivotTableViz(BaseViz):
         return d
 
     def get_data(self, df):
+        df = df.fillna('')
         if (
                 self.form_data.get("granularity") == "all" and
                 DTTM_ALIAS in df):
