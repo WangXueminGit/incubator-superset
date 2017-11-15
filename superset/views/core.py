@@ -534,8 +534,6 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
             obj.slug = slugify(obj.dashboard_title)
         if '__' not in obj.slug:
             obj.slug = '{}__{}'.format(obj.slug, hashlib.sha256(str(time.time())).hexdigest())
-        if g.user not in obj.owners:
-            obj.owners.append(g.user)
         utils.validate_json(obj.json_metadata)
         utils.validate_json(obj.position_json)
         owners = [o for o in obj.owners]
