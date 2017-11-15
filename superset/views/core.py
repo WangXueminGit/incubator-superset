@@ -180,23 +180,9 @@ class DashboardFilter(SupersetFilter):
     def apply(self, query, func):  # noqa
         if self.has_all_datasource_access():
             return query
-        Slice = models.Slice  # noqa
-        Dash = models.Dashboard  # noqa
-        # TODO(bogdan): add `schema_access` support here
-        datasource_perms = self.get_view_menus('datasource_access')
-        slice_ids_qry = (
-            db.session
-            .query(Slice.id)
-            .filter(Slice.perm.in_(datasource_perms))
-        )
-        query = query.filter(
-            Dash.id.in_(
-                db.session.query(Dash.id)
-                .distinct()
-                .join(Dash.slices)
-                .filter(Slice.id.in_(slice_ids_qry))
-            )
-        )
+        Dash = models.Dashboard
+        query = query.filter(Dash.owners.contains(g.user))
+
         return query
 
 
