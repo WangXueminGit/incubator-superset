@@ -1963,8 +1963,20 @@ class Superset(BaseSupersetView):
             'dash_edit_perm': dash_edit_perm,
         })
 
+        is_user_admin = any(role.name == 'Admin' for role in g.user.roles)
+
+        if is_user_admin:
+            user_type = 'admin'
+        elif g.user in dash.owners:
+            user_type = 'owner'
+        elif g.user in dash.guests:
+            user_type = 'guest'
+        else:
+            user_type = 'anonymous'
+
         bootstrap_data = {
             'user_id': g.user.get_id(),
+            'user_type': user_type,
             'dashboard_data': dashboard_data,
             'datasources': {ds.uid: ds.data for ds in datasources},
         }

@@ -74,14 +74,16 @@ function initDashboardView(dashboard) {
   );
 
   // Displaying widget controls on hover
-  $('.react-grid-item').hover(
-    function () {
-      $(this).find('.chart-controls').fadeIn(300);
-    },
-    function () {
-      $(this).find('.chart-controls').fadeOut(300);
-    },
-  );
+  if (dashboard.curUserType == 'admin' || dashboard.curUserType == 'owner') {
+    $('.react-grid-item').hover(
+      function () {
+        $(this).find('.chart-controls').fadeIn(300);
+      },
+      function () {
+        $(this).find('.chart-controls').fadeOut(300);
+      },
+    );
+  }
   $('div.grid-container').css('visibility', 'visible');
 
   $('div.widget').click(function (e) {
@@ -100,12 +102,13 @@ function initDashboardView(dashboard) {
   $('[data-toggle="tooltip"]').tooltip({ container: 'body' });
 }
 
-export function dashboardContainer(dashboard, datasources, userid) {
+export function dashboardContainer(dashboard, datasources, userid, userType) {
   return Object.assign({}, dashboard, {
     type: 'dashboard',
     filters: {},
     slicesDone: [],
     curUserId: userid,
+    curUserType: userType,
     init() {
       this.sliceObjects = [];
       dashboard.slices.forEach((data) => {
@@ -406,7 +409,8 @@ $(document).ready(() => {
   const dashboardData = $('.dashboard').data('bootstrap');
 
   const state = getInitialState(dashboardData);
-  const dashboard = dashboardContainer(state.dashboard, state.datasources, state.user_id);
+  const dashboard = dashboardContainer(state.dashboard, state.datasources,
+    state.user_id, state.user_type);
   initDashboardView(dashboard);
   dashboard.init();
 });
