@@ -1,11 +1,12 @@
 /* eslint camelcase: 0 */
 import URI from 'urijs';
 
-export function getExploreUrl(form_data, endpointType = 'base', force = false, curUrl = null) {
+export function getExploreUrl(form_data, endpointType = 'base', force = false,
+                              curUrl = null,
+                              dashboardId = null) {
   if (!form_data.datasource) {
     return null;
   }
-
 
   // The search params from the window.location are carried through,
   // but can be specified with curUrl (used for unit tests to spoof
@@ -39,6 +40,11 @@ export function getExploreUrl(form_data, endpointType = 'base', force = false, c
   if (endpointType === 'query') {
     search.query = 'true';
   }
+
+  if (dashboardId) {
+    search.dashboard_id = dashboardId;
+  }
+
   uri = uri.search(search).directory(directory);
   return uri.toString();
 }

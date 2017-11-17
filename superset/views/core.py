@@ -48,7 +48,8 @@ from superset import (
 from superset.legacy import cast_form_data
 from superset.utils import (has_access, has_access_api,
                             QueryStatus, escape_filename,
-                            SupersetSecurityException)
+                            SupersetSecurityException,
+                            dashboard_user_type)
 from superset.connectors.connector_registry import ConnectorRegistry
 import superset.models.core as models
 from superset.models.sql_lab import Query
@@ -1193,7 +1194,23 @@ class Superset(BaseSupersetView):
                 utils.error_msg_from_exception(e),
                 stacktrace=traceback.format_exc())
 
-        if not self.datasource_access(viz_obj.datasource):
+        dashboard_id = request.args.get('dashboard_id')
+
+        # The basic logic is, we dive slice data access into two categories:
+        # - direct access: where users explore the slice data directly, this
+        #   access is granted by determining whether user has direct data source
+        #   access to slice's data source
+        # - indirect access: where users get the slice data inside a dashboard.
+        #   when user is a super admin, or is an owner or guest of a dashboard,
+        #   it should have access to slice's data even if he didn't have the
+        #   necessary data source access, cause if we add a user as a owner or
+        #   guest of a dashboard, it means that the dashboard owner want to
+        #   share all slices' data to that user.
+        if dashboard_id:
+            user_type = dashboard_user_type(dashboard_id, g.user)
+            if user_type == 'anonymous':
+                return json_error_response(DATASOURCE_ACCESS_ERR, status=404)
+        elif not self.datasource_access(viz_obj.datasource):
             return json_error_response(DATASOURCE_ACCESS_ERR, status=404)
 
         if request.args.get("csv") == "true":
@@ -1937,8 +1954,11 @@ class Superset(BaseSupersetView):
             if datasource:
                 datasources.add(datasource)
 
+        user_type = dashboard_user_type(dashboard_id, g.user)
+
         for datasource in datasources:
-            if datasource and not self.datasource_access(datasource):
+            if (datasource and not self.datasource_access(datasource) and
+                user_type == 'anonymous'):
                 flash(
                     __(get_datasource_access_error_msg(datasource.name)),
                     "danger")
@@ -1962,17 +1982,6 @@ class Superset(BaseSupersetView):
             'dash_save_perm': dash_save_perm,
             'dash_edit_perm': dash_edit_perm,
         })
-
-        is_user_admin = any(role.name == 'Admin' for role in g.user.roles)
-
-        if is_user_admin:
-            user_type = 'admin'
-        elif g.user in dash.owners:
-            user_type = 'owner'
-        elif g.user in dash.guests:
-            user_type = 'guest'
-        else:
-            user_type = 'anonymous'
 
         bootstrap_data = {
             'user_id': g.user.get_id(),

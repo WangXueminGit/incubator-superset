@@ -59,7 +59,8 @@ function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
               </a>
               <a
                 className="exportCSV"
-                href={getExploreUrl(slice.form_data, 'csv')}
+                href={getExploreUrl(slice.form_data, 'csv', null, null,
+                                    dashboard.id)}
                 title="Export as CSV"
                 data-toggle="tooltip"
               >

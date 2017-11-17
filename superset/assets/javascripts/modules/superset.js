@@ -63,6 +63,7 @@ const px = function () {
     const sliceId = data.slice_id;
     const datasourceId = datasource.id;
     const formData = applyDefaultFormData(data.form_data);
+    const dashboardId = controller.id;
     slice = {
       data,
       formData,
@@ -84,7 +85,8 @@ const px = function () {
         return this.endpoint(data, 'json');
       },
       endpoint(data, endpointType = 'json') {
-        let endpoint = getExploreUrl(data, endpointType, this.force, null);
+        let endpoint = getExploreUrl(data, endpointType, this.force, null,
+                                     dashboardId);
         if (endpoint.charAt(0) !== '/') {
           // Known issue for IE <= 11:
           // https://connect.microsoft.com/IE/feedbackdetail/view/1002846/pathname-incorrect-for-out-of-document-elements

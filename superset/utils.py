@@ -28,7 +28,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.utils import formatdate
-from flask import flash, Markup, render_template, make_response, url_for, redirect, request
+from flask import (flash, g, Markup, render_template, make_response, url_for,
+                   redirect, request)
 from flask_appbuilder.const import (
     LOGMSG_ERR_SEC_ACCESS_DENIED,
     FLAMSG_ERR_SEC_ACCESS_DENIED,
@@ -755,3 +756,31 @@ def decode_base16_string(text):
 
 def escape_filename(filename):
     return re.sub(r'[":<>|/\\?*]', '__', filename)
+
+
+def dashboard_user_type(dashboard_id_or_slug, user):
+    from superset import db
+    from superset.models.core import Dashboard
+
+    session = db.session()
+    query = session.query(Dashboard)
+
+    if dashboard_id_or_slug.isdigit():
+        query = query.filter_by(id=int(dashboard_id_or_slug))
+    else:
+        query = query.filter_by(slug=dashboard_id_or_slug)
+
+    dashboard = query.one()
+
+    is_user_admin = any(role.name == 'Admin' for role in g.user.roles)
+
+    if is_user_admin:
+        user_type = 'admin'
+    elif g.user in dashboard.owners:
+        user_type = 'owner'
+    elif g.user in dashboard.guests:
+        user_type = 'guest'
+    else:
+        user_type = 'anonymous'
+
+    return user_type
