@@ -74,16 +74,14 @@ function initDashboardView(dashboard) {
   );
 
   // Displaying widget controls on hover
-  if (dashboard.curUserType == 'admin' || dashboard.curUserType == 'owner') {
-    $('.react-grid-item').hover(
-      function () {
-        $(this).find('.chart-controls').fadeIn(300);
-      },
-      function () {
-        $(this).find('.chart-controls').fadeOut(300);
-      },
-    );
-  }
+  $('.react-grid-item').hover(
+    function () {
+      $(this).find('.chart-controls').fadeIn(300);
+    },
+    function () {
+      $(this).find('.chart-controls').fadeOut(300);
+    },
+  );
   $('div.grid-container').css('visibility', 'visible');
 
   $('div.widget').click(function (e) {
