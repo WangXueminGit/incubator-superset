@@ -1,7 +1,6 @@
 /* eslint-disable react/no-danger */
 import React from 'react';
 import PropTypes from 'prop-types';
-import ExportMailModal from './ExportMailModal';
 
 import { getExploreUrl } from '../../explorev2/exploreUtils';
 
@@ -66,16 +65,6 @@ function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
               >
                 <i className="fa fa-table" />
               </a>
-              <ExportMailModal
-                dashboard={dashboard}
-                slice={slice}
-                css={dashboard.css}
-                isButton={false}
-                isLink={true}
-                triggerNode={
-                  <i className="fa fa-share-alt" />
-                }
-              />
             </div>
           </div>
         </div>
