@@ -115,19 +115,53 @@ module.exports = function(slice, payload) {
   if (rowConfiguration.hide) {
     hide = rowConfiguration.hide;
   }
+  // Check if column is present in column options
+  var colInConfig = function(column, optionsName) {
+    var parsedOptions = Object.keys(optionsName).map((v, i) => (v.split(",")))
+    var finalOptions = parsedOptions
+      .filter(
+        (v1, index) =>
+          (v1.every((v2, i2) =>
+            (v2 === column[i2])
+          )
+        )
+      )
+    return finalOptions;
+  }
   // The function accepts option configuration name and
   // return corresponding style class name
+  // var compareColumns
   var getColumnConfigStyleClass = function (column, optionsName, options,
     styleClassName) {
-    if (column in optionsName && optionsName[column] !== null) {
-      for (var i in options) {
-        if (optionsName[column] == options[i]) {
-          return styleClassName[i]
-        }
-      }
-      return null;
+    let validOptions = colInConfig(column, optionsName)
+    if (validOptions.length >= 1) {
+      let currentPriority = 0;
+      let currentStyle = null;
+      validOptions.forEach((optionName, _) => {
+        const columnPriority = optionName.length;
+        options.forEach((option, i) => {
+          if (optionsName[optionName] == option
+              && columnPriority > currentPriority) {
+            currentStyle = styleClassName[i];
+            currentPriority = columnPriority;
+          }
+        })
+      })
+      return currentStyle;
     }
     return null;
+  }
+  var getFormattingForColumn = function(column, formatting) {
+    const validFormattingOptions = colInConfig(column, formatting)
+    if (validFormattingOptions.length >= 1) {
+      const formattingPriority = validFormattingOptions.map((v, _) => (v.length))
+      const chosenPriority = Math.max(...formattingPriority)
+      const chosenIndex = formattingPriority.indexOf(chosenPriority)
+      const chosenOption = validFormattingOptions[chosenIndex]
+        .slice(0, chosenPriority)
+        .toString()
+      return formatting[chosenOption]
+    }
   }
   var checkBaseIsFloat = function (base) {
     return !isNaN(parseFloat(base));
@@ -346,8 +380,9 @@ module.exports = function(slice, payload) {
               column = column[0];
             }
           }
-          if (column in formatting &&
-            formatting[column] !== null) {
+          const columnFormat =
+            getFormattingForColumn(originalColumn, formatting);
+          if (columnFormat) {
             const val = $(this).data(
               'originalvalue') || $(
                 this).html();
@@ -355,7 +390,7 @@ module.exports = function(slice, payload) {
               val);
             if (val.length > 0) {
               $(this).html(d3.format(
-              formatting[column])
+              columnFormat)
               (val));
             }
           }
@@ -363,26 +398,29 @@ module.exports = function(slice, payload) {
             'originalvalue') || $(this)
               .html();
           var base = ''
-          if (column in basements &&
-            basements[column] !== null) {
-            base = $.trim(basements[column])
+          const columnBase =
+            getFormattingForColumn(originalColumn, basements);
+          if (columnBase) {
+            base = $.trim(columnBase)
           }
           var coloringOptionClass =
             getColumnConfigStyleClass(
-              column, coloringOptions,
+              originalColumn, coloringOptions,
               colorings, colorStyles);
           var bcColoringOptionClass =
             getColumnConfigStyleClass(
-              column, bcColoringOptions,
+              originalColumn, bcColoringOptions,
               colorings, colorStyles);
           var fontOptionClass =
             getColumnConfigStyleClass(
-              column, fontOptions,
+              originalColumn, fontOptions,
               fontWeights,
               fontWeightStyles);
+          const columnComparisonOption =
+            getFormattingForColumn(originalColumn, comparisionOptions);
           addClassAccordingConfig($(this),
             base, val,
-            comparisionOptions[column],
+            columnComparisonOption,
             coloringOptionClass,
             fontOptionClass,
             bcColoringOptionClass, false, null);
@@ -399,7 +437,9 @@ module.exports = function(slice, payload) {
           styling[cellTotalColumn] + `, 0.7), rgba(` +
           styling[cellTotalColumn] + `, 0.7) ${perc}%,     ` +
           `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
-          const textAlign = textAligns[column] == undefined ? 'right' : textAligns[column];
+          const textAlign = getFormattingForColumn(originalColumn, textAligns)
+            ? 'right'
+            : getFormattingForColumn(originalColumn, textAligns);
           $(this).css('background-image',progressBarStyle);
           $(this).addClass('text-' + textAlign);
         });
@@ -461,6 +501,7 @@ module.exports = function(slice, payload) {
       }
       $(this).find('td').each(function (index) {
         var column = columns[index];
+        var originalColumn = columns[index];
         // Change for dealing with different situations:
         // metircs on the top or columns on the top
         if (Array.isArray(column)) {
@@ -472,14 +513,14 @@ module.exports = function(slice, payload) {
             column = column[0];
           }
         }
-        if (column in formatting && formatting[
-          column] !== null) {
+        const columnFormat =
+            getFormattingForColumn(originalColumn, formatting);
+        if (columnFormat) {
           const val = $(this).data(
             'originalvalue') || $(this).html();
           $(this).data('originalvalue', val);
           if (val.length > 0) {
-            $(this).html(d3.format(formatting[
-            column])(val));
+            $(this).html(d3.format(columnFormat)(val));
           }
         }
         var val = $(this).data('originalvalue') ||
@@ -487,24 +528,27 @@ module.exports = function(slice, payload) {
         var base = ''
         var coloringOptionClass = ''
         var fontOptionClass = ''
-        if (column in basements && basements[column] !==
-          null) {
-          base = $.trim(basements[column])
+        const columnBase =
+            getFormattingForColumn(originalColumn, basements);
+        if (columnBase) {
+          base = $.trim(columnBase)
         }
         var coloringOptionClass =
-          getColumnConfigStyleClass(column,
+          getColumnConfigStyleClass(originalColumn,
             coloringOptions, colorings,
             colorStyles);
         var bcColoringOptionClass =
-          getColumnConfigStyleClass(column,
+          getColumnConfigStyleClass(originalColumn,
             bcColoringOptions, colorings,
             colorStyles);
         var fontOptionClass =
-          getColumnConfigStyleClass(column,
+          getColumnConfigStyleClass(originalColumn,
             fontOptions, fontWeights,
             fontWeightStyles);
+        const columnComparisonOption =
+            getFormattingForColumn(originalColumn, comparisionOptions)
         addClassAccordingConfig($(this), base, val,
-          comparisionOptions[column],
+          columnComparisonOption,
           coloringOptionClass,
           fontOptionClass,
           bcColoringOptionClass, hasRowColor, rowColor);
@@ -521,7 +565,9 @@ module.exports = function(slice, payload) {
             styling[cellTotalColumn] + `, 0.7), rgba(` +
             styling[cellTotalColumn] + `, 0.7) ${perc}%,     ` +
             `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
-        const textAlign = textAligns[column] == undefined ? 'right' : textAligns[column];
+        const textAlign = getFormattingForColumn(originalColumn, textAligns)
+            ? 'right'
+            : getFormattingForColumn(originalColumn, textAligns);
         $(this).css('background-image',progressBarStyle);
         $(this).addClass('text-' + textAlign);
       });

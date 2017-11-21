@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Checkbox } from 'react-bootstrap';
 import SelectControl from './SelectControl';
 import TextControl from './TextControl';
+import ControlHeader from './../ControlHeader';
 
 const D3_TIME_FORMAT_OPTIONS = [
   ['.3s', '.3s | 12.3k'],
@@ -80,6 +81,7 @@ export default class ColumnControl extends React.Component {
       metrics: props.formData.metrics || [],
       value: props.value,
       selectedMetric: null,
+      selectedColumns: []
     };
   }
   componentWillReceiveProps(nextProps) {
@@ -100,8 +102,16 @@ export default class ColumnControl extends React.Component {
       this.setState({ metrics: nextProps.formData.metrics, value, selectedMetric });
     }
   }
-  onSelectChange(value) {
+  onSelectedMetricChange(value) {
     this.setState({selectedMetric: value});
+  }
+  onSelectedColumnsChange(index, value) {
+    const selectedColumns = this.state.selectedColumns || [];
+    if (value) {
+      this.setState({selectedColumns: [ ...selectedColumns.slice(0, index), value]})
+    } else {
+      this.setState({selectedColumns: selectedColumns.slice(0, index)})
+    }
   }
   onToggle(metric, mode, type) {
     const value = this.props.value;
@@ -133,10 +143,31 @@ export default class ColumnControl extends React.Component {
     this.setState({value});
     this.props.onChange(value);
   }
+  getCombinedMetric() {
+    if (this.props.formData.viz_type !== 'pivot_table') {
+      return this.state.selectedMetric
+    } else {
+      return [this.state.selectedMetric].concat(this.state.selectedColumns)
+    }
+  }
+  getUnique(array) {
+    return [...(new Set(array))]
+  }
+  getSelectedColumnsOptions(index) {
+    const metrics = this.getCombinedMetric();
+    let subOptions = this.props.columns;
+    for (let i = 0; i <= index; i++){
+      subOptions = subOptions.filter((v) => (v[i] === metrics[i]));
+    }
+    const uniqueOptions = new Set();
+    return this.getUnique(subOptions.map((v) => (v[index + 1])))
+  }
   render() {
+    const viz_type = this.props.formData.viz_type;
     const metrics = this.props.formData.metrics || [];
+    const columns = this.props.formData.columns || [];
     const value = this.state.value === null ? {} : this.state.value;
-    const metric = this.state.selectedMetric;
+    const metric = this.getCombinedMetric();
     const hideAll = (
                   'hide' in value &&
                   'hide' in value['hide'] &&
@@ -160,6 +191,30 @@ export default class ColumnControl extends React.Component {
           </table>
       </div>
     );
+    let selectedColumnsElement = null;
+    if (viz_type === 'pivot_table' && this.state.selectedMetric !== null) {
+      selectedColumnsElement = columns.map((value, index) => {
+        if (index === 0 || this.state.selectedColumns[(index - 1)]) {
+          return (<div className="panel-body" key={index}>
+            <SelectControl
+              name="column_focus"
+              choices={this.getSelectedColumnsOptions(index)}
+              onChange={this.onSelectedColumnsChange.bind(this, index)}
+              value={this.state.selectedColumns[index]}
+            />
+          </div>)
+        }
+      });
+    }
+    let selectedColumnsHeader = null;
+    if (selectedColumnsElement !== null) {
+      selectedColumnsHeader = (
+        <ControlHeader
+          label="Columns"
+          description=""
+        />
+        )
+    }
     if (this.state.selectedMetric !== null) {
       metricElement = (
         <div className="panel-body">
@@ -301,19 +356,26 @@ export default class ColumnControl extends React.Component {
       );
     }
     return (
+      <div>
         <div className="panel panel-default" style={{ border: 'initial', borderColor: '#ddd' }}>
           <div className="panel-heading">
             <SelectControl
               name="column_focus"
-              default={metrics[0]}
-              choices={metrics}
-              onChange={this.onSelectChange.bind(this)}
+              choices={this.getUnique(this.props.columns.map(
+                  (v, _) => (typeof(v) == 'string' ? v : v[0])
+                ))}
+              onChange={this.onSelectedMetricChange.bind(this)}
               value={this.state.selectedMetric}
             />
           </div>
+        </div>
+        {selectedColumnsHeader}
+        <div className="panel panel-default" style={{ border: 'initial', borderColor: '#ddd' }}>
+          {selectedColumnsElement}
           {metricElement}
           {hideAllElement}
         </div>
+      </div>
     );
   }
 }
