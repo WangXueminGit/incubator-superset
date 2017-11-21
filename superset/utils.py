@@ -772,15 +772,21 @@ def dashboard_user_type(dashboard_id_or_slug, user):
 
     dashboard = query.one()
 
-    is_user_admin = any(role.name == 'Admin' for role in g.user.roles)
+    is_user_webshot = request.headers.get('Authorization') == \
+                      config.WEBSHOT_SECRET_TOKEN
 
-    if is_user_admin:
-        user_type = 'admin'
-    elif g.user in dashboard.owners:
-        user_type = 'owner'
-    elif g.user in dashboard.guests:
-        user_type = 'guest'
-    else:
+    if is_user_webshot:
+        user_type = 'webshot'
+    elif user.is_anonymous():
         user_type = 'anonymous'
+    else:
+        is_user_admin = any(role.name == 'Admin' for role in user.roles)
+
+        if is_user_admin:
+            user_type = 'admin'
+        elif user in dashboard.owners:
+            user_type = 'owner'
+        elif user in dashboard.guests:
+            user_type = 'guest'
 
     return user_type
