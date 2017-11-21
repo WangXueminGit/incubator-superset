@@ -5,14 +5,12 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import Select from 'react-select';
 import { Button } from 'react-bootstrap';
-import DatePicker from 'react-datepicker';
 import moment from 'moment';
-
 import DateFilterControl from '../javascripts/explorev2/components/controls/DateFilterControl';
+import ControlHeader from '../javascripts/explorev2/components/ControlHeader';
 import '../stylesheets/react-select/select.less';
 import { TIME_CHOICES } from './constants';
 import './filter_box.css';
-import 'react-datepicker/dist/react-datepicker.css';
 
 // maps control names to their key in extra_filters
 const timeFilterMap = {
@@ -104,31 +102,31 @@ class FilterBox extends React.Component {
     const until = '__to';
     if (this.props.showDateFilter) {
       dateFilter = (
-        <div className={'input-group input-daterange'} style={{ display: 'block' }}>
-          <div className="form-group">
-            <label style={{ display: 'block' }}>From</label>
-            <DatePicker
-              selected={this.state.startDate}
-              selectsStart
-              placeholderText="From"
-              isClearable={true}
-              startDate={this.state.startDate}
-              endDate={this.state.endDate}
-              onChange={this.changeDateFilter.bind(this, since)}
-              className="form-control"
+        <div className="row space-1">
+          <div className="col-lg-6 col-xs-12">
+            <ControlHeader
+              label="Since"
+              description="Select starting date"
+            />
+            <DateFilterControl
+              name={since}
+              label="Since"
+              description="Select starting date"
+              onChange={this.changeFilter.bind(this, since)}
+              value={this.state.selectedValues[since]}
             />
           </div>
-          <div className="form-group">
-            <label style={{ display: 'block' }}>To</label>
-            <DatePicker
-              selected={this.state.endDate}
-              selectsEnd
-              placeholderText="to"
-              isClearable={true}
-              startDate={this.state.startDate}
-              endDate={this.state.endDate}
-              onChange={this.changeDateFilter.bind(this, until)}
-              className="form-control"
+          <div className="col-lg-6 col-xs-12">
+            <ControlHeader
+              label="Until"
+              description="Select end date"
+            />
+            <DateFilterControl
+              name={until}
+              label="Until"
+              description="Select end date"
+              onChange={this.changeFilter.bind(this, until)}
+              value={this.state.selectedValues[until]}
             />
           </div>
         </div>

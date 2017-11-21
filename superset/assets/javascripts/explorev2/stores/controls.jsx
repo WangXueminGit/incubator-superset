@@ -534,6 +534,7 @@ export const controls = {
     freeForm: true,
     label: 'Since',
     default: 'yesterday',
+    description: 'Select starting date'
   },
 
   until: {
@@ -541,6 +542,7 @@ export const controls = {
     freeForm: true,
     label: 'Until',
     default: 'now',
+    description: 'Select end date'
   },
 
   max_bubble_size: {
