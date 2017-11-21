@@ -28,7 +28,16 @@ function tableVis(slice, payload) {
   let timestampFormatter;
   const data = payload.data;
   const fd = slice.formData;
-  const styling = fd.styling ? fd.styling : null;
+  let styling = fd.styling ? fd.styling : null;
+  // For the color saved in the database, change the value structure
+  for (let metricForStyling in styling) {
+    if (typeof(styling[metricForStyling]) == "string") {
+      let savedColor = styling[metricForStyling];
+      styling[metricForStyling] = {};
+      styling[metricForStyling]['color'] = savedColor;
+      styling[metricForStyling]['exclude_rows_from_progress_bar'] = [];
+    }
+  }
   const columnConfiguration = fd.column_configuration ? fd.column_configuration : {};
   const rowConfiguration = fd.row_configuration ? fd.row_configuration : {};
   const formatting = {};
@@ -99,21 +108,10 @@ function tableVis(slice, payload) {
     rowContains = rowConfiguration.basements;
   }
   // Removing metrics (aggregates) that are strings
-  //const tempMetrics = data.columns.map(m => m.toLowerCase()) || [];
-  //const metrics = tempMetrics.filter(m => !isNaN(data.records[0][m]));
   const metrics = data.columns.filter(m => !isNaN(data.records[0][m]));
-  //const percentageMetrics = tempMetrics.filter(m => /%/.test(m));
-
-  function col(c) {
-    const arr = [];
-    for (let i = 0; i < data.records.length; i += 1) {
-      arr.push(data.records[i][c]);
-    }
-    return arr;
-  }
-  const maxes = {};
-  for (let i = 0; i < metrics.length; i += 1) {
-    maxes[metrics[i]] = d3.max(col(metrics[i]));
+  var arrForMax = {};
+  for (var i in metrics) {
+    arrForMax[metrics[i]] = [];
   }
   if (fd.table_timestamp_format === 'smart_date') {
     timestampFormatter = formatDate;
@@ -204,12 +202,6 @@ function tableVis(slice, payload) {
           bcColoringOptionClass = 'background-lightgray'
         }
       }
-    /*
-      if (styling !== null) {
-        coloringOptionClass = ''
-        bcColoringOptionClass = ''
-      }
-    */
       if (d.fontOption !== null) {
         if (d.fontOption === 'bold') {
           fontOptionClass = 'bold'
@@ -249,28 +241,6 @@ function tableVis(slice, payload) {
       }
       return null;
     })
-    .style('background-image', function (d) {
-      //if (styling === null || !d.isMetric) {
-      if (styling === null || !$.isNumeric(d.val)) {
-        return null;
-      }
-      //if (d.isMetric) {
-      if ($.isNumeric(d.val)) {
-        const perc = Math.round((d.val / maxes[d.col]) * 100);
-        const colorIndex = metrics.indexOf(d.col);
-        const progressBarStyle = `linear-gradient(to right, rgba(` +
-        styling[d.col] + `, 0.6), rgba(` +
-        styling[d.col] + `, 0.6) ${perc}%,     ` +
-        `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
-        // The 0.01 to 0.001 is a workaround for what appears to be a
-        // CSS rendering bug on flat, transparent colors
-        return (
-          progressBarStyle
-        );
-      }
-      return null;
-    })
-    //.classed('text-right', d=>d.isMetric)
     .classed('text-right', d=>$.isNumeric(d.val) && (d.textAlign=='right' || d.textAlign == undefined))
     .classed('text-left', d=>$.isNumeric(d.val) && d.textAlign=='left')
     .classed('text-center', d=>$.isNumeric(d.val) && d.textAlign=='center')
@@ -299,7 +269,8 @@ function tableVis(slice, payload) {
       return (!d.isMetric) ? 'pointer' : '';
     })
     .html(d => d.html ? d.html : d.val);
-  table.selectAll('tr').each(function () {
+  table.selectAll('tbody tr').each(function () {
+    var that = this;
     for (var i in rowContains) {
       for (var j in this.cells) {
         if (this.cells[j].innerText == rowContains[i]) {
@@ -310,7 +281,26 @@ function tableVis(slice, payload) {
       }
       continue;
     }
+    $(this).find('td').each(function (index){
+      var column = data.columns[index];
+      if ($.inArray(column, metrics) !== -1) {
+        var exclude = false;
+        for (var i = 0; i < that.cells.length; i++) {
+          if (styling[column] && ('exclude_rows_from_progress_bar' in styling[column]) &&
+            ($.inArray(that.cells[i].innerText, styling[column]['exclude_rows_from_progress_bar']) !== -1)) {
+            exclude = true;
+          }
+        }
+        if (!exclude) {
+          arrForMax[column].push(parseFloat(this.innerText));
+        }
+      }
+    });
   });
+  const maxes = {};
+  for (let i = 0; i < metrics.length; i += 1) {
+    maxes[metrics[i]] = d3.max(arrForMax[metrics[i]]);
+  }
   const height = slice.height();
   let paging = false;
   let pageLength;
@@ -347,6 +337,35 @@ function tableVis(slice, payload) {
       else {
         return null;
       }
+    },
+    rowCallback: (row, rowData, index) => {
+      $(row).find('td').each(function (index) {
+        var column = data.columns[index];
+        if ($.inArray(column, metrics) !== -1) {
+          var exclude = false;
+          for (var i = 0; i < row.cells.length; i++) {
+            if (styling[column] && ('exclude_rows_from_progress_bar' in styling[column]) &&
+                ($.inArray(row.cells[i].innerText, styling[column]['exclude_rows_from_progress_bar']) !== -1)) {
+              exclude = true;
+            }
+          }
+          if (!exclude) {
+            var val = $(this).data(
+            'originalvalue') || $(this)
+              .html();
+            if (!styling[column] || !styling[column]['color']) {
+              styling[column] = {};
+              styling[column]['color'] = null;
+            }
+            const perc = Math.round((val / maxes[column]) * 100);
+            const progressBarStyle = `linear-gradient(to right, rgba(` +
+            styling[column]['color'] + `, 0.7), rgba(` +
+            styling[column]['color'] + `, 0.4) ${perc}%,     ` +
+            `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+            $(this).css('background-image',progressBarStyle);
+          }
+        }
+      });
     },
   });
 

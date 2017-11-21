@@ -34,7 +34,16 @@ module.exports = function(slice, payload) {
   // payload.data.columns: [["sum__num", "CA"], ["sum_num", "FL"]]
   const metrics = fd.metrics;
   const columns = payload.data.columns;
-  const styling = fd.styling ? fd.styling : null;
+  let styling = fd.styling ? fd.styling : null;
+  // For the color saved in the database, change the value structure
+  for (let metricForStyling in styling) {
+    if (typeof(styling[metricForStyling]) == "string") {
+      let savedColor = styling[metricForStyling];
+      styling[metricForStyling] = {};
+      styling[metricForStyling]['color'] = savedColor;
+      styling[metricForStyling]['exclude_rows_from_progress_bar'] = [];
+    }
+  }
   const columnConfiguration =
     fd.column_configuration ? fd.column_configuration : {};
   const rowConfiguration = fd.row_configuration ? fd.row_configuration : {};
@@ -280,46 +289,73 @@ module.exports = function(slice, payload) {
   }
   for (var j in columns) {
     var maxKey = '';
-    for (var k in columns[j]) {
-      maxKey += columns[j][k];
+    if (Array.isArray(columns[j])) {
+      for (var k in columns[j]) {
+        maxKey += columns[j][k];
+      }
+    }
+    else {
+      maxKey = columns[j];
     }
     arrForMax[maxKey] = [];
   }
   container.find('table tbody tr').each(function () {
+    var that = this;
+    var hidden = false;
     if (hide) {
       // Remove row contains "rowContains" for pivot table
       if ($.inArray(this.cells[0].innerText, hide) !== -1) {
         $(this).hide();
+        hidden = true;
       }
     }
-    // If hideColumnAll is true, then hide the column who contains 'all'
-    // This section is used to hide 'td' elements
-    //$(this).find('td').addClass('text-right').each(function (index){
-    $(this).find('td').each(function (index){
-      var maxKey = '';
-      for (var k in columns[index]) {
-        maxKey += columns[index][k];
-      }
-      arrForMax[maxKey].push(parseFloat(this.innerText));
-    });
+    if (!hidden) {
+      $(this).find('td').each(function (index){
+        var metricForColumn = columns[index];;
+        var exclude = false;
+        var column = columns[index];
+        // Change for dealing with different situations:
+        // metircs on the top or columns on the top
+        if (Array.isArray(column)) {
+          if (metricUnderColumn) {
+            var lengthOfCol = column.length;
+            metricForColumn = column[lengthOfCol - 1];
+          }
+          else {
+            metricForColumn = column[0];
+          }
+        }
+        for (var i = 0; i < that.cells.length; i++) {
+          if (styling[column] && ('exclude_rows_from_progress_bar' in styling[column]) &&
+            ($.inArray(that.cells[i].innerText, styling[metricForColumn]['exclude_rows_from_progress_bar']) !== -1)) {
+            exclude = true;
+          }
+        }
+        if (!exclude){
+          var maxKey = '';
+          if (Array.isArray(columns[index])) {
+            for (var k in columns[index]) {
+              maxKey += columns[index][k];
+            }
+          }
+          else {
+            maxKey = columns[index];
+          }
+          arrForMax[maxKey].push(parseFloat(this.innerText));
+        }
+      });
+    }
   });
-
-  var lengthOfarr = Object.keys(arrForMax).length;
-  for (var q=0; q < lengthOfarr; q+=1) {
-    var maxKey = '';
-    for (var k in columns[q]) {
-      maxKey += columns[q][k];
-    }
-    var l = arrForMax[maxKey].length;
-    arrForMax[maxKey].splice(l-1, 1);
-  }
-
-
   const maxes = {};
   for (var n = 0; n < Object.keys(arrForMax).length; n += 1) {
     var maxKey = '';
-    for (var k in columns[n]) {
-      maxKey += columns[n][k];
+    if (Array.isArray(columns[n])) {
+      for (var k in columns[n]) {
+        maxKey += columns[n][k];
+      }
+    }
+    else {
+      maxKey = columns[n];
     }
     maxes[maxKey] = d3.max(arrForMax[maxKey]);
   }
@@ -365,6 +401,7 @@ module.exports = function(slice, payload) {
       },
       rowCallback: (row, data, index) => {
         $(row).find('td').each(function (index) {
+          var exclude = false;
           var column = columns[index];
           var originalColumn = columns[index];
           // Change for dealing with different situations:
@@ -422,23 +459,40 @@ module.exports = function(slice, payload) {
             coloringOptionClass,
             fontOptionClass,
             bcColoringOptionClass, false, null);
-          var maxKey = '';
-          for (var k in originalColumn) {
-            maxKey += originalColumn[k];
+          for (var i = 0; i < row.cells.length; i++) {
+            if (styling[column] && ('exclude_rows_from_progress_bar' in styling[column]) &&
+                ($.inArray(row.cells[i].innerText, styling[column]['exclude_rows_from_progress_bar'])) !== -1) {
+              exclude = true;
+            }
           }
-          const perc = Math.round((val / maxes[maxKey]) * 100);
-          var cellTotalColumn = column;
-          if (Array.isArray(cellTotalColumn)) {
-            cellTotalColumn = cellTotalColumn[0];
+          if (!exclude) {
+            var maxKey = '';
+            if (Array.isArray(originalColumn)) {
+              for (var k in originalColumn) {
+                maxKey += originalColumn[k];
+              }
+            }
+            else {
+              maxKey = originalColumn;
+            }
+            const perc = Math.round((val / maxes[maxKey]) * 100);
+            var cellTotalColumn = column;
+            if (Array.isArray(cellTotalColumn)) {
+              cellTotalColumn = cellTotalColumn[0];
+            }
+            if (!styling[cellTotalColumn] || !styling[cellTotalColumn]['color']) {
+              styling[cellTotalColumn] = {};
+              styling[cellTotalColumn]['color'] = null;
+            }
+            const progressBarStyle = `linear-gradient(to right, rgba(` +
+            styling[cellTotalColumn]['color'] + `, 0.7), rgba(` +
+            styling[cellTotalColumn]['color'] + `, 0.4) ${perc}%,     ` +
+            `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+            $(this).css('background-image',progressBarStyle);
           }
-          const progressBarStyle = `linear-gradient(to right, rgba(` +
-          styling[cellTotalColumn] + `, 0.7), rgba(` +
-          styling[cellTotalColumn] + `, 0.7) ${perc}%,     ` +
-          `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
           const textAlign = getFormattingForColumn(originalColumn, textAligns)
             ? 'right'
             : getFormattingForColumn(originalColumn, textAligns);
-          $(this).css('background-image',progressBarStyle);
           $(this).addClass('text-' + textAlign);
         });
       },
@@ -479,6 +533,7 @@ module.exports = function(slice, payload) {
     // the DataTable plugin, so we need to handle the scrolling ourselves.
     // In this case the header is not fixed.
     container.find('table tbody tr').each(function () {
+      var that = this;
       var hasRowColor = false;
       for (var i in rowContains) {
         for (var j in this.cells) {
@@ -498,6 +553,7 @@ module.exports = function(slice, payload) {
         continue;
       }
       $(this).find('td').each(function (index) {
+        var exclude = false;
         var column = columns[index];
         var originalColumn = columns[index];
         // Change for dealing with different situations:
@@ -550,43 +606,42 @@ module.exports = function(slice, payload) {
           coloringOptionClass,
           fontOptionClass,
           bcColoringOptionClass, hasRowColor, rowColor);
-        var maxKey = '';
-        for (var k in columns[index]) {
-          maxKey += columns[index][k];
+        for (var i = 0; i < that.cells.length; i++) {
+          if (styling[column] && ('exclude_rows_from_progress_bar' in styling[column]) &&
+            ($.inArray(that.cells[i].innerText, styling[column]['exclude_rows_from_progress_bar'])) !== -1) {
+            exclude = true;
+          }
         }
-        const perc = Math.round((val / maxes[maxKey]) * 100);
-        var cellTotalColumn = column;
-        if (Array.isArray(cellTotalColumn)) {
+        if (!exclude) {
+          var maxKey = '';
+          if (Array.isArray(originalColumn)) {
+            for (var k in originalColumn) {
+              maxKey += originalColumn[k];
+            }
+          }
+          else {
+            maxKey = originalColumn;
+          }
+          const perc = Math.round((val / maxes[maxKey]) * 100);
+          var cellTotalColumn = column;
+          if (Array.isArray(cellTotalColumn)) {
             cellTotalColumn = cellTotalColumn[0];
+          }
+          if (!styling[cellTotalColumn] || !styling[cellTotalColumn]['color']) {
+            styling[cellTotalColumn] = {};
+            styling[cellTotalColumn]['color'] = null;
+          }
+          const progressBarStyle = `linear-gradient(to right, rgba(` +
+              styling[cellTotalColumn]['color'] + `, 0.7), rgba(` +
+              styling[cellTotalColumn]['color'] + `, 0.4) ${perc}%,     ` +
+              `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+          $(this).css('background-image',progressBarStyle);
         }
-        const progressBarStyle = `linear-gradient(to right, rgba(` +
-            styling[cellTotalColumn] + `, 0.7), rgba(` +
-            styling[cellTotalColumn] + `, 0.7) ${perc}%,     ` +
-            `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
         const textAlign = getFormattingForColumn(originalColumn, textAligns)
             ? 'right'
             : getFormattingForColumn(originalColumn, textAligns);
-        $(this).css('background-image',progressBarStyle);
         $(this).addClass('text-' + textAlign);
       });
-/*
-      for (var i in rowContains) {
-        for (var j in this.cells) {
-          if (this.cells[j].innerText == rowContains[i]) {
-            // remove the class of rowcolor and rowfont when this cell's
-            // rowspan is more than 1
-            $(this).find('td, th').each(function (index) {
-              if (!($(this).attr('rowspan') > 1)) {
-                $(this).addClass(rowColor);
-                $(this).addClass(rowFont);
-              }
-            });
-          }
-          continue;
-        }
-        continue;
-      }
-*/
     });
 
     // Add for make rowsgroup plugin can be used which means datatable can be used

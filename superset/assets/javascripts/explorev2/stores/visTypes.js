@@ -294,7 +294,9 @@ const visTypes = {
       {
         label: 'Table Progress Bar Configuration',
         description: 'Add styling rules to the visualization',
-        controlSetRows: [['styling']],
+        controlSetRows: [
+          ['styling'],
+        ],
       },
     ],
     controlOverrides: {
@@ -350,7 +352,9 @@ const visTypes = {
       {
         label: 'Table Progress Bar Configuration',
         description: 'Add styling rules to the visualization',
-        controlSetRows: [['styling']],
+        controlSetRows: [
+          ['styling'],
+        ],
       },
     ],
   },

@@ -38,10 +38,14 @@ export default class ColorPickerControl extends React.Component {
     super(props);
     const value = props.value ? props.value : {};
     const metrics = props.formData.metrics || [];
-    let output = [], i;
-    if (Object.keys(value).length >= 1) {
-      for (var prop in value) {
-        output.push({id: prop, text: value[prop]});
+    let output = {};
+    for (var prop in value) {
+      if (Object.keys(value[prop]).length == 0) {
+        output[prop] = [];
+      }
+      else {
+        output[prop] = [];
+        output[prop].push({id: prop, text: value[prop]['color']});
       }
     }
     this.state = {
@@ -77,30 +81,27 @@ export default class ColorPickerControl extends React.Component {
   onSelectChange(value) {
     this.setState({selectedMetric: value});
   }
-  onToggle(type) {
+  onValueChange(metric, type, newValue) {
     const value = this.props.value;
-    if (!(type in value)) {
-      value[type] = {};
+    if (!(metric in value)) {
+      value[metric] = {};
     }
-    value[type] = !value[type];
-    this.setState({value});
-    this.props.onChange(value);
-  }
-  onValueChange(type, newValue) {
-    const value = this.props.value;
-    if (!(type in value)) {
-      value[type] = null;
+    if (!(type in value[metric])) {
+      value[metric][type] = null;
     }
-    value[type] = newValue;
+    value[metric][type] = newValue;
     this.setState({value});
     this.props.onChange(value);
   }
   handleDelete(metric) {
     let value = this.state.value;
     if (!(metric in value)) {
-      value[metric] = null;
+      value[metric] = {};
     }
-    value[metric] = null;
+    if (!('color' in value[metric])) {
+      value[metric]['color'] = null;
+    }
+    value[metric]['color'] = null;
     this.setState({ value });
     this.getTagArray(false);
     this.props.onChange(value);
@@ -108,14 +109,16 @@ export default class ColorPickerControl extends React.Component {
   handleColorAddition(metric, color) {
     const colorString = color.rgb.r + ', ' + color.rgb.g + ', ' + color.rgb.b;
     this.handleAddition(metric, colorString);
-    this.getTagArray(true);
   }
   handleAddition(metric, tag) {
     let value = this.props.value;
     if (!(metric in value)) {
-      value[metric] = null;
+      value[metric] = {};
     }
-    value[metric] = tag;
+    if (!('color' in value[metric])) {
+      value[metric]['color'] = null;
+    }
+    value[metric]['color'] = tag;
     this.setState({ value });
     this.props.onChange(value);
     this.renderColorTag(tag);
@@ -131,25 +134,38 @@ export default class ColorPickerControl extends React.Component {
     return (<div style={{display: "inline-block"}}><span style={Object.assign({}, style)}></span></div>);
   }
   getTagArray(add) {
-    let output = [], i;
+    let output = {};
     const selectedMetric = this.state.selectedMetric;
     if (add) {
-      output.push({id: selectedMetric, text: this.state.value[selectedMetric]});
+      output[selectedMetric] = [];
+      output[selectedMetric].push({id: selectedMetric, text: this.state.value[selectedMetric]['color']});
     }
     else {
-      output = [];
+      output[selectedMetric] = [];
     }
     this.setState({tagValue: output});
   }
   render() {
-    //  Tab, comma or Enter will trigger a new option created for FreeFormSelect
+    // Tab, comma or Enter will trigger a new option created for FreeFormSelect
     const metrics = this.props.formData.metrics || [];
-    const value = this.state.value === null ? {} : this.state.value;
+    let value = this.state.value === null ? {} : this.state.value;
     const metric = this.state.selectedMetric;
+    // For the color saved in the database, change the value structure
+    if (metric in value && typeof(value[metric]) == "string") {
+      let savedColor = value[metric];
+      value[metric] = {};
+      value[metric]['color'] = savedColor;
+      value[metric]['exclude_rows_from_progress_bar'] = [];
+    }
+    const exclude_rows_from_progress_bar = (
+        metric in value &&
+        'exclude_rows_from_progress_bar' in value[metric]
+    ) ? value[metric].exclude_rows_from_progress_bar : null;
     let colorPicker = null;
     let selectWrap = null;
+    let exclude_rows_from_progress_bar_setting = null;
     if (this.state.selectedMetric !== null) {
-      selectWrap = (<ReactTags tags={this.state.tagValue}
+      selectWrap = (<ReactTags tags={this.state.tagValue[metric]}
                                    suggestions={[]}
                                    handleDelete={this.handleDelete.bind(this, metric)}
                                    handleAddition={this.handleAddition.bind(this, metric)}
@@ -158,6 +174,26 @@ export default class ColorPickerControl extends React.Component {
                                    autofocus={false}/>);
       colorPicker = (<SwatchesPicker onChange={
           this.handleColorAddition.bind(this,metric)} height={560} width={"100%"} />);
+      exclude_rows_from_progress_bar_setting = (
+          <div className="panel-body">
+          <table className="table table-bordered" style={{fontSize: '12px'}}>
+            <tbody>
+              <tr>
+                <td><span>Exclude the rows which contains following value</span></td>
+                <td>
+                  <SelectControl
+                    name="exclude"
+                    multi={true}
+                    freeForm
+                    clearable
+                    default={null}
+                    onChange={this.onValueChange.bind(this, metric, 'exclude_rows_from_progress_bar')}
+                    value={exclude_rows_from_progress_bar}/>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>);
     }
     return (
       <div className="panel panel-default"
@@ -173,6 +209,7 @@ export default class ColorPickerControl extends React.Component {
           </div>
           {selectWrap}
           {colorPicker}
+          {exclude_rows_from_progress_bar_setting}
       </div>
     );
   }
