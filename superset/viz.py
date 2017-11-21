@@ -519,8 +519,12 @@ class PivotTableViz(BaseViz):
             df.columns = df.columns.swaplevel(0, len(df.columns.levels) - 1)
         else:
             df = df.rename_axis(safe_get_value, axis=1)
+        parsed_columns = map(
+            lambda x: map(str, x) if type(x) == tuple else [x],
+            df.columns.values
+        )
         return dict(
-            columns=list(df.columns),
+            columns=parsed_columns,
             html=df.to_html(
                 na_rep='',
                 classes=(

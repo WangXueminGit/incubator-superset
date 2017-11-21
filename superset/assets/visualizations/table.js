@@ -137,7 +137,6 @@ function tableVis(slice, payload) {
     .text(function (d) {
       return d;
     });
-
   table.append('tbody')
     .selectAll('tr')
     .data(data.records)
