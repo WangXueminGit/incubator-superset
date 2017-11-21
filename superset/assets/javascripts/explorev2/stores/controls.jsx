@@ -597,8 +597,8 @@ export const controls = {
     freeForm: true,
     label: 'Series limit',
     choices: formatSelectOptions(SERIES_LIMITS),
-    default: 50,
-    description: 'Limits the number of time series that get displayed',
+    default: 0,
+    description: 'Limits the number of time series that get displayed (MAY CAUSE YOUR QUERY TO SLOW DOWN)',
   },
 
   timeseries_limit_metric: {
