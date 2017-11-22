@@ -38,7 +38,7 @@ from flask_babel import lazy_gettext as _
 
 from flask_login import current_user, login_user
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, or_
 from werkzeug.routing import BaseConverter
 
 from superset import (
@@ -169,9 +169,18 @@ class SliceFilter(SupersetFilter):
     def apply(self, query, func):  # noqa
         if self.has_all_datasource_access():
             return query
+
         perms = self.get_view_menus('datasource_access')
-        # TODO(bogdan): add `schema_access` support here
-        return query.filter(self.model.perm.in_(perms))
+
+        if (request.path.startswith('/dashboardmodelview/edit/')):
+            dashboard_id = int(re.match('/dashboardmodelview/edit/(.*)',
+                                        request.path).group(1))
+            dashboard = db.session.query(models.Dashboard).\
+                        filter_by(id=dashboard_id).one()
+            return query.filter(or_(self.model.perm.in_(perms),
+                                    self.model.dashboards.contains(dashboard)))
+        else:
+            return query.filter(self.model.perm.in_(perms))
 
 
 class DashboardFilter(SupersetFilter):
