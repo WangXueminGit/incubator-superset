@@ -268,10 +268,14 @@ RowsGroup.prototype = {
             return order;
         }
         if (order.length === 1) {
+            // when it is initialization(not toggle) and it is just one column's order saved.
+            if (this.order.length == 1 && order[0][0] == this.order[0][0] && order[0][1] == this.order[0][1]) {
+                return order;
+            }
             // got mono order - workaround here
-            var orderingColumn = order[0][0]
+            var orderingColumn = order[0][0];
             var previousOrder = this.order.map(function(val){
-                return val[0]
+                return val[0];
             })
             var iColumn = previousOrder.indexOf(orderingColumn);
             if (iColumn >= 0) {

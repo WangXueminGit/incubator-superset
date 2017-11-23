@@ -306,6 +306,7 @@ module.exports = function(slice, payload) {
         "tableWidthFixed": true,
       },
       paging: false,
+      aaSorting: [],
       searching: false,
       bInfo: false,
       scrollY: `${height}px`,
