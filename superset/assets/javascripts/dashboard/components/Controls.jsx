@@ -103,14 +103,12 @@ class Controls extends React.PureComponent {
           >
             <i className="fa fa-edit" />
           </Button>
-          <SaveModal
+          <ExportMailModal
             dashboard={dashboard}
             css={this.state.css}
-            refreshInterval={this.state.refreshInterval}
+            isButton
             triggerNode={
-              <Button disabled={!dashboard.dash_save_perm}>
-                <i className="fa fa-save" />
-              </Button>
+              <i className="fa fa-share-alt" />
             }
           />
           <Button
@@ -122,12 +120,14 @@ class Controls extends React.PureComponent {
           >
             <i className="fa fa-table" />
           </Button>
-          <ExportMailModal
+          <SaveModal
             dashboard={dashboard}
             css={this.state.css}
-            isButton
+            refreshInterval={this.state.refreshInterval}
             triggerNode={
-              <i className="fa fa-share-alt" />
+              <Button disabled={!dashboard.dash_save_perm}>
+                <i className="fa fa-save" />
+              </Button>
             }
           />
         </ButtonGroup>
@@ -142,6 +142,14 @@ class Controls extends React.PureComponent {
           >
             <i className="fa fa-refresh" />
           </Button>
+          <ExportMailModal
+            dashboard={dashboard}
+            css={this.state.css}
+            isButton
+            triggerNode={
+              <i className="fa fa-share-alt" />
+            }
+          />
           <Button
             onClick={() => {
               const dl_csv_api_path = `/dashboardmodelview/download_dashboard_csv/`
@@ -151,14 +159,6 @@ class Controls extends React.PureComponent {
           >
             <i className="fa fa-table" />
           </Button>
-          <ExportMailModal
-            dashboard={dashboard}
-            css={this.state.css}
-            isButton
-            triggerNode={
-              <i className="fa fa-share-alt" />
-            }
-          />
         </ButtonGroup>
       );
     }

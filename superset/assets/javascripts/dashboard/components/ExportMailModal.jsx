@@ -107,9 +107,9 @@ class ExportMailModal extends React.PureComponent {
         ref={(modal) => { this.modal = modal; }}
         triggerNode={this.props.triggerNode}
         isButton={this.props.isButton}
-        tooltip="Export as Image"
+        tooltip="Email as Image"
         isLink={this.props.isLink}
-        modalTitle="Export Snapshot as image"
+        modalTitle="Email dashboard snapshot as an image"
         modalBody={
           <FormGroup>
             { sliceFormControl }
