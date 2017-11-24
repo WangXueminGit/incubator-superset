@@ -1,5 +1,38 @@
 ## Change Log by Shopee Lumos
 
+### 2017.11.4
+
+This is a big release, contains two important features, column width resize and
+dashboard sharing, both contains many commits:
+
+- Dashboard sharing:
+  - [3a6551f9](https://git.garena.com/shopee-data/lumos-superset/commit/3a6551f93a931d6a9810c41ea9d309f28f7d55f0) Small fix to email snapshot button.
+  - [89275f05](https://git.garena.com/shopee-data/lumos-superset/commit/89275f0534f3ae6fc48b2891430a25763ee814fc) Return list of dashboards for admin where user can be guest or owner.
+  - [e216af00](https://git.garena.com/shopee-data/lumos-superset/commit/e216af00b152e92c53b912dd1c3e3fd0034bde1b) Fix dashboard edit with slices from multiple data sources.
+  - [4bc7e6a9](https://git.garena.com/shopee-data/lumos-superset/commit/4bc7e6a9a55d6e5e78e9f1b72ee03cf2add68495) Fix anonymous user in webshot.
+  - [bb546858](https://git.garena.com/shopee-data/lumos-superset/commit/bb5468587e6fad29873c9952004cb9c25dd20b85) Show icon icons for guest and read/write icons for owners.
+  - [cccb3d45](https://git.garena.com/shopee-data/lumos-superset/commit/cccb3d454a3d67894d3d1f544d30a8be9cf7b116) Remove `ExportMailModal` for slice cells.
+  - [f131241b](https://git.garena.com/shopee-data/lumos-superset/commit/f131241bf03bacc3d030e4d10753633053321408) Enable indirect slice data access for dashboard's guest.
+  - [3de09f85](https://git.garena.com/shopee-data/lumos-superset/commit/3de09f855d5a9e3ea015faa8524d57d6a646ee3e) Hide clickable buttons for guest user in Dashboard.
+  - [9c808a86](https://git.garena.com/shopee-data/lumos-superset/commit/9c808a8673c79fc58fe3e5a0a3c8a1158aff9815) Improve dashboard list filter behavior.
+  - [04541471](https://git.garena.com/shopee-data/lumos-superset/commit/045414719a97f9e129c3d082a53b357d1c5bc2b8) Enable dashboard transfer function.
+  - [a620a762](https://git.garena.com/shopee-data/lumos-superset/commit/a620a76284aa34a51762b43311fb0f9ec108900f) Return a list of dashboards in which user are owner or guest.
+  - [14e6bd5d](https://git.garena.com/shopee-data/lumos-superset/commit/14e6bd5d8d7c97c40d3b9cf78b338f2e7f3339a7) Dig a hole for webshot service to take screenshot.
+  - [41c43bc3](https://git.garena.com/shopee-data/lumos-superset/commit/41c43bc32532dda077c9bd46f214aa20d25a24ba) Prefer id over slug for building dashboard URL
+  - [77e8a8c9](https://git.garena.com/shopee-data/lumos-superset/commit/77e8a8c90896341a683d5e3b2d8a7867a2df06e8) Show owners instead of creators in dashboard list page.
+  - [bdc35f9e](https://git.garena.com/shopee-data/lumos-superset/commit/bdc35f9e2c64697bac50dcf406eb39b4d4e96796) Add guest user to dashboard.
+
+- Column width resize:
+  - [9e6dd68b](https://git.garena.com/shopee-data/lumos-superset/commit/9e6dd68b7cf5e5e75abdef9696e83fbc28e8432b) Fix the bug of sorting properly in some situation.
+  - [f9976a7e](https://git.garena.com/shopee-data/lumos-superset/commit/f9976a7e6e356eee8863fea46d9278f8c7b6d0d2) Implement the feature of adjusting column width.
+  - [11dc0924](https://git.garena.com/shopee-data/lumos-superset/commit/11dc0924a4b499351fb44c8423f20f3ce8a85f07) Implement the feature of adjusting column width.
+  - [830ca8e1](https://git.garena.com/shopee-data/lumos-superset/commit/830ca8e19fb512bac40ba16a8e65bdfdfb09a28b) Add the datatable plugin 'colResize' to adjust column width.
+
+- Other small fix
+  - [fa8fb27f](https://git.garena.com/shopee-data/lumos-superset/commit/fa8fb27f8b32359c972aaee7ee83dde7127fbcbb) Revert "Fix the bug of showing rows with null value"
+  - [d162e668](https://git.garena.com/shopee-data/lumos-superset/commit/d162e6686138f1c14371ecc4fc7bd2594054f272) Fix the bug of showing rows with null value in pivot table.
+  - [5e2c537a](https://git.garena.com/shopee-data/lumos-superset/commit/5e2c537a918200456c2686632de52edc7648e335) Fix the bug of barchart total number show properly
+
 ### 2017.11.3
 
 - [ea8f75](https://git.garena.com/shopee-data/lumos-superset/commit/ea8f75cdbc77b6db6271959e76d60ae4353a62d3) Fix the bug of making number refresh properly in bar chart.
