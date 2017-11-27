@@ -289,7 +289,6 @@ module.exports = function(slice, payload) {
     }
     maxes[maxKey] = d3.max(arrForMax[maxKey]);
   }
-  console.log(maxes);
   if (fd.groupby.length === 1) {
     // When there is only 1 group by column,
     // we use the DataTable plugin to make the header fixed.

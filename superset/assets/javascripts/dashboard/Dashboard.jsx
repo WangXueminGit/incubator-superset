@@ -227,6 +227,16 @@ export function dashboardContainer(dashboard, datasources, userid, userType) {
       }
       return f;
     },
+    getSliceFilters() {
+      const sliceFilters = {}
+      this.sliceObjects.forEach((slice, _) => {
+        const datasourceId = slice.datasource.id;
+        const sliceId = slice.data.slice_id;
+        const sliceFilter = this.effectiveExtraFilters(sliceId, datasourceId)
+        if (sliceFilter.length > 0) sliceFilters[sliceId] = sliceFilter
+      });
+      return sliceFilters
+    },
     addFilter(sliceId, datasourceId, col, vals, merge = true, refresh = true) {
       if (
         this.getSlice(sliceId) && (

@@ -113,8 +113,9 @@ class Controls extends React.PureComponent {
           />
           <Button
             onClick={() => {
-              const dl_csv_api_path = `/dashboardmodelview/download_dashboard_csv/`
-              window.location = dl_csv_api_path + `${dashboard.id}`;
+              const dl_csv_api_path = `/dashboardmodelview/download_dashboard_csv/` + `${dashboard.id}`
+              const filters = `?filters=` + encodeURIComponent(JSON.stringify(dashboard.getSliceFilters()));
+              window.location = dl_csv_api_path + filters;
             }}
             tooltip="Export as CSV"
           >

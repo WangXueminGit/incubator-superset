@@ -569,25 +569,34 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
             dashboards_url='/dashboardmodelview/list'
         )
 
-    def get_viz_by_slice_id(self, slice_id):
-        slc = (
-            db.session.query(models.Slice)
-            .filter_by(id=slice_id)
-            .one()
+    def get_viz(self, dashboard_slice, filters):
+        slice_id = str(dashboard_slice['slice_id'])
+        form_data = dashboard_slice['form_data']
+        if slice_id in filters:
+            form_data['extra_filters'] = filters[slice_id]
+        datasource_id, datasource_type = \
+            form_data['datasource'].split('__')
+        viz_type = form_data.get('viz_type', 'table')
+        datasource = ConnectorRegistry.get_datasource(
+            datasource_type, datasource_id, db.session)
+        viz_obj = viz.viz_types[viz_type](
+            datasource,
+            form_data=form_data,
         )
-        return slc.get_viz()
+        return viz_obj
 
     @expose("/download_dashboard_csv/<dashboard_id>")
     @has_access
     def download_dashboard_csv(self, dashboard_id):
-        dashboard = db.session.query(models.Dashboard).filter_by(id=dashboard_id).one()
+        filters = json.loads(request.args['filters'])
+        dashboard = db.session.query(models.Dashboard) \
+            .filter_by(id=dashboard_id).one()
         zsio = StringIO.StringIO()
         zf = zipfile.ZipFile(zsio, "w", zipfile.ZIP_DEFLATED, False)
         for dashboard_slice in dashboard.data['slices']:
-            slice_id = dashboard_slice['slice_id']
             slice_name = dashboard_slice['slice_name']
-            slice_viz = self.get_viz_by_slice_id(slice_id)
-            # Not all data sources are dataframes, thus these cannot be downloaded as csv
+            slice_viz = self.get_viz(dashboard_slice, filters)
+        # Not all data sources are dataframes, thus these cannot be downloaded as csv
             if type(slice_viz.get_df()) == pd.DataFrame:
                 slice_csv = slice_viz.get_csv()
                 zf.writestr('%s.csv' % escape_filename(slice_name),

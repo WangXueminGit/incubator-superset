@@ -12,6 +12,7 @@ const propTypes = {
 };
 
 function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
+  // extra_filters = dashboard.extraEffectiveFilters(sliceId, datasourceId);
   if (dashboard.curUserType == 'admin' || dashboard.curUserType == 'owner') {
     return (
       <div className="slice-cell" id={`${slice.slice_id}-cell`}>
@@ -59,12 +60,12 @@ function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
                 </a>
                 <a
                   className="exportCSV"
-                  href={getExploreUrl(slice.form_data, 'csv', null, null,
-                                      dashboard.id)}
                   title="Export as CSV"
                   data-toggle="tooltip"
                 >
-                  <i className="fa fa-table" />
+                  <i className="fa fa-table"
+                     onClick={() => {window.location = getExploreUrl(slice.form_data, 'csv', true, null,
+                                      dashboard.id)}} />
                 </a>
               </div>
             </div>
