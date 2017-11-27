@@ -65,7 +65,6 @@ class ChartContainer extends React.PureComponent {
       this.renderViz();
     }
   }
-
   getMockedSliceObject() {
     const props = this.props;
     const getHeight = () => {
@@ -283,6 +282,8 @@ class ChartContainer extends React.PureComponent {
                   chartStatus={this.props.chartStatus}
                   queryResponse={queryResponse}
                   queryEndpoint={getExploreUrl(this.props.latestQueryFormData, 'query')}
+                  vizType={this.props.viz_type}
+                  title={this.renderChartTitle()}
                 />
               </div>
             </div>

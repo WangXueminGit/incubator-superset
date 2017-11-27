@@ -107,10 +107,15 @@ const config = {
       },
     ],
   },
+  node: {
+    fs: 'empty'
+  },
   externals: {
     cheerio: 'window',
     'react/lib/ExecutionEnvironment': true,
     'react/lib/ReactContext': true,
+    "./cptable": "var cptable",
+    "./jszip": "jszip"
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -118,6 +123,7 @@ const config = {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV),
       },
     }),
+    new webpack.IgnorePlugin(/cptable/),
   ],
 };
 if (process.env.NODE_ENV === 'production') {
