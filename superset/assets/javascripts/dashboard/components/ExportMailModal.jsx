@@ -54,6 +54,7 @@ class ExportMailModal extends React.PureComponent {
       target: target,
       "dashboard_name": dashboard.dashboard_title,
       selector: slice ? '#slice_' + slice.slice_id : false,
+      search: window.location.search
     };
     if (exportType === 'email' && !this.isEmail(target)) {
       exportMailModal.close();
