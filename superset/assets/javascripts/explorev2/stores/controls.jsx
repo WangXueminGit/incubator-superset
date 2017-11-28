@@ -732,6 +732,22 @@ export const controls = {
     default: '',
   },
 
+  y_range_min: {
+    type: 'TextControl',
+    label: 'Set y-axis floor',
+    renderTrigger: true,
+    default: '',
+    placeholder: 'Auto',
+  },
+
+  y_range_max: {
+    type: 'TextControl',
+    label: 'Set y-axis ceiling',
+    renderTrigger: true,
+    default: '',
+    placeholder: 'Auto',
+  },
+
   hide_value_below: {
     type: 'TextControl',
     label:'Hide Value below',

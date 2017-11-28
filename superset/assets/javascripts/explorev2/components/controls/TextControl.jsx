@@ -14,6 +14,7 @@ const propTypes = {
   ]),
   isFloat: PropTypes.bool,
   isInt: PropTypes.bool,
+  placeholder: PropTypes.string,
 };
 
 const defaultProps = {
@@ -23,13 +24,15 @@ const defaultProps = {
   value: '',
   isInt: false,
   isFloat: false,
+  placeholder: '',
 };
 
 export default class TextControl extends React.Component {
   constructor(props) {
     super(props);
     const value = props.value ? props.value.toString() : '';
-    this.state = { value };
+    const placeholder = props.placeholder? props.placeholder.toString() : '';
+    this.state = { value, placeholder };
     this.onChange = this.onChange.bind(this);
   }
   onChange(event) {
@@ -61,7 +64,7 @@ export default class TextControl extends React.Component {
       <FormGroup controlId="formInlineName" bsSize="small">
         <FormControl
           type="text"
-          placeholder=""
+          placeholder={this.state.placeholder}
           onChange={this.onChange}
           value={this.state.value}
         />

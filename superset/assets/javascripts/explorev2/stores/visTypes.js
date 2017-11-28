@@ -137,6 +137,8 @@ const visTypes = {
           ['x_axis_format', 'y_axis_format'],
           ['x_axis_label', 'y_axis_label'],
           ['show_point_value'],
+          ['y_range_max'],
+          ['y_range_min'],
         ],
       },
       sections.NVD3TimeSeries[1],

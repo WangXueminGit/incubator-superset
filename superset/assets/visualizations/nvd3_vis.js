@@ -383,6 +383,31 @@ function nvd3Vis(slice, payload) {
     } else if (fd.y_log_scale) {
       chart.yScale(d3.scale.log());
     }
+    if (fd.y_range_min || fd.y_range_max) {
+      let min = d3.min(payload.data, function(c) {
+        return d3.min(c.values, function(d){
+            return d.y;
+        })
+      });
+      let max = d3.max(payload.data, function(c) {
+        return d3.max(c.values, function(d){
+            return d.y;
+        })
+      });
+      if (fd.y_range_min) {
+        min = fd.y_range_min;
+      }
+      if (fd.y_range_max) {
+        max = fd.y_range_max;
+      }
+      chart.pointActive(function (d) {
+        return d.y >= min && d.y <= max;
+      });
+      chart.defined(function (d) {
+        return d.y >= min && d.y <= max;
+      });
+      chart.yDomain([min, max]);
+    }
     if (fd.x_log_scale) {
       chart.xScale(d3.scale.log());
     }
