@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2017.11.5-1
+
+- [584ed436](https://git.garena.com/shopee-data/lumos-superset/commit/584ed436d03dfb0c933afeccb26c2dad383d3eb0) Hotfix for download csv not working with Guest users
+
 ### 2017.11.5
 
 - [4dbb4c98](https://git.garena.com/shopee-data/lumos-superset/commit/4dbb4c98bf0413aa030ef9e139ced9c2a857bdaf) Fix the bug of changing background color in table.
