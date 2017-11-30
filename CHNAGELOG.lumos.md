@@ -1,5 +1,13 @@
 ## Change Log by Shopee Lumos
 
+### 2017.11.5
+
+- [4dbb4c98](https://git.garena.com/shopee-data/lumos-superset/commit/4dbb4c98bf0413aa030ef9e139ced9c2a857bdaf) Fix the bug of changing background color in table.
+- [b4433fcf](https://git.garena.com/shopee-data/lumos-superset/commit/b4433fcf0854e87e3cc29a8eeb7cb08263cf4149) Allowed filter-box to work with webshot
+- [72fc49b6](https://git.garena.com/shopee-data/lumos-superset/commit/72fc49b630aaaf4ad0f80a58e88cea20d43d83f5) Allowed filters to be applied to downloaded csv
+- [5411f545](https://git.garena.com/shopee-data/lumos-superset/commit/5411f5457de7f1c3cabf36f5c8beb063536d3782) Added default series limit and changed description of series limit
+- [852bba24](https://git.garena.com/shopee-data/lumos-superset/commit/852bba242cfa8eac804400f3e40dc5c3538b1fc0) Revert filter box datepicker to upstream
+
 ### 2017.11.4
 
 This is a big release, contains two important features, column width resize and
