@@ -588,7 +588,7 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
     @expose("/download_dashboard_csv/<dashboard_id>")
     @has_access
     def download_dashboard_csv(self, dashboard_id):
-        filters = json.loads(request.args['filters'])
+        filters = json.loads(request.args.get('filters', "{}"))
         dashboard = db.session.query(models.Dashboard) \
             .filter_by(id=dashboard_id).one()
         zsio = StringIO.StringIO()

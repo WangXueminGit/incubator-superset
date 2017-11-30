@@ -65,7 +65,7 @@ function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
                 >
                   <i className="fa fa-table"
                      onClick={() => {window.location = getExploreUrl(slice.form_data, 'csv', true, null,
-                                      dashboard.id)}} />
+                                     dashboard.id)}} />
                 </a>
               </div>
             </div>
@@ -120,8 +120,8 @@ function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
                 }
                 <a
                   className="exportCSV"
-                  href={getExploreUrl(slice.form_data, 'csv', null, null,
-                                      dashboard.id)}
+                  onClick={() => {window.location = getExploreUrl(slice.form_data, 'csv', true, null,
+                                  dashboard.id)}}
                   title="Export as CSV"
                   data-toggle="tooltip"
                 >
