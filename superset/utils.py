@@ -222,7 +222,8 @@ def parse_human_datetime(s):
             if parsed_flags & 2 == 0:
                 if 'month' in s or 'Month' in s:
                     parsed_dttm = parsed_dttm.replace(day=1, hour=0, minute=0, second=0)
-                elif 'monday' in s or 'Monday' in s:
+                elif 'monday' in s or 'Monday' in s or 'yesterday' in s or 'Yesterday' in s \
+                    or 'today' in s or 'Today' in s:
                     parsed_dttm = parsed_dttm.replace(hour=0, minute=0, second=0)
             dttm = dttm_from_timtuple(parsed_dttm.utctimetuple())
         except Exception as e:
