@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2017.11.5-2
+
+- [5cc59f2e](https://git.garena.com/shopee-data/lumos-superset/commit/5cc59f2ef73ce249ca2619a2c46e01a8b3a64f66) Hotfix for correcting `yesterday` in `since`
+
 ### 2017.11.5-1
 
 - [584ed436](https://git.garena.com/shopee-data/lumos-superset/commit/584ed436d03dfb0c933afeccb26c2dad383d3eb0) Hotfix for download csv not working with Guest users
