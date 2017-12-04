@@ -1515,8 +1515,15 @@ class Superset(BaseSupersetView):
             .filter_by(id=db_id)
             .one()
         )
+        def check_schema_perm(db_name):
+            def f(schema_name):
+                return self.appbuilder.sm \
+                    .has_access('schema_access', '[%s].[%s]' % (db_name, schema_name))
+            return f
+        schemas = database.all_schema_names()
+        filtered_schemas = filter(check_schema_perm(database.name), schemas)
         return Response(
-            json.dumps({'schemas': database.all_schema_names()}),
+            json.dumps({'schemas': filtered_schemas}),
             mimetype="application/json")
 
     @api
