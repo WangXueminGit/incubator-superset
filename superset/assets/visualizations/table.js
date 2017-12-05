@@ -30,12 +30,18 @@ function tableVis(slice, payload) {
   const fd = slice.formData;
   let styling = fd.styling ? fd.styling : null;
   // For the color saved in the database, change the value structure
-  for (let metricForStyling in styling) {
-    if (typeof(styling[metricForStyling]) == "string") {
-      let savedColor = styling[metricForStyling];
-      styling[metricForStyling] = {};
-      styling[metricForStyling]['color'] = savedColor;
-      styling[metricForStyling]['exclude_rows_from_progress_bar'] = [];
+  if (styling !== null) {
+    for (let metricForStyling in styling) {
+      if (typeof(styling[metricForStyling]) == "string") {
+        let savedColorString = styling[metricForStyling];
+        let savedColorArray = savedColorString.split(",");
+        let savedColorObject = {rgb: {r: savedColorArray[0], g: savedColorArray[1], b: savedColorArray[2]}};
+        styling[metricForStyling] = {};
+        styling[metricForStyling]['active'] = 'Represent with color bar length';
+        styling[metricForStyling]['Represent with color bar length'] = {};
+        styling[metricForStyling]['Represent with color bar length']['color'] = savedColorObject;
+        styling[metricForStyling]['exclude_rows_from_progress_bar'] = [];
+      }
     }
   }
   const columnConfiguration = fd.column_configuration ? fd.column_configuration : {};
@@ -292,14 +298,16 @@ function tableVis(slice, payload) {
           }
         }
         if (!exclude) {
-          arrForMax[column].push(parseFloat(this.innerText));
+          arrForMax[column].push(parseFloat(this.getAttribute('data-sort') || this.innerText));
         }
       }
     });
   });
   const maxes = {};
+  const mins = {};
   for (let i = 0; i < metrics.length; i += 1) {
     maxes[metrics[i]] = d3.max(arrForMax[metrics[i]]);
+    mins[metrics[i]] = d3.min(arrForMax[metrics[i]]);
   }
   const height = slice.height();
   let paging = false;
@@ -341,6 +349,7 @@ function tableVis(slice, payload) {
     rowCallback: (row, rowData, index) => {
       $(row).find('td').each(function (index) {
         var column = data.columns[index];
+        var maxKey = column;
         if ($.inArray(column, metrics) !== -1) {
           var exclude = false;
           for (var i = 0; i < row.cells.length; i++) {
@@ -350,19 +359,59 @@ function tableVis(slice, payload) {
             }
           }
           if (!exclude) {
-            var val = $(this).data(
-            'originalvalue') || $(this)
-              .html();
-            if (!styling[column] || !styling[column]['color']) {
-              styling[column] = {};
-              styling[column]['color'] = null;
+            var val = this.getAttribute('data-sort') || $(this).html();
+            if (styling !== null && styling[column] && styling[column]['active']) {
+              const progressbarChoice = styling[column]['active'];
+              if (progressbarChoice == 'Represent with color bar length' && styling[column][progressbarChoice] &&
+                    styling[column][progressbarChoice]['color']) {
+                const perc = Math.round((val / maxes[maxKey]) * 100);
+                const colorObject = styling[column][progressbarChoice]['color'];
+                const colorString = colorObject.rgb.r + ', ' + colorObject.rgb.g + ', ' + colorObject.rgb.b;
+                const progressBarLengthStyle = `linear-gradient(to right, rgba(` +
+                  colorString + `, 0.7), rgba(` +
+                  colorString + `, 0.4) ${perc}%,     ` +
+                  `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+                $(this).css('background-image', progressBarLengthStyle);
+              }
+              else if (progressbarChoice == 'Represent with color scale' && styling[column][progressbarChoice]) {
+                const min = mins[maxKey];
+                const max = maxes[maxKey];
+                var maxColorString = "255, 255, 255";
+                var minColorString = "255, 255, 255";
+                var midpoint = 0;
+                if (styling[column][progressbarChoice]['maximumColor']) {
+                  const maxColorObject = styling[column][progressbarChoice]['maximumColor'];
+                  maxColorString = maxColorObject.rgb.r + ', ' + maxColorObject.rgb.g + ', ' + maxColorObject.rgb.b;
+                }
+                if (styling[column][progressbarChoice]['minimumColor']) {
+                  const minColorObject = styling[column][progressbarChoice]['minimumColor'];
+                  minColorString = minColorObject.rgb.r + ', ' + minColorObject.rgb.g + ', ' + minColorObject.rgb.b;
+                }
+                if (styling[column][progressbarChoice]['midPoint']) {
+                  midpoint = (styling[column][progressbarChoice]['midPoint']) ? (
+                    styling[column][progressbarChoice]['midPoint']) : '0';
+                }
+                var percForGradient = 0;
+                var progressBarGradientStyle = '';
+                val = parseFloat(val)
+                if (val > midpoint) {
+                  percForGradient = 1 - ((max - val) / (max - midpoint));
+                  progressBarGradientStyle = `rgba(` + maxColorString +
+                  `, ` + percForGradient + `)`;
+                }
+                else if (val < midpoint) {
+                  percForGradient = 1 - ((val - min) / (midpoint - min));
+                  progressBarGradientStyle = `rgba(` + minColorString +
+                  `, ` + percForGradient + `)`;
+                }
+                else if (val == midpoint) {
+                  percForGradient = 0;
+                  progressBarGradientStyle = `rgba(` + minColorString +
+                  `, ` + percForGradient + `)`;
+                }
+                $(this).css('background', progressBarGradientStyle);
+              }
             }
-            const perc = Math.round((val / maxes[column]) * 100);
-            const progressBarStyle = `linear-gradient(to right, rgba(` +
-            styling[column]['color'] + `, 0.7), rgba(` +
-            styling[column]['color'] + `, 0.4) ${perc}%,     ` +
-            `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
-            $(this).css('background-image',progressBarStyle);
           }
         }
       });

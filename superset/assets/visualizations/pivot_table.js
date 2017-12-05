@@ -36,12 +36,18 @@ module.exports = function(slice, payload) {
   const columns = payload.data.columns;
   let styling = fd.styling ? fd.styling : null;
   // For the color saved in the database, change the value structure
-  for (let metricForStyling in styling) {
-    if (typeof(styling[metricForStyling]) == "string") {
-      let savedColor = styling[metricForStyling];
-      styling[metricForStyling] = {};
-      styling[metricForStyling]['color'] = savedColor;
-      styling[metricForStyling]['exclude_rows_from_progress_bar'] = [];
+  if (styling !== null) {
+    for (let metricForStyling in styling) {
+      if (typeof(styling[metricForStyling]) == "string") {
+        let savedColorString = styling[metricForStyling];
+        let savedColorArray = savedColorString.split(",");
+        let savedColorObject = {rgb: {r: savedColorArray[0], g: savedColorArray[1], b: savedColorArray[2]}};
+        styling[metricForStyling] = {};
+        styling[metricForStyling]['active'] = 'Represent with color bar length';
+        styling[metricForStyling]['Represent with color bar length'] = {};
+        styling[metricForStyling]['Represent with color bar length']['color'] = savedColorObject;
+        styling[metricForStyling]['exclude_rows_from_progress_bar'] = [];
+      }
     }
   }
   const columnConfiguration =
@@ -326,7 +332,7 @@ module.exports = function(slice, payload) {
           }
         }
         for (var i = 0; i < that.cells.length; i++) {
-          if (styling[column] && ('exclude_rows_from_progress_bar' in styling[column]) &&
+          if (styling !== null && styling[metricForColumn] && ('exclude_rows_from_progress_bar' in styling[metricForColumn]) &&
             ($.inArray(that.cells[i].innerText, styling[metricForColumn]['exclude_rows_from_progress_bar']) !== -1)) {
             exclude = true;
           }
@@ -347,6 +353,7 @@ module.exports = function(slice, payload) {
     }
   });
   const maxes = {};
+  const mins = {};
   for (var n = 0; n < Object.keys(arrForMax).length; n += 1) {
     var maxKey = '';
     if (Array.isArray(columns[n])) {
@@ -358,6 +365,7 @@ module.exports = function(slice, payload) {
       maxKey = columns[n];
     }
     maxes[maxKey] = d3.max(arrForMax[maxKey]);
+    mins[maxKey] = d3.min(arrForMax[maxKey]);
   }
   if (fd.groupby.length === 1) {
     // When there is only 1 group by column,
@@ -403,16 +411,17 @@ module.exports = function(slice, payload) {
         $(row).find('td').each(function (index) {
           var exclude = false;
           var column = columns[index];
+          var metricForColumn = columns[index];
           var originalColumn = columns[index];
           // Change for dealing with different situations:
           // metircs on the top or columns on the top
           if (Array.isArray(column)) {
             if (metricUnderColumn) {
               var lengthOfCol = column.length;
-              column = column[lengthOfCol - 1];
+              metricForColumn = column[lengthOfCol - 1];
             }
             else {
-              column = column[0];
+              metricForColumn = column[0];
             }
           }
           const columnFormat =
@@ -460,8 +469,8 @@ module.exports = function(slice, payload) {
             fontOptionClass,
             bcColoringOptionClass, false, null);
           for (var i = 0; i < row.cells.length; i++) {
-            if (styling[column] && ('exclude_rows_from_progress_bar' in styling[column]) &&
-                ($.inArray(row.cells[i].innerText, styling[column]['exclude_rows_from_progress_bar'])) !== -1) {
+            if (styling !== null && styling[metricForColumn] && ('exclude_rows_from_progress_bar' in styling[metricForColumn]) &&
+                ($.inArray(row.cells[i].innerText, styling[metricForColumn]['exclude_rows_from_progress_bar'])) !== -1) {
               exclude = true;
             }
           }
@@ -475,20 +484,58 @@ module.exports = function(slice, payload) {
             else {
               maxKey = originalColumn;
             }
-            const perc = Math.round((val / maxes[maxKey]) * 100);
-            var cellTotalColumn = column;
-            if (Array.isArray(cellTotalColumn)) {
-              cellTotalColumn = cellTotalColumn[0];
+            if (styling !== null && styling[metricForColumn] && styling[metricForColumn]['active']) {
+              const progressbarChoice = styling[metricForColumn]['active'];
+              if (progressbarChoice == 'Represent with color bar length' && styling[metricForColumn][progressbarChoice] &&
+                    styling[metricForColumn][progressbarChoice]['color']) {
+                const perc = Math.round((val / maxes[maxKey]) * 100);
+                const colorObject = styling[metricForColumn][progressbarChoice]['color'];
+                const colorString = colorObject.rgb.r + ', ' + colorObject.rgb.g + ', ' + colorObject.rgb.b;
+                const progressBarLengthStyle = `linear-gradient(to right, rgba(` +
+                  colorString + `, 0.7), rgba(` +
+                  colorString + `, 0.4) ${perc}%,     ` +
+                  `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+                $(this).css('background-image', progressBarLengthStyle);
+              }
+              else if (progressbarChoice == 'Represent with color scale' && styling[metricForColumn][progressbarChoice]) {
+                const min = mins[maxKey];
+                const max = maxes[maxKey];
+                var maxColorString = "255, 255, 255";
+                var minColorString = "255, 255, 255";
+                var midpoint = 0;
+                if (styling[metricForColumn][progressbarChoice]['maximumColor']) {
+                  const maxColorObject = styling[metricForColumn][progressbarChoice]['maximumColor'];
+                  maxColorString = maxColorObject.rgb.r + ', ' + maxColorObject.rgb.g + ', ' + maxColorObject.rgb.b;
+                }
+                if (styling[metricForColumn][progressbarChoice]['minimumColor']) {
+                  const minColorObject = styling[metricForColumn][progressbarChoice]['minimumColor'];
+                  minColorString = minColorObject.rgb.r + ', ' + minColorObject.rgb.g + ', ' + minColorObject.rgb.b;
+                }
+                if (styling[metricForColumn][progressbarChoice]['midPoint']) {
+                  midpoint = (styling[metricForColumn][progressbarChoice]['midPoint']) ? (
+                    styling[metricForColumn][progressbarChoice]['midPoint']) : '0';
+                }
+                var percForGradient = 0;
+                var progressBarGradientStyle = '';
+                val = parseFloat(val);
+                if (val > midpoint) {
+                  percForGradient = 1 - ((max - val) / (max - midpoint));
+                  progressBarGradientStyle = `rgba(` + maxColorString +
+                  `, ` + percForGradient + `)`;
+                }
+                else if (val < midpoint) {
+                  percForGradient = 1 - ((val - min) / (midpoint - min));
+                  progressBarGradientStyle = `rgba(` + minColorString +
+                  `, ` + percForGradient + `)`;
+                }
+                else if (val == midpoint) {
+                  percForGradient = 0;
+                  progressBarGradientStyle = `rgba(` + minColorString +
+                  `, ` + percForGradient + `)`;
+                }
+                $(this).css('background', progressBarGradientStyle);
+              }
             }
-            if (!styling[cellTotalColumn] || !styling[cellTotalColumn]['color']) {
-              styling[cellTotalColumn] = {};
-              styling[cellTotalColumn]['color'] = null;
-            }
-            const progressBarStyle = `linear-gradient(to right, rgba(` +
-            styling[cellTotalColumn]['color'] + `, 0.7), rgba(` +
-            styling[cellTotalColumn]['color'] + `, 0.4) ${perc}%,     ` +
-            `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
-            $(this).css('background-image',progressBarStyle);
           }
           const textAlign = getFormattingForColumn(originalColumn, textAligns)
             ? 'right'
@@ -555,16 +602,17 @@ module.exports = function(slice, payload) {
       $(this).find('td').each(function (index) {
         var exclude = false;
         var column = columns[index];
+        var metricForColumn = columns[index]
         var originalColumn = columns[index];
         // Change for dealing with different situations:
         // metircs on the top or columns on the top
         if (Array.isArray(column)) {
           if (metricUnderColumn) {
             var lengthOfCol = column.length;
-            column = column[lengthOfCol - 1];
+            metricForColumn = column[lengthOfCol - 1];
           }
           else {
-            column = column[0];
+            metricForColumn = column[0];
           }
         }
         const columnFormat =
@@ -607,8 +655,8 @@ module.exports = function(slice, payload) {
           fontOptionClass,
           bcColoringOptionClass, hasRowColor, rowColor);
         for (var i = 0; i < that.cells.length; i++) {
-          if (styling[column] && ('exclude_rows_from_progress_bar' in styling[column]) &&
-            ($.inArray(that.cells[i].innerText, styling[column]['exclude_rows_from_progress_bar'])) !== -1) {
+          if (styling !== null && styling[metricForColumn] && ('exclude_rows_from_progress_bar' in styling[metricForColumn]) &&
+            ($.inArray(that.cells[i].innerText, styling[metricForColumn]['exclude_rows_from_progress_bar'])) !== -1) {
             exclude = true;
           }
         }
@@ -622,20 +670,58 @@ module.exports = function(slice, payload) {
           else {
             maxKey = originalColumn;
           }
-          const perc = Math.round((val / maxes[maxKey]) * 100);
-          var cellTotalColumn = column;
-          if (Array.isArray(cellTotalColumn)) {
-            cellTotalColumn = cellTotalColumn[0];
-          }
-          if (!styling[cellTotalColumn] || !styling[cellTotalColumn]['color']) {
-            styling[cellTotalColumn] = {};
-            styling[cellTotalColumn]['color'] = null;
-          }
-          const progressBarStyle = `linear-gradient(to right, rgba(` +
-              styling[cellTotalColumn]['color'] + `, 0.7), rgba(` +
-              styling[cellTotalColumn]['color'] + `, 0.4) ${perc}%,     ` +
-              `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
-          $(this).css('background-image',progressBarStyle);
+          if (styling !== null && styling[metricForColumn] && styling[metricForColumn]['active']) {
+            const progressbarChoice = styling[metricForColumn]['active'];
+            if (progressbarChoice == 'Represent with color bar length' && styling[metricForColumn][progressbarChoice] &&
+                styling[metricForColumn][progressbarChoice]['color']) {
+              const perc = Math.round((val / maxes[maxKey]) * 100);
+              const colorObject = styling[metricForColumn][progressbarChoice]['color'];
+              const colorString = colorObject.rgb.r + ', ' + colorObject.rgb.g + ', ' + colorObject.rgb.b;
+              const progressBarLengthStyle = `linear-gradient(to right, rgba(` +
+                colorString + `, 0.7), rgba(` +
+                colorString + `, 0.4) ${perc}%,     ` +
+                `rgba(0,0,0,0.01) ${perc}%, rgba(0,0,0,0.001) 100%)`;
+              $(this).css('background-image', progressBarLengthStyle);
+            }
+            else if (progressbarChoice == 'Represent with color scale' && styling[metricForColumn][progressbarChoice]) {
+              const min = mins[maxKey];
+              const max = maxes[maxKey];
+              var maxColorString = "255, 255, 255";
+              var minColorString = "255, 255, 255";
+              var midpoint = 0;
+            if (styling[metricForColumn][progressbarChoice]['maximumColor']) {
+              const maxColorObject = styling[metricForColumn][progressbarChoice]['maximumColor'];
+              maxColorString = maxColorObject.rgb.r + ', ' + maxColorObject.rgb.g + ', ' + maxColorObject.rgb.b;
+            }
+            if (styling[metricForColumn][progressbarChoice]['minimumColor']) {
+              const minColorObject = styling[metricForColumn][progressbarChoice]['minimumColor'];
+              minColorString = minColorObject.rgb.r + ', ' + minColorObject.rgb.g + ', ' + minColorObject.rgb.b;
+            }
+            if (styling[metricForColumn][progressbarChoice]['midPoint']) {
+              midpoint = (styling[metricForColumn][progressbarChoice]['midPoint']) ? (
+              styling[metricForColumn][progressbarChoice]['midPoint']) : '0';
+            }
+            var percForGradient = 0;
+            var progressBarGradientStyle = '';
+            val = parseFloat(val);
+            if (val > midpoint) {
+                percForGradient = 1 - ((max - val) / (max - midpoint));
+                progressBarGradientStyle = `rgba(` + maxColorString +
+                `, ` + percForGradient + `)`;
+            }
+            else if (val < midpoint) {
+                percForGradient = 1 - ((val - min) / (midpoint - min));
+                progressBarGradientStyle = `rgba(` + minColorString +
+                `, ` + percForGradient + `)`;
+            }
+            else if (val == midpoint) {
+                percForGradient = 0;
+                progressBarGradientStyle = `rgba(` + minColorString +
+                `, ` + percForGradient + `)`;
+            }
+            $(this).css('background', progressBarGradientStyle);
+            }
+        }
         }
         const textAlign = getFormattingForColumn(originalColumn, textAligns)
             ? 'right'

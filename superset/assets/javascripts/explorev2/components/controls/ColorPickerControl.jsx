@@ -5,6 +5,14 @@ import { WithOutContext as ReactTags } from 'react-tag-input';
 import '../../../../stylesheets/react-tag/react-tag.css';
 import '../../../../stylesheets/react-color/react-color.css';
 import SelectControl from './SelectControl';
+import { CompactPicker } from 'react-color';
+import TextControl from './TextControl';
+import Button from '../../../components/Button';
+
+const progressbarChoices = [
+  'Represent with color bar length',
+  'Represent with color scale',
+];
 
 const propTypes = {
   choices: PropTypes.array,
@@ -38,21 +46,11 @@ export default class ColorPickerControl extends React.Component {
     super(props);
     const value = props.value ? props.value : {};
     const metrics = props.formData.metrics || [];
-    let output = {};
-    for (var prop in value) {
-      if (Object.keys(value[prop]).length == 0) {
-        output[prop] = [];
-      }
-      else {
-        output[prop] = [];
-        output[prop].push({id: prop, text: value[prop]['color']});
-      }
-    }
     this.state = {
       value: props.value,
-      tagValue: output,
       metrics: metrics,
       selectedMetric: null,
+      selectedProgressbarChoice: null,
     };
   }
   componentWillReceiveProps(nextProps) {
@@ -78,104 +76,110 @@ export default class ColorPickerControl extends React.Component {
       this.setState({ metrics: nextProps.formData.metrics, value, selectedMetric });
     }
   }
-  onSelectChange(value) {
-    this.setState({selectedMetric: value});
+  onSelectChange(type, value) {
+    this.state[type] = value;
+    this.setState({type});
+    if (type == 'selectedProgressbarChoice') {
+      this.setActiveProgressbarChoice(this.state.selectedMetric, this.state.selectedProgressbarChoice);
+    }
   }
-  onValueChange(metric, type, newValue) {
+  onExcludeChange(metric, mode, newValue) {
     const value = this.props.value;
     if (!(metric in value)) {
       value[metric] = {};
     }
-    if (!(type in value[metric])) {
-      value[metric][type] = null;
+    if (!(mode in value[metric])) {
+      value[metric][mode] = null;
     }
-    value[metric][type] = newValue;
+    value[metric][mode] = newValue;
     this.setState({value});
     this.props.onChange(value);
   }
-  handleDelete(metric) {
-    let value = this.state.value;
+  onValueChange(metric, progressbarChoice, type, newValue) {
+    const value = this.props.value;
     if (!(metric in value)) {
       value[metric] = {};
     }
-    if (!('color' in value[metric])) {
-      value[metric]['color'] = null;
+    if (!(progressbarChoice in value[metric])) {
+      value[metric][progressbarChoice] = {};
     }
-    value[metric]['color'] = null;
-    this.setState({ value });
-    this.getTagArray(false);
+    if (!(type in value[metric][progressbarChoice])) {
+      value[metric][progressbarChoice][type] = null;
+    }
+    value[metric][progressbarChoice][type] = newValue;
+    this.setState({value});
     this.props.onChange(value);
   }
-  handleColorAddition(metric, color) {
-    const colorString = color.rgb.r + ', ' + color.rgb.g + ', ' + color.rgb.b;
-    this.handleAddition(metric, colorString);
-  }
-  handleAddition(metric, tag) {
-    let value = this.props.value;
+  setActiveProgressbarChoice(metric, progressbarChoice) {
+    const value = this.props.value;
     if (!(metric in value)) {
       value[metric] = {};
     }
-    if (!('color' in value[metric])) {
-      value[metric]['color'] = null;
-    }
-    value[metric]['color'] = tag;
-    this.setState({ value });
+    value[metric]['active'] = progressbarChoice;
+    this.setState({value});
     this.props.onChange(value);
-    this.renderColorTag(tag);
-    this.getTagArray(true);
   }
-  renderColorTag(value) {
-    const style = {
-      width: '12px',
-      height: '12px',
-      display: 'inline-block',
-      background: 'rgb(' + value.text + ')',
-    };
-    return (<div style={{display: "inline-block"}}><span style={Object.assign({}, style)}></span></div>);
-  }
-  getTagArray(add) {
-    let output = {};
-    const selectedMetric = this.state.selectedMetric;
-    if (add) {
-      output[selectedMetric] = [];
-      output[selectedMetric].push({id: selectedMetric, text: this.state.value[selectedMetric]['color']});
+  onCancel(metric, progressbarChoice) {
+    const value = this.props.value;
+    if (!(metric in value)) {
+      value[metric] = {};
     }
-    else {
-      output[selectedMetric] = [];
+    if (!(progressbarChoice in value[metric])) {
+      value[metric][progressbarChoice] = {};
     }
-    this.setState({tagValue: output});
+    value[metric][progressbarChoice] = {};
+    this.setState({value});
+    this.props.onChange(value);
   }
   render() {
     // Tab, comma or Enter will trigger a new option created for FreeFormSelect
     const metrics = this.props.formData.metrics || [];
     let value = this.state.value === null ? {} : this.state.value;
     const metric = this.state.selectedMetric;
+    const progressbarChoice = this.state.selectedProgressbarChoice;
     // For the color saved in the database, change the value structure
+    if (metric in value && typeof(value[metric]) == "string") {
+      let savedColorString = value[metricForStyling];
+      let savedColorArray = savedColorString.split(",");
+      let savedColorObject = {rgb: {r: savedColorArray[0], g: savedColorArray[1], b: savedColorArray[2]}};
+      value[metricForStyling] = {};
+      value[metricForStyling]['active'] = 'Represent with color bar length';
+      value[metricForStyling]['Represent with color bar length'] = {};
+      value[metricForStyling]['Represent with color bar length']['color'] = savedColorObject;
+      value[metricForStyling]['exclude_rows_from_progress_bar'] = [];
+    }
+    /*
     if (metric in value && typeof(value[metric]) == "string") {
       let savedColor = value[metric];
       value[metric] = {};
       value[metric]['color'] = savedColor;
       value[metric]['exclude_rows_from_progress_bar'] = [];
     }
-    const exclude_rows_from_progress_bar = (
+    */
+    let progressbarChoicesSetting = null;
+    let colorPicker = null;
+    let exclude_rows_from_progress_bar_setting = null;
+    let progressbarGradientSetting = null;
+    let progressbarCancelButton = null;
+    if (this.state.selectedMetric !== null) {
+      progressbarChoicesSetting = (
+        <div className="panel-heading">
+            <SelectControl
+              name="progress_bar_type"
+              default={progressbarChoices[0]}
+              choices={progressbarChoices}
+              onChange={this.onSelectChange.bind(this, 'selectedProgressbarChoice')}
+              value={this.state.selectedProgressbarChoice}
+            />
+        </div>);
+    }
+    if (this.state.selectedProgressbarChoice !== null) {
+      const exclude_rows_from_progress_bar = (
         metric in value &&
         'exclude_rows_from_progress_bar' in value[metric]
-    ) ? value[metric].exclude_rows_from_progress_bar : null;
-    let colorPicker = null;
-    let selectWrap = null;
-    let exclude_rows_from_progress_bar_setting = null;
-    if (this.state.selectedMetric !== null) {
-      selectWrap = (<ReactTags tags={this.state.tagValue[metric]}
-                                   suggestions={[]}
-                                   handleDelete={this.handleDelete.bind(this, metric)}
-                                   handleAddition={this.handleAddition.bind(this, metric)}
-                                   renderTag={this.renderColorTag}
-                                   inline={false}
-                                   autofocus={false}/>);
-      colorPicker = (<SwatchesPicker onChange={
-          this.handleColorAddition.bind(this,metric)} height={560} width={"100%"} />);
+      ) ? value[metric].exclude_rows_from_progress_bar : null;
       exclude_rows_from_progress_bar_setting = (
-          <div className="panel-body">
+        <div className="panel-body">
           <table className="table table-bordered" style={{fontSize: '12px'}}>
             <tbody>
               <tr>
@@ -187,13 +191,85 @@ export default class ColorPickerControl extends React.Component {
                     freeForm
                     clearable
                     default={null}
-                    onChange={this.onValueChange.bind(this, metric, 'exclude_rows_from_progress_bar')}
+                    onChange={this.onExcludeChange.bind(this, metric, 'exclude_rows_from_progress_bar')}
                     value={exclude_rows_from_progress_bar}/>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>);
+      progressbarCancelButton = (
+        <Button
+            type="reset"
+            className="btn-custom"
+            bsClass="btn"
+            bsSize="sm"
+            bsStyle="default"
+            onClick={this.onCancel.bind(this, metric, progressbarChoice)}
+        >
+          <i className="fa fa-eraser"></i> Reset Progress Bar
+        </Button>);
+    }
+    if (this.state.selectedProgressbarChoice == 'Represent with color bar length') {
+      const progressbarColor = (metric in value &&
+                  progressbarChoice in value[metric] &&
+                  'color' in value[metric][progressbarChoice]
+              ) ? value[metric][progressbarChoice].color : {hex: '#fff'};
+      colorPicker = (<SwatchesPicker color={progressbarColor}
+          onChangeComplete={this.onValueChange.bind(this, metric, progressbarChoice, 'color')} height={560} width={"100%"} />);
+    }
+    else if (this.state.selectedProgressbarChoice == 'Represent with color scale') {
+      const minimumColor = (
+                  metric in value &&
+                  progressbarChoice in value[metric] &&
+                  'minimumColor' in value[metric][progressbarChoice]
+              ) ? value[metric][progressbarChoice].minimumColor : {hex: '#fff'};
+      const midPoint = (
+                  metric in value &&
+                  progressbarChoice in value[metric] &&
+                  'midPoint' in value[metric][progressbarChoice]
+              ) ? value[metric][progressbarChoice].midPoint : '0';
+      const maximumColor = (
+                  metric in value &&
+                  progressbarChoice in value[metric] &&
+                  'maximumColor' in value[metric][progressbarChoice]
+              ) ? value[metric][progressbarChoice].maximumColor : {hex: '#fff'};
+      progressbarGradientSetting = (
+          <div className="panel panel-default" style={{ border: 'initial', borderColor: '#ddd' }}>
+          <div className="panel-body">
+          <table className="table table-bordered" style={{fontSize: '12px'}}>
+                <tbody>
+                  <tr>
+                    <td><span>Maximum Color</span></td>
+                    <td>
+                      <CompactPicker color={maximumColor}
+                        onChangeComplete={this.onValueChange.bind(this, metric, progressbarChoice, 'maximumColor')} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><span>Midpoint</span></td>
+                    <td>
+                      <TextControl
+                        name={metric + '__midPoint'}
+                        default={'0'}
+                        clearable
+                        onChange={this.onValueChange.bind(this, metric, progressbarChoice, 'midPoint')}
+                        value={midPoint}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><span>Minimum Color</span></td>
+                    <td>
+                      <CompactPicker color={minimumColor}
+                        onChangeComplete={this.onValueChange.bind(this, metric, progressbarChoice, 'minimumColor')} />
+                    </td>
+                  </tr>
+                </tbody>
+          </table>
+          </div>
+        </div>
+      );
     }
     return (
       <div className="panel panel-default"
@@ -203,12 +279,14 @@ export default class ColorPickerControl extends React.Component {
               name="column_focus"
               default={metrics[0]}
               choices={metrics}
-              onChange={this.onSelectChange.bind(this)}
+              onChange={this.onSelectChange.bind(this, 'selectedMetric')}
               value={this.state.selectedMetric}
             />
           </div>
-          {selectWrap}
+          {progressbarChoicesSetting}
+          {progressbarCancelButton}
           {colorPicker}
+          {progressbarGradientSetting}
           {exclude_rows_from_progress_bar_setting}
       </div>
     );
