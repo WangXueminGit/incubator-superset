@@ -507,8 +507,6 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         pv = sm.get_session.query(sm.permissionview_model).filter_by(
                 permission=permission, view_menu=view_menu).first()
         private_roles = [role for role in current_user.roles if role.name not in config.ROBOT_PERMISSION_ROLES]
-        for role in private_roles:
-            role.permissions.append(pv)
         db.session.commit()
 
         create_table_sql = form.get('create_table_sql', None)
