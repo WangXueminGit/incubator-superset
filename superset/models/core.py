@@ -681,7 +681,14 @@ class Database(Model, AuditMixinNullable):
         return sqla.inspect(engine)
 
     def all_table_names(self, schema=None, force=False):
-        if not schema:
+        if self.db_engine_spec == db_engine_specs.HiveEngineSpec:
+            engine =  self.get_sqla_engine(schema)
+            if schema:
+                rs = engine.execute('show tables in %s' % schema).fetchall()
+            else:
+                rs = engine.execute('show tables in %s' % schema).fetchall()
+            return sorted(map(lambda x: x[1], rs))
+        elif not schema:
             tables_dict = self.db_engine_spec.fetch_result_sets(
                 self, 'table', force=force)
             return tables_dict.get("", [])
@@ -689,6 +696,8 @@ class Database(Model, AuditMixinNullable):
             self.db_engine_spec.get_table_names(schema, self.inspector))
 
     def all_view_names(self, schema=None, force=False):
+        if self.db_engine_spec == db_engine_specs.HiveEngineSpec:
+            return []
         if not schema:
             views_dict = self.db_engine_spec.fetch_result_sets(
                 self, 'view', force=force)
