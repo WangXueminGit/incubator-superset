@@ -3,13 +3,6 @@ import XLSX from 'xlsx';
 import XLSXStyle from 'xlsx-style';
 
 const classToCellProps = {
-  odd: {
-    fill: {
-      fgColor: {
-        rgb: 'C7C7C7',
-      },
-    },
-  },
   'background-lightseagreen': {
     fill: {
       fgColor: {
@@ -142,8 +135,25 @@ function formatTable(workbook, tableDf) {
   const finalWs = formatContent(refs, headerWs, tBody, rCount);
   return Object.assign({}, workbook, { Sheets: { Sheet1: finalWs } });
 }
+function removeHiddenRows(tableDf) {
+  const newDf = tableDf.cloneNode(true);
+  const tableContent = newDf.children[1]
+  const tableRows = tableContent.children
+  Array.from(Array(tableRows.length), (_, i) => tableRows[i])
+    .forEach((tableRow, rowNo) => {
+      const tableColumns = tableRow.children
+      Array.from(Array(tableColumns.length), (_, i) => tableColumns[i])
+        .forEach((tableColumn, colNo) => {
+          if(tableColumn.style.display === 'none') {
+            tableRow.removeChild(tableColumn);
+          }
+        })
+    });
+  return newDf;
+}
 export default function downloadTable(type, title, tableDf) {
-  const workbook = XLSX.utils.table_to_book(tableDf, { raw: true });
+  const newDf = removeHiddenRows(tableDf)
+  const workbook = XLSX.utils.table_to_book(newDf, { raw: true });
   const formattedWb = formatTable(workbook, tableDf);
   const wopts = { bookType: type, bookSST: false, type: 'binary' };
   const wbout = XLSXStyle.write(formattedWb, wopts);
