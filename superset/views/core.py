@@ -191,8 +191,7 @@ class DashboardFilter(SupersetFilter):
         if self.has_all_datasource_access():
             return query
         Dash = models.Dashboard
-        query = query.filter(or_(Dash.owners.contains(g.user),
-                                 Dash.guests.contains(g.user)))
+        query = query.filter(Dash.owners.contains(g.user))
 
         return query
 
