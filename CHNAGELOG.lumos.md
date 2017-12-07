@@ -1,5 +1,13 @@
 ## Change Log by Shopee Lumos
 
+### 2017.12.1
+
+- [60596989](https://git.garena.com/shopee-data/lumos-superset/commit/60596989b1bb53c2c770746d61797e4d83282b24) Updated config to ignore Editor and Guest role when adding new datasource
+- [2c6a8658](https://git.garena.com/shopee-data/lumos-superset/commit/2c6a86580c63ee712b29819dcb98d8671f246c1c) Revert "Disable automatically permission add when add sqla table."
+- [937ad41d](https://git.garena.com/shopee-data/lumos-superset/commit/937ad41d837043cfd80481a6f5b6645b4827e344) Allowed column config to be applied on finer levels in pivot table
+- [4ab5c187](https://git.garena.com/shopee-data/lumos-superset/commit/4ab5c187d3502423452748d00e84c7722bc9417e) Implement the feature of setting y-axis range in the line chart.
+- [35d85ec6](https://git.garena.com/shopee-data/lumos-superset/commit/35d85ec6bba0fa76530b5fb1ebe6cdfeb13e3ab7) Disable automatically permission add when add sqla table.
+
 ### 2017.11.5-2
 
 - [5cc59f2e](https://git.garena.com/shopee-data/lumos-superset/commit/5cc59f2ef73ce249ca2619a2c46e01a8b3a64f66) Hotfix for correcting `yesterday` in `since`
