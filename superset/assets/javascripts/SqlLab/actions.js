@@ -31,6 +31,7 @@ export const START_QUERY = 'START_QUERY';
 export const STOP_QUERY = 'STOP_QUERY';
 export const REQUEST_QUERY_RESULTS = 'REQUEST_QUERY_RESULTS';
 export const QUERY_SUCCESS = 'QUERY_SUCCESS';
+export const QUERY_SUCCESS_ASYNC = 'QUERY_SUCCESS_ASYNC';
 export const QUERY_FAILED = 'QUERY_FAILED';
 export const CLEAR_QUERY_RESULTS = 'CLEAR_QUERY_RESULTS';
 export const REMOVE_DATA_PREVIEW = 'REMOVE_DATA_PREVIEW';
@@ -67,6 +68,10 @@ export function startQuery(query) {
 
 export function querySuccess(query, results) {
   return { type: QUERY_SUCCESS, query, results };
+}
+
+export function querySuccessAsync(query, results) {
+  return { type: QUERY_SUCCESS_ASYNC, query, results };
 }
 
 export function queryFailed(query, msg) {
@@ -135,6 +140,8 @@ export function runQuery(query) {
       success(results) {
         if (!query.runAsync) {
           dispatch(querySuccess(query, results));
+        } else {
+          dispatch(querySuccessAsync(query, results));
         }
       },
       error(err, textStatus, errorThrown) {

@@ -179,6 +179,12 @@ export const sqlLabReducer = function (state, action) {
       };
       return alterInObject(state, 'queries', action.query, alts);
     },
+    [actions.QUERY_SUCCESS_ASYNC]() {
+      if (action.results.query.state === 'pending') {
+        return Object.assign({}, state, {queriesLastUpdate:action.results.query.changedOn});
+      }
+      return state;
+    },
     [actions.QUERY_FAILED]() {
       if (action.query.state === 'stopped') {
         return state;
@@ -245,7 +251,10 @@ export const sqlLabReducer = function (state, action) {
       if (!change) {
         newQueries = state.queries;
       }
-      const queriesLastUpdate = now();
+      const changedOnTimes = Object.values(newQueries)
+        .map((v) => v.changedOn)
+        .filter((v) => v)
+      const queriesLastUpdate = Math.max(...changedOnTimes);
       return Object.assign({}, state, { queries: newQueries, queriesLastUpdate });
     },
   };
