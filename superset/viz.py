@@ -967,7 +967,7 @@ class NVD3TimeSeriesViz(NVD3Viz):
 
     def process_data(self, df, aggregate=False):
         fd = self.form_data
-        df = df.fillna(0)
+        # df = df.fillna(0)
         if fd.get("granularity") == "all":
             raise Exception(_("Pick a time granularity for your time series"))
 

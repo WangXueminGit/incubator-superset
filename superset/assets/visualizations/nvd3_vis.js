@@ -383,6 +383,14 @@ function nvd3Vis(slice, payload) {
     } else if (fd.y_log_scale) {
       chart.yScale(d3.scale.log());
     }
+    if (vizType === 'line') {
+      chart.pointActive(function (d) {
+        return d.y !== null;
+      });
+      chart.defined(function (d) {
+        return d.y !== null;
+      });
+    }
     if (fd.y_range_min || fd.y_range_max) {
       let min = d3.min(payload.data, function(c) {
         return d3.min(c.values, function(d){
@@ -401,10 +409,10 @@ function nvd3Vis(slice, payload) {
         max = fd.y_range_max;
       }
       chart.pointActive(function (d) {
-        return d.y >= min && d.y <= max;
+        return d.y !== null && d.y >= min && d.y <= max;
       });
       chart.defined(function (d) {
-        return d.y >= min && d.y <= max;
+        return d.y !== null && d.y >= min && d.y <= max;
       });
       chart.yDomain([min, max]);
     }
