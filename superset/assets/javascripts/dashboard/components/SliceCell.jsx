@@ -13,19 +13,19 @@ const propTypes = {
 
 function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
   function downloadTableAsXls() {
+    const freezeRows = slice.form_data.columns.length + 2;
+    const freezeColumns = slice.form_data.groupby.length;
     const sliceContainer = document.getElementById('con_' + slice.slice_id)
     const dataframes = sliceContainer.getElementsByClassName('dataFrame');
     const tableDf = dataframes[1];
-    downloadTable('xlsx', slice.slice_name, tableDf);
+    downloadTable('xlsx', slice.slice_name, tableDf, freezeRows, freezeColumns);
   }
   let xlsExportButton = null;
   let moveChartButton = null;
   let editChartButton = null;
   let exploreChartButton = null;
   let removeChartButton = null;
-  if (slice.form_data.viz_type === 'pivot_table'
-    || dashboard.curUserType == 'admin'
-    || dashboard.curUserType == 'owner') {
+  if (slice.form_data.viz_type === 'pivot_table') {
     xlsExportButton = (
       <a
         className="exportCSV"

@@ -7202,9 +7202,9 @@ write@^0.2.1:
   dependencies:
     mkdirp "^0.5.1"
 
-xlsx-style@^0.8.13:
+"xlsx-style@git+https://github.com/tanhaoqin/js-xlsx.git#feature/pane-element":
   version "0.8.13"
-  resolved "https://registry.yarnpkg.com/xlsx-style/-/xlsx-style-0.8.13.tgz#ed238d6b8c0562f9447c2906abbded2d339e0486"
+  resolved "git+https://github.com/tanhaoqin/js-xlsx.git#d2894ba047684a2edc87576f21cb96f3c4646b6e"
   dependencies:
     adler-32 ""
     cfb ">=0.10.0"
@@ -7215,8 +7215,8 @@ xlsx-style@^0.8.13:
     ssf "~0.8.1"
 
 xlsx@^0.11.10:
-  version "0.11.12"
-  resolved "https://registry.yarnpkg.com/xlsx/-/xlsx-0.11.12.tgz#827d6ad738970a69e138619ab2c1440d2127f839"
+  version "0.11.13"
+  resolved "https://registry.yarnpkg.com/xlsx/-/xlsx-0.11.13.tgz#20f87f632b282935dbd52240ab7b82d759745de0"
   dependencies:
     adler-32 "~1.1.0"
     cfb "~1.0.1"

@@ -26,9 +26,11 @@ export default function ExploreActionButtons({
   title,
 }) {
   function downloadTableAsXls() {
+    const freezeRows = slice.formData.columns.length + 2;
+    const freezeColumns = slice.formData.groupby.length;
     const dataframes = document.getElementsByClassName('dataFrame');
     const tableDf = dataframes[1];
-    downloadTable('xlsx', title, tableDf);
+    downloadTable('xlsx', title, tableDf, freezeRows, freezeColumns);
   }
   const exportToCSVClasses = cx('btn btn-default btn-sm', {
     'disabled disabledButton': !canDownload,

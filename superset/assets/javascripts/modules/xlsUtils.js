@@ -151,12 +151,30 @@ function removeHiddenRows(tableDf) {
     });
   return newDf;
 }
-export default function downloadTable(type, title, tableDf) {
+function freezeSheets(workbook, freezeRows, freezeColumns){
+  const ws = workbook.Sheets.Sheet1;
+  const topLeftCellAddress = { c: freezeColumns, r: freezeRows };
+  const topLeftCellReference = XLSX.utils.encode_cell(topLeftCellAddress);
+  const wsFreeze = {
+    '!viewPane': {
+      xSplit: String(freezeColumns),
+      ySplit: String(freezeRows),
+      topLeftCell: topLeftCellReference,
+      activePane: "bottomRight",
+      state: "frozen"
+    }
+  };
+  const finalWs = Object.assign({}, ws, wsFreeze);
+  return Object.assign({}, workbook, { Sheets: { Sheet1: finalWs } });
+}
+export default function downloadTable(type, title, tableDf, freezeRows, freezeColumns) {
   const newDf = removeHiddenRows(tableDf)
   const workbook = XLSX.utils.table_to_book(newDf, { raw: true });
   const formattedWb = formatTable(workbook, tableDf);
+  const frozenWb =  (freezeRows || freezeColumns) ?
+    freezeSheets(formattedWb, freezeRows, freezeColumns) : formattedWb
   const wopts = { bookType: type, bookSST: false, type: 'binary' };
-  const wbout = XLSXStyle.write(formattedWb, wopts);
+  const wbout = XLSXStyle.write(frozenWb, wopts);
   FileSaver.saveAs(
     new Blob([s2ab(wbout)], { type: 'application/octet-stream' }),
     title + '.' + type,
