@@ -1301,14 +1301,6 @@ export const controls = {
     type: 'ColumnControl',
     label: 'Metrics',
     description: 'Advanced configuration on columns',
-    updateOnFetch: state => ({
-      columns: (state.queryResponse && state.queryResponse.data)
-        ? state.queryResponse.data.columns: [],
-    }),
-    mapStateToProps: state => ({
-      columns: (state.queryResponse && state.queryResponse.data)
-        ? state.queryResponse.data.columns: [],
-    }),
   },
 
   row_configuration: {

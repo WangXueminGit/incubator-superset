@@ -71,8 +71,7 @@ export const exploreReducer = function (state, action) {
       return Object.assign({}, state, changes);
     },
     [actions.CHART_UPDATE_SUCCEEDED]() {
-      const controls = Object.assign({}, state.controls);
-      const new_state = Object.assign(
+      return Object.assign(
         {},
         state,
         {
@@ -80,13 +79,6 @@ export const exploreReducer = function (state, action) {
           queryResponse: action.queryResponse,
         },
       );
-      Object.keys(controls).forEach((key) => {
-        const control = controls[key]
-        if (control.updateOnFetch) {
-          controls[key] = Object.assign({}, control, control.updateOnFetch(new_state));
-        }
-      });
-      return Object.assign({}, new_state, {controls});
     },
     [actions.CHART_UPDATE_STARTED]() {
       return Object.assign({}, state,

@@ -146,7 +146,7 @@ export default class SelectControl extends React.PureComponent {
     if (opt.backgroundColor) {
       return (
         <div>
-          <div className="color-box" style={renderColorbox(opt.backgroundColor)}></div>
+          <div class="color-box" style={renderColorbox(opt.backgroundColor)}></div>
           <span>{opt.label}</span>
         </div>
       )
