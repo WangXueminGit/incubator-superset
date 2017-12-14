@@ -209,22 +209,6 @@ export default class DateFilterControl extends React.Component {
               </div>
             </div>
           </PopoverSection>
-          <PopoverSection
-            title="Free form"
-            isSelected={this.state.type === 'free'}
-            onSelect={this.setType.bind(this, 'free')}
-            info={
-              'Superset supports smart date parsing. Strings like `last sunday` or ' +
-              '`last october` can be used.'
-            }
-          >
-            <FormControl
-              onFocus={this.setType.bind(this, 'free')}
-              value={this.state.free}
-              onChange={this.onFreeChange.bind(this)}
-              bsSize="small"
-            />
-          </PopoverSection>
           <div className="clearfix">
             <Button
               bsSize="small"
