@@ -1,5 +1,11 @@
 ## Change Log by Shopee Lumos
 
+### 2017.12.2
+
+- [446ede64](https://git.garena.com/shopee-data/lumos-superset/commit/446ede6477702f499968ad21660930af3b58e0ed) hotfix to remove the free form in time filter
+- [0d0754ce](https://git.garena.com/shopee-data/lumos-superset/commit/0d0754ce8f6db320b8d6b035d8b80ca1d74adfc9) Revert "Allowed column config to be applied on finer levels in pivot table"
+- [c881dba3](https://git.garena.com/shopee-data/lumos-superset/commit/c881dba384031bcf326d174509c645b7ad36363e) Revert "Return list of dashboards for admin where user can be guest or owner."
+
 ### 2017.12.1
 
 - [60596989](https://git.garena.com/shopee-data/lumos-superset/commit/60596989b1bb53c2c770746d61797e4d83282b24) Updated config to ignore Editor and Guest role when adding new datasource
