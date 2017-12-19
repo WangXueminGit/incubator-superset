@@ -342,8 +342,6 @@ function tableVis(slice, payload) {
     stateLoadCallback: function(settings) {
       if (('slice_state' in settings.oInit.slice.formData) && 
         (settings.oInit.slice.formData['slice_state']!==undefined)) {
-          console.log("state load for datatable_slice_state_" +
-                    settings.oInit.sliceId);
           return JSON.parse(settings.oInit.slice.formData.slice_state);
         }
       else {
