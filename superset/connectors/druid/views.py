@@ -141,8 +141,8 @@ appbuilder.add_view(
     name="Druid Clusters",
     label=__("Druid Clusters"),
     icon="fa-cubes",
-    category="Sources",
-    category_label=__("Sources"),
+    category="Data",
+    category_label=__("Data"),
     category_icon='fa-database',)
 
 
@@ -231,8 +231,8 @@ appbuilder.add_view(
     DruidDatasourceModelView,
     "Druid Datasources",
     label=__("Druid Datasources"),
-    category="Sources",
-    category_label=__("Sources"),
+    category="Data",
+    category_label=__("Data"),
     icon="fa-cube")
 
 
@@ -270,10 +270,10 @@ appbuilder.add_link(
     "Refresh Druid Metadata",
     label=__("Refresh Druid Metadata"),
     href='/druid/refresh_datasources/',
-    category='Sources',
-    category_label=__("Sources"),
+    category='Data',
+    category_label=__("Data"),
     category_icon='fa-database',
     icon="fa-cog")
 
 
-appbuilder.add_separator("Sources", )
+appbuilder.add_separator('Data', )

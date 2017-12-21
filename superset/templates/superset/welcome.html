@@ -10,12 +10,51 @@
 {% block title %}{{ _("Welcome!") }}{% endblock %}
 
 {% block body %}
-<div class="container welcome welcome-lumos">
-  <div class="hero-unit" style="background-image: url('/static/assets/images/harry_potter.jpg');">
-    <h1>Welcome to Shopee Lumos</h1>
-    <h2>Shopee Lumos provides solutions to visualize data and generate reports from Shopee Data Warehouse on-the-fly. </h2>
-    <p>Lumos is originally a charm, a light-creation spell, taken from Harry Potter.</p>
-    <p>Shopee Lumos is based on an open source project <a href="https://github.com/airbnb/superset">Superset</a> under <a href="https://github.com/airbnb">@airbnb</a>.</p>
+<!--<div class="container welcome welcome-lumos">-->
+<div class="welcome welcome-lumos">
+  <div class="hero-unit" style="background-image: url('/static/assets/images/banner.jpg');">
+    <h1 class="text-center">Welcome to Lumos - addictive, informative, collaborative.</h1>
+    <h4 class="text-center">Lumos serves data visualizations and reporting capabilities to over 300 users at Shopee.</h4>
+    <h4 class="text-center">Join the action in 4 easy steps:</h4>
+    <p></p>
+    <section id="features" class="features section">
+        <!--<div class="container">-->
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12 feature text-center">
+                    <span class="fa fa-database"></span>
+                    <div class="feature-content">
+                        <h4>Step 1</h4>
+                        <h5>Connect to a Data Source</h5>
+                        <p>Connect to data sources from Redshift or Spark using Lumos’ built-in SQL IDE, or simply load in existing tables and views.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12 feature text-center">
+                    <span class="fa fa-bar-chart"></span>
+                    <div class="feature-content">
+                        <h4>Step 2</h4>
+                        <h5>Create a Data Visualization</h5>
+                        <p>Pick and choose a visualization type from a rich library of interactive, engaging, and dynamic charts, tables, and graphs.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12 feature text-center">
+                    <span class="fa fa-dashboard"></span>
+                    <div class="feature-content">
+                        <h4>Step 3</h4>
+                        <h5>Design and Build a Dashboard</h5>
+                        <p>Populate and paint an empty canvas with data visualizations relevant to your various audiences and their specific requirements.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12 feature text-center">
+                    <span class="fa fa-users"></span>
+                    <div class="feature-content">
+                        <h4>Step 4</h4>
+                        <h5>Share and Collaborate</h5>
+                        <p>Grant guest or owner access to your colleagues. Nothing says “I trust you” like giving permission to access your work.</p>
+                    </div>
+                </div>
+            </div>
+        <!-- </div>-->
+    </section><!-- features -->
   </div>
 </div>
 <div class="container welcome">

@@ -336,16 +336,30 @@ appbuilder.add_link(
     category_label=__("Manage"),
     category_icon='fa-wrench',)
 
-
-appbuilder.add_view(
-    DatabaseView,
-    "Databases",
-    label=__("Databases"),
-    icon="fa-database",
-    category="Sources",
-    category_label=__("Sources"),
-    category_icon='fa-database',)
-
+appbuilder.add_link(
+    'New SQL Query',
+    label=_("New SQL Query"),
+    href='/superset/sqllab',
+    category_icon="fa-Database",
+    icon="fa-flask",
+    category='Data',
+    category_label=__("Data"),
+)
+appbuilder.add_link(
+    __('Browse Queries'),
+    href='/sqllab/my_queries/',
+    icon="fa-search",
+    category='Data')
+appbuilder.add_link(
+    'SQL Lab Query History',
+    label=_("SQL Lab Query History"),
+    href='/superset/sqllab#search',
+    icon="fa-history",
+    category_icon="fa-Database",
+    category='Manage',
+    category_label=__("Manage"),
+)
+appbuilder.add_separator('Data')
 
 class DatabaseAsync(DatabaseView):
     list_columns = [
@@ -388,7 +402,8 @@ appbuilder.add_view(
     icon='fa-table',)
 
 
-class SliceModelView(SupersetModelView, DeleteMixin):  # noqa
+class SliceModelView(SupersetModelView, DeleteMixin): 
+     # noqa
     datamodel = SQLAInterface(models.Slice)
     can_add = False
     label_columns = {
@@ -440,20 +455,36 @@ class SliceModelView(SupersetModelView, DeleteMixin):  # noqa
     @expose('/add', methods=['GET', 'POST'])
     @has_access
     def add(self):
-        flash(__(
-            "To create a new slice, you can open a data source "
-            "through the `Sources` menu, or alter an existing slice "
-            "from the `Slices` menu"), "info")
-        return redirect('/superset/welcome')
+        datasources = ConnectorRegistry.get_all_datasources(db.session)
+        datasources = [
+            {'value': str(d.id) + '__' + d.type, 'label': repr(d)}
+            for d in datasources
+        ]
+        return self.render_template(
+            'superset/add_slice.html',
+            bootstrap_data=json.dumps({
+                'datasources': sorted(datasources, key=lambda d: d['label']),
+            }),
+        )
+
+
+appbuilder.add_link(
+    "New Slice",
+    label=__("New Slice"),
+    href='/slicemodelview/add',
+    category='Slices',
+    category_label=__("Slices"),
+    category_icon='fa-bar-chart',
+    icon="fa-bar-chart")
 
 appbuilder.add_view(
     SliceModelView,
-    "Slices",
-    label=__("Slices"),
-    icon="fa-bar-chart",
-    category="",
-    category_icon='',)
-
+    "Browse Slices",
+    label=__("Browse Slices"),
+    category='Slices',
+    category_label=__("Slices"),
+    category_icon='fa-bar-chart',
+    icon="fa-search")
 
 class SliceAsync(SliceModelView):  # noqa
     list_columns = [
@@ -465,7 +496,6 @@ class SliceAsync(SliceModelView):  # noqa
     }
 
 appbuilder.add_view_no_menu(SliceAsync)
-
 
 class SliceAddView(SliceModelView):  # noqa
     list_columns = [
@@ -609,14 +639,23 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
             mimetype="application/zip")
 
 
+appbuilder.add_link(
+    "New Dashboard",
+    label=__("New Dashboard"),
+    href='/dashboardmodelview/add',
+    category='Dashboards',
+    category_label=__("Dashboards"),
+    category_icon='fa-dashboard',
+    icon="fa-dashboard")
+
 appbuilder.add_view(
     DashboardModelView,
-    "Dashboards",
-    label=__("Dashboards"),
-    icon="fa-dashboard",
-    category='',
-    category_icon='',)
-
+    "Browse Dashboards",
+    label=__("Browse Dashboards"),
+    category='Dashboards',
+    category_label=__("Dashboards"),
+    category_icon='fa-dashboard',
+    icon="fa-search")
 
 class DashboardModelViewAsync(DashboardModelView):  # noqa
     list_columns = ['dashboard_link', 'owners', 'modified', 'dashboard_title']
@@ -2611,7 +2650,6 @@ class CssTemplateModelView(SupersetModelView, DeleteMixin):
 class CssTemplateAsyncModelView(CssTemplateModelView):
     list_columns = ['template_name', 'css']
 
-appbuilder.add_separator("Sources")
 appbuilder.add_view(
     CssTemplateModelView,
     "CSS Templates",
@@ -2622,26 +2660,6 @@ appbuilder.add_view(
     category_icon='')
 
 appbuilder.add_view_no_menu(CssTemplateAsyncModelView)
-
-appbuilder.add_link(
-    'SQL Editor',
-    label=_("SQL Editor"),
-    href='/superset/sqllab',
-    category_icon="fa-flask",
-    icon="fa-flask",
-    category='SQL Lab',
-    category_label=__("SQL Lab"),
-)
-appbuilder.add_link(
-    'Query Search',
-    label=_("Query Search"),
-    href='/superset/sqllab#search',
-    icon="fa-search",
-    category_icon="fa-flask",
-    category='SQL Lab',
-    category_label=__("SQL Lab"),
-)
-
 
 @app.after_request
 def apply_caching(response):

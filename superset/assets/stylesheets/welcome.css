@@ -33,27 +33,40 @@ input {
   margin-top: 12px;
   font-size: 18px;
 }
-
+.container {
+  margin-top: 20px;
+}
 .hero-unit {
   background-size: cover;
   background-color: #EEEEEE;
-  height: 400px;
+  height: 550px;
   padding: 50px;
+  margin-top: -20px;
 }
 .hero-unit h1 {
-  color: #FFFFFF;
-  font-size: 60px;
+  color: #ffffff;
+  font-size: 30px;
   letter-spacing: -1px;
   line-height: 1;
   margin-bottom: 0;
 }
 .hero-unit h2 {
-  font-size: 25px;
-  color: #FFFFFF;
+  color: #ffffff;
+}
+.hero-unit h3 {
+  color: #ffffff;
+}
+.hero-unit h4 {
+  color: #ffffff;
+  font-size: 16px;
+}
+.hero-unit h5 {
+  color: #ffffff;
+  font-size: 16px;
 }
 .hero-unit p {
-  color: #FFFFFF;
-  font-size: 16px;
+  color: #ffffff;
+  font-size: 14px;
   font-weight: 100;
 }
 .fill{
@@ -61,4 +74,21 @@ input {
   height: 350px;
   background-position: center;
   background-size: cover;
+}
+.section {
+  padding: 60px 10px;
+}
+.feature {
+  margin-bottom: 20px;
+}
+.feature-content {
+  margin-top: 30px;
+}
+.feature .icon {
+  color: white;
+  font-size: 40px;
+}
+.hero-unit .fa {
+  color: white;
+  font-size: 40px;
 }

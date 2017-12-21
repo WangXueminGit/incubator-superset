@@ -28,6 +28,8 @@ from superset.widgets import CustomFormWidget
 
 from . import models
 
+from superset.views.core import DatabaseView
+
 
 class TableColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
     datamodel = SQLAInterface(models.TableColumn)
@@ -320,7 +322,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                 datasource_groups[datasource.id] = datasource.database_group
             if datasource.database_group not in sub_datasources:
                 sub_datasources[datasource.database_group] = []
-            if len(datasource.force_ctas_schema) > 0:
+            if datasource.force_ctas_schema and len(datasource.force_ctas_schema) > 0:
                 for role in private_roles:
                     if role in datasource.roles:
                         sub_datasources[datasource.database_group].append(datasource.force_ctas_schema)
@@ -677,42 +679,31 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
 
         return redirect('/tablemodelview/' + path + '/' + str(pk) + '?success=true&type=save_columns_type')
 
+
+appbuilder.add_separator('Data')
+appbuilder.add_link(
+    'New Table',
+    label=__("New Table"),
+    href='/tablemodelview/add',
+    icon="fa-table",
+    category='Data',
+    category_label=__("Data"),
+    category_icon='Data',)
+
 appbuilder.add_view(
     TableModelView,
-    "Tables",
-    label=__("Tables"),
-    category="",
-    category_label="",
-    icon='fa-table',)
+    "Browse Tables",
+    label=__("Browse Tables"),
+    category="Data",
+    category_label="Data",
+    icon='fa-search',)
 
-appbuilder.add_link(
-    'Lumos User Guide',
-    label=__("Lumos User Guide"),
-    href='https://docs.google.com/a/shopeemobile.com/document/d/1pgQcFJ-p57QfhfcrWj9GbOF4ACThjyb9o47mWj4YmW8/edit?usp=sharing',
-    category='Documentation',
-    category_label=__("Documentation"),
-    category_icon='fa-book',)
-
-appbuilder.add_link(
-    'Order Mart Schema Guide',
-    label=__("Order Mart Schema Guide"),
-    href='https://docs.google.com/a/garena.com/spreadsheets/d/1-mGknmLWREy68R_9iBrWwTIMM8cTsE4eu34hUR43lo8/edit?usp=sharing',
-    category='Documentation',
-    category_label=__("Documentation"),
-    category_icon='fa-book',)
-
-appbuilder.add_link(
-    'User Feedback',
-    label=__("User Feedback"),
-    href='https://goo.gl/forms/K4dJqf3xjwhATnrw2',
-    category='Documentation',
-    category_label=__("Documentation"),
-    category_icon='fa-book',)
-
-appbuilder.add_link(
-    'Developer Notes',
-    label=__("Developer Notes"),
-    href='https://docs.google.com/document/d/17r0jMfQHMAi0ymNjNfhc2QT17X8gdGb9I5-dBQcJijI/edit',
-    category='Documentation',
-    category_label=__("Documentation"),
-    category_icon='fa-book',)
+appbuilder.add_view(
+    DatabaseView,
+    "Databases",
+    label=__("Databases"),
+    icon="fa-database",
+    category="Data",
+    category_label=__("Data"),
+    category_icon='fa-database',)    
+appbuilder.add_separator('Data')
