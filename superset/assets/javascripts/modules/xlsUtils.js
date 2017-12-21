@@ -46,16 +46,24 @@ const classToCellProps = {
   'text-left': {
     alignment: {
       horizontal: 'top',
+      vertical: 'top',
     },
   },
   'text-center': {
     alignment: {
       horizontal: 'center',
+      vertical: 'top',
     },
   },
   'text-right': {
     alignment: {
       horizontal: 'bottom',
+      vertical: 'top',
+    },
+  },
+  'default': {
+    alignment: {
+      vertical: 'top',
     },
   },
 };
@@ -91,7 +99,7 @@ function formatHeader(refs, ws, rCount) {
   headerCells.filter(v => Object.keys(ws).indexOf(v) !== -1)
     .forEach((v) => {
       const newCellContent = Object.assign({}, ws[v], {
-        s: classToCellProps.bold,
+        s: Object.assign({}, classToCellProps.bold, classToCellProps.default),
       });
       newWs[v] = newCellContent;
     });
@@ -113,7 +121,12 @@ function formatContent(refs, ws, tBody, rCount) {
       if (tr.children[C].tagName === 'TH') {
         cellStyles.push(classToCellProps.bold);
       }
-      const finalStyles = Object.assign({}, ...rowStyles, ...cellStyles);
+      const finalStyles = Object.assign(
+        {},
+        classToCellProps.default,
+        ...rowStyles,
+        ...cellStyles
+      );
       if (Object.keys(ws).indexOf(cellReference) !== -1) {
         const parsedCellValue = decodeHtmlChars(ws[cellReference].v);
         const newCellContent = Object.assign({}, ws[cellReference], {
@@ -141,6 +154,9 @@ function removeHiddenRows(tableDf) {
   const tableRows = tableContent.children
   Array.from(Array(tableRows.length), (_, i) => tableRows[i])
     .forEach((tableRow, rowNo) => {
+      if(tableRow.style.display === 'none') {
+        tableContent.removeChild(tableRow);
+      }
       const tableColumns = tableRow.children
       Array.from(Array(tableColumns.length), (_, i) => tableColumns[i])
         .forEach((tableColumn, colNo) => {
