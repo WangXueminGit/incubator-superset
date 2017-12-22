@@ -1307,11 +1307,9 @@ class Superset(BaseSupersetView):
             .filter_by(id=datasource_id)
             .one()
         )
-
         if not datasource:
             flash(DATASOURCE_MISSING_ERR, "danger")
             return redirect(error_redirect)
-
         if not self.datasource_access(datasource):
             flash(
                 __(get_datasource_access_error_msg(datasource.name)),
@@ -2089,6 +2087,7 @@ class Superset(BaseSupersetView):
         if not table:
             table = SqlaTable(table_name=table_name)
         table.database_id = data.get('dbId')
+        table.schema = data.get('schema')
         q = SupersetQuery(data.get('sql'))
         table.sql = q.stripped()
         db.session.add(table)
@@ -2130,6 +2129,23 @@ class Superset(BaseSupersetView):
             ))
         table.columns = cols
         table.metrics = metrics
+        db.session.commit()
+
+        security.merge_perm(sm, 'datasource_access', table.get_perm())
+        if table.schema:
+            security.merge_perm(sm, 'schema_access', table.schema_perm)
+
+        # Grant user permission to use this table in Lumos
+        permission = sm.find_permission('datasource_access')
+        view_menu = sm.find_view_menu(table.get_perm())
+        pv = sm.get_session.query(sm.permissionview_model).filter_by(
+            permission=permission, view_menu=view_menu).first()
+        private_roles = [
+            role for role in current_user.roles
+            if role.name not in app.config['ROBOT_PERMISSION_ROLES']
+        ]
+        for role in private_roles:
+            role.permissions.append(pv)
         db.session.commit()
         return self.json_response(json.dumps({
             'table_id': table.id,

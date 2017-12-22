@@ -54,7 +54,7 @@ class VisualizeModal extends React.PureComponent {
     props.query.results.columns.forEach((col) => {
       columns[col.name] = col;
     });
-    this.setState({ columns });
+    this.setState({ columns, schema: props.query.schema });
   }
   datasourceName() {
     const { query } = this.props;
@@ -117,6 +117,7 @@ class VisualizeModal extends React.PureComponent {
     const vizOptions = {
       chartType: this.state.chartType.value,
       datasourceName: this.state.datasourceName,
+      schema: this.state.schema,
       columns: this.state.columns,
       sql: this.props.query.sql,
       dbId: this.props.query.dbId,
