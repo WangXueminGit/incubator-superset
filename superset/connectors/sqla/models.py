@@ -232,9 +232,15 @@ class SqlaTable(Model, BaseDatasource):
         return utils.get_schema_perm(self.database, self.schema)
 
     def get_perm(self):
-        return (
-            "[{obj.database}].[{obj.table_name}]"
-            "(id:{obj.id})").format(obj=self)
+        if self.database:
+            return (
+                "[{obj.database}].[{obj.table_name}]"
+                "(id:{obj.id})").format(obj=self)
+        else:
+            database = db.session.query(Database).get(self.database_id)
+            return (
+                "[{database}].[{obj.table_name}]"
+                "(id:{obj.id})").format(obj=self, database=database.name)
 
     @property
     def name(self):
