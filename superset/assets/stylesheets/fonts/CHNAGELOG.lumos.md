@@ -1,0 +1,15 @@
+- [9cf836ac](https://git.garena.com/shopee-data/lumos-superset/commit/9cf836ac0c57caf5938e46d46be2f87ab023c38e) Implement the UI/UX reformation.
+- [e89f9597](https://git.garena.com/shopee-data/lumos-superset/commit/e89f9597c108e2f2275ce5aadf246573c0688812) Fixed datasource permissions not being created properly on SQL Lab
+- [61573264](https://git.garena.com/shopee-data/lumos-superset/commit/61573264c400c7300ce00ae9da71a731474ef26c) Added auto datasource permission creation for vizualization in sqllab
+- [1c87dd01](https://git.garena.com/shopee-data/lumos-superset/commit/1c87dd01a8ed339dbe9d1b2f29fd71e87845dbf9) Minor hotfixes for excel download feature,
+- [bc16f60d](https://git.garena.com/shopee-data/lumos-superset/commit/bc16f60dfb7c27edbd0726f566a6f7f3f0627f79) Fixed superset using local user time to filter Queries in database
+- [99109e9c](https://git.garena.com/shopee-data/lumos-superset/commit/99109e9c08ebb39a7b4272b4bf8eb1a945097814) Added workaround for models.Database to work with Spark SQL
+- [8b12cc86](https://git.garena.com/shopee-data/lumos-superset/commit/8b12cc86d7bcb2aed78223abc0047389c8bdac3f) Enabled SQL Lab for Spark
+- [f254b906](https://git.garena.com/shopee-data/lumos-superset/commit/f254b90604bb6514331b90c0a03373a0618710a8) Fix being able to select schemas in SQL Lab without proper permission
+- [2cec3256](https://git.garena.com/shopee-data/lumos-superset/commit/2cec325644f8058518171eac5c345a8787c143f4) Remove unnecessary `console.log`.
+- [f3ba1736](https://git.garena.com/shopee-data/lumos-superset/commit/f3ba17362cde32a94e23edebd4d2e37fcf631ed8) Allowed column config to be applied on finer levels in pivot table
+- [eefd8194](https://git.garena.com/shopee-data/lumos-superset/commit/eefd8194cab63b1a20a7c2a90fa92bbcc9b3ea57) Update README
+- [a898a2d0](https://git.garena.com/shopee-data/lumos-superset/commit/a898a2d0c4faa4ffa70d86cd0f59117da47f9ab7) Remove unnecessary files.
+- [bf1a50c2](https://git.garena.com/shopee-data/lumos-superset/commit/bf1a50c299cd81d90ed051f41bd0872acf10bade) Added xls default freezing behavior to downloaded xlsx files
+- [d6c89992](https://git.garena.com/shopee-data/lumos-superset/commit/d6c89992afa9947530610397ab5fc9c6dac0073a) Hotfix for javascript error when exporting table with hidden cells to xls
+- [c2dc0bc3](https://git.garena.com/shopee-data/lumos-superset/commit/c2dc0bc3eefb0047de5b1dadb52cf4f3877d3170) Added feature to download pivot table as xls file.
