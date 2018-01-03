@@ -2131,36 +2131,41 @@ class Superset(BaseSupersetView):
         table.sql = q.stripped()
         db.session.add(table)
         cols = []
-        dims = []
         metrics = []
         for column_name, config in data.get('columns').items():
-            is_dim = config.get('is_dim', False)
             SqlaTable = ConnectorRegistry.sources['table']
             TableColumn = SqlaTable.column_class
             SqlMetric = SqlaTable.metric_class
             col = TableColumn(
                 column_name=column_name,
-                filterable=is_dim,
-                groupby=is_dim,
-                is_dttm=config.get('is_date', False),
+                filterable=config.get('is_filterable', False),
+                groupby=config.get('is_groupable', False),
+                is_dttm=config.get('is_temporal', False),
                 type=config.get('type', False),
+                is_hex=config.get('is_base16_encoded', False),
             )
             cols.append(col)
-            if is_dim:
-                dims.append(col)
-            agg = config.get('agg')
-            if agg:
-                if agg == 'count_distinct':
-                    metrics.append(SqlMetric(
-                        metric_name="{agg}__{column_name}".format(**locals()),
-                        expression="COUNT(DISTINCT {column_name})"
-                        .format(**locals()),
-                    ))
-                else:
-                    metrics.append(SqlMetric(
-                        metric_name="{agg}__{column_name}".format(**locals()),
-                        expression="{agg}({column_name})".format(**locals()),
-                    ))
+            if config.get('is_count_distinct') :
+                metrics.append(SqlMetric(
+                    metric_name="count_distinct__{column_name}".format(**locals()),
+                    expression="COUNT(DISTINCT {column_name})"
+                    .format(**locals()),
+                ))
+            elif config.get('is_sum') :
+                metrics.append(SqlMetric(
+                    metric_name="sum__{column_name}".format(**locals()),
+                    expression="sum({column_name})".format(**locals()),
+                ))
+            elif config.get('is_min') :
+                metrics.append(SqlMetric(
+                    metric_name="min__{column_name}".format(**locals()),
+                    expression="min({column_name})".format(**locals()),
+                ))
+            elif config.get('is_max') :
+                metrics.append(SqlMetric(
+                    metric_name="max__{column_name}".format(**locals()),
+                    expression="max({column_name})".format(**locals()),
+                ))
         if not metrics:
             metrics.append(SqlMetric(
                 metric_name="count".format(**locals()),

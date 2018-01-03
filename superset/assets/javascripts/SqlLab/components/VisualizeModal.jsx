@@ -53,6 +53,10 @@ class VisualizeModal extends React.PureComponent {
     const columns = {};
     props.query.results.columns.forEach((col) => {
       columns[col.name] = col;
+      // add for visulization generization
+      columns[col.name].is_temporal = col.is_date;
+      columns[col.name].is_groupable = col.is_dim;
+      columns[col.name].is_filterable = col.is_dim;
     });
     this.setState({ columns, schema: props.query.schema });
   }
@@ -185,33 +189,71 @@ class VisualizeModal extends React.PureComponent {
     }
     const tableData = this.props.query.results.columns.map(col => ({
       column: col.name,
-      is_dimension: (
+      type: col.type,
+      is_dim: col.is_dim,
+      is_date: col.is_date,
+      groupable: (
         <input
           type="checkbox"
-          onChange={this.changeCheckbox.bind(this, 'is_dim', col.name)}
-          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_dim : false}
+          onChange={this.changeCheckbox.bind(this, 'is_groupable', col.name)}
+          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_groupable : false}
           className="form-control"
         />
       ),
-      is_date: (
+      filterable: (
         <input
           type="checkbox"
+          onChange={this.changeCheckbox.bind(this, 'is_filterable', col.name)}
+          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_filterable : false}
           className="form-control"
-          onChange={this.changeCheckbox.bind(this, 'is_date', col.name)}
-          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_date : false}
         />
       ),
-      agg_func: (
-        <Select
-          options={[
-            { value: 'sum', label: 'SUM(x)' },
-            { value: 'min', label: 'MIN(x)' },
-            { value: 'max', label: 'MAX(x)' },
-            { value: 'avg', label: 'AVG(x)' },
-            { value: 'count_distinct', label: 'COUNT(DISTINCT x)' },
-          ]}
-          onChange={this.changeAggFunction.bind(this, col.name)}
-          value={(this.state.columns[col.name]) ? this.state.columns[col.name].agg : null}
+      count_distinct: (
+        <input
+          type="checkbox"
+          onChange={this.changeCheckbox.bind(this, 'is_count_distinct', col.name)}
+          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_count_distinct : false}
+          className="form-control"
+        />
+      ),
+      sum: (
+        <input
+          type="checkbox"
+          onChange={this.changeCheckbox.bind(this, 'is_sum', col.name)}
+          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_sum : false}
+          className="form-control"
+        />
+      ),
+      min: (
+        <input
+          type="checkbox"
+          onChange={this.changeCheckbox.bind(this, 'is_min', col.name)}
+          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_min : false}
+          className="form-control"
+        />
+      ),
+      max: (
+        <input
+          type="checkbox"
+          onChange={this.changeCheckbox.bind(this, 'is_max', col.name)}
+          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_max : false}
+          className="form-control"
+        />
+      ),
+      is_temporal: (
+        <input
+          type="checkbox"
+          onChange={this.changeCheckbox.bind(this, 'is_temporal', col.name)}
+          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_temporal : false}
+          className="form-control"
+        />
+      ),
+      base16_encoded: (
+        <input
+          type="checkbox"
+          onChange={this.changeCheckbox.bind(this, 'is_base16_encoded', col.name)}
+          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_base16_encoded : false}
+          className="form-control"
         />
       ),
     }));
@@ -252,7 +294,8 @@ class VisualizeModal extends React.PureComponent {
             <hr />
             <Table
               className="table table-condensed"
-              columns={['column', 'is_dimension', 'is_date', 'agg_func']}
+              columns={['column', 'type', 'groupable', 'filterable', 'count_distinct',
+                        'sum', 'min', 'max', 'is_temporal', 'base16_encoded']}
               data={tableData}
             />
             <Button
