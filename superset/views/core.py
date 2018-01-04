@@ -340,7 +340,7 @@ appbuilder.add_link(
     'New SQL Query',
     label=_("New SQL Query"),
     href='/superset/sqllab',
-    category_icon="fa-Database",
+    category_icon="fa-database",
     icon="fa-flask",
     category='Data',
     category_label=__("Data"),
@@ -355,7 +355,7 @@ appbuilder.add_link(
     label=_("SQL Lab Query History"),
     href='/superset/sqllab#search',
     icon="fa-history",
-    category_icon="fa-Database",
+    category_icon="fa-database",
     category='Manage',
     category_label=__("Manage"),
 )
