@@ -76,9 +76,11 @@ function initDashboardView(dashboard) {
   $('.react-grid-item').hover(
     function () {
       $(this).find('.chart-controls').fadeIn(300);
+      $(this).addClass('dashboard-scrollbar');
     },
     function () {
       $(this).find('.chart-controls').fadeOut(300);
+      $(this).removeClass('dashboard-scrollbar');
     },
   );
   $('div.grid-container').css('visibility', 'visible');

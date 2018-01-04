@@ -22,6 +22,35 @@ div.widget .chart-controls {
   opacity: 0.75;
   display: none;
 }
+.dashboard ::-webkit-scrollbar {
+  display: none;
+}
+.dashboard-scrollbar ::-webkit-scrollbar {
+  display: block;
+  width: 10px;
+  height: 10px;
+}
+.dashboard-scrollbar ::-webkit-scrollbar-button {
+  width: 0px;
+  height: 0px;
+}
+.dashboard-scrollbar ::-webkit-scrollbar-thumb {
+  background: grey;
+  border: 0px none #ffffff;
+  border-radius: 50px;
+}
+.dashboard-scrollbar ::-webkit-scrollbar-track {
+  background: #d0cdd3;
+  border: 0px none #ffffff;
+  border-radius: 73px;
+}
+.dashboard-scrollbar ::-webkit-scrollbar-track:hover {
+  background: #d6dadd;
+}
+.dashboard-scrollbar ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 .slice-grid div.widget {
   border-radius: 0;
   border: 0px;
