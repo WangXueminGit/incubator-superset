@@ -13,7 +13,8 @@ const propTypes = {
 
 function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
   function downloadTableAsXls() {
-    const freezeRows = slice.form_data.columns.length + 2;
+    const freezeRows = slice.form_data.viz_type === 'table' ?
+      1 : slice.form_data.columns.length + 2;
     const freezeColumns = slice.form_data.groupby.length;
     const sliceContainer = document.getElementById('con_' + slice.slice_id)
     const dataframes = sliceContainer.getElementsByClassName('dataFrame');
@@ -25,7 +26,7 @@ function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
   let editChartButton = null;
   let exploreChartButton = null;
   let removeChartButton = null;
-  if (slice.form_data.viz_type === 'pivot_table') {
+  if (slice.form_data.viz_type === 'pivot_table' || slice.form_data.viz_type === 'table') {
     xlsExportButton = (
       <a
         className="exportCSV"

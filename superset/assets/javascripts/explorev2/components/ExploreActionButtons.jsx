@@ -26,7 +26,8 @@ export default function ExploreActionButtons({
   title,
 }) {
   function downloadTableAsXls() {
-    const freezeRows = slice.formData.columns.length + 2;
+    const freezeRows = slice.formData.viz_type === 'table' ?
+      1 : slice.formData.columns.length + 2;
     const freezeColumns = slice.formData.groupby.length;
     const dataframes = document.getElementsByClassName('dataFrame');
     const tableDf = dataframes[1];
@@ -36,7 +37,7 @@ export default function ExploreActionButtons({
     'disabled disabledButton': !canDownload,
   });
   let xlsExportButton = null;
-  if (vizType === 'pivot_table') {
+  if (vizType === 'pivot_table' || vizType === 'table') {
     xlsExportButton = (
       <button
         onClick={downloadTableAsXls.bind(this)}
