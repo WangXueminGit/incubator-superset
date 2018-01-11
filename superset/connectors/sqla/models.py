@@ -372,6 +372,7 @@ class SqlaTable(Model, BaseDatasource):
             is_timeseries=True,
             timeseries_limit=15,
             timeseries_limit_metric=None,
+            timeseries_order_metric=None,
             row_limit=None,
             inner_from_dttm=None,
             inner_to_dttm=None,
@@ -405,16 +406,21 @@ class SqlaTable(Model, BaseDatasource):
             raise Exception(_(
                 "Datetime column not provided as part table configuration "
                 "and is required by this type of chart"))
+
         for m in metrics:
             if m not in metrics_dict:
                 raise Exception(_("Metric '{}' is not valid".format(m)))
         metrics_exprs = [metrics_dict.get(m).sqla_col for m in metrics]
 
         timeseries_limit_metric = metrics_dict.get(timeseries_limit_metric)
+        timeseries_order_metric = metrics_dict.get(timeseries_order_metric)
         timeseries_limit_metric_expr = None
         if timeseries_limit_metric:
             timeseries_limit_metric_expr = \
                 timeseries_limit_metric.sqla_col
+        if timeseries_order_metric:
+            timeseries_order_metric_expr = \
+                timeseries_order_metric.sqla_col
         if metrics_exprs:
             main_metric_expr = metrics_exprs[0]
         else:
@@ -440,7 +446,6 @@ class SqlaTable(Model, BaseDatasource):
             for s in columns:
                 select_exprs.append(cols[s].sqla_col)
             metrics_exprs = []
-
         if granularity:
             dttm_col = cols[granularity]
             time_grain = extras.get('time_grain_sqla')
@@ -460,6 +465,10 @@ class SqlaTable(Model, BaseDatasource):
             time_filters.append(dttm_col.get_time_filter(from_dttm, to_dttm))
 
         select_exprs += metrics_exprs
+        select_names = map(lambda x: x.name, select_exprs)
+        if timeseries_order_metric and \
+           timeseries_order_metric_expr.name not in select_names:
+            select_exprs.append(timeseries_order_metric_expr)
         qry = sa.select(select_exprs)
 
         # Supporting arbitrary SQL statements in place of tables
@@ -528,7 +537,9 @@ class SqlaTable(Model, BaseDatasource):
         else:
             qry = qry.where(and_(*where_clause_and))
         qry = qry.having(and_(*having_clause_and))
-        if groupby:
+        if timeseries_order_metric:
+            qry = qry.order_by(desc(timeseries_order_metric_expr))
+        elif groupby:
             qry = qry.order_by(desc(main_metric_expr))
         elif orderby:
             for col, ascending in orderby:

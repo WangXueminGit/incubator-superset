@@ -37,6 +37,12 @@ export const sections = {
       controlSetRows: [
         ['metrics'],
         ['groupby'],
+        ['timeseries_order_metric']
+      ],
+    },
+    {
+      label: 'Time Series Selection',
+      controlSetRows: [
         ['limit', 'timeseries_limit_metric'],
       ],
     },
@@ -126,6 +132,7 @@ const visTypes = {
     requiresTime: true,
     controlPanelSections: [
       sections.NVD3TimeSeries[0],
+      sections.NVD3TimeSeries[1],
       {
         label: 'Chart Options',
         controlSetRows: [
@@ -142,7 +149,7 @@ const visTypes = {
           ['y_range_min'],
         ],
       },
-      sections.NVD3TimeSeries[1],
+      sections.NVD3TimeSeries[2],
     ],
   },
 
@@ -203,6 +210,7 @@ const visTypes = {
     requiresTime: true,
     controlPanelSections: [
       sections.NVD3TimeSeries[0],
+      sections.NVD3TimeSeries[1],
       {
         label: 'Chart Options',
         controlSetRows: [
@@ -218,7 +226,7 @@ const visTypes = {
           ['reduce_x_ticks', 'show_controls'],
         ],
       },
-      sections.NVD3TimeSeries[1],
+      sections.NVD3TimeSeries[2],
     ],
   },
 
@@ -228,6 +236,7 @@ const visTypes = {
     controlPanelSections: [
       sections.NVD3TimeSeries[0],
       sections.NVD3TimeSeries[1],
+      sections.NVD3TimeSeries[2],
     ],
   },
 
@@ -236,6 +245,7 @@ const visTypes = {
     requiresTime: true,
     controlPanelSections: [
       sections.NVD3TimeSeries[0],
+      sections.NVD3TimeSeries[1],
       {
         label: 'Chart Options',
         controlSetRows: [
@@ -247,7 +257,7 @@ const visTypes = {
           ['line_interpolation', 'stacked_style'],
         ],
       },
-      sections.NVD3TimeSeries[1],
+      sections.NVD3TimeSeries[2],
     ],
   },
 
@@ -749,6 +759,7 @@ const visTypes = {
     label: 'Horizon',
     controlPanelSections: [
       sections.NVD3TimeSeries[0],
+      sections.NVD3TimeSeries[1],
       {
         label: 'Chart Options',
         controlSetRows: [

@@ -624,6 +624,16 @@ export const controls = {
     }),
   },
 
+  timeseries_order_metric: {
+    type: 'SelectControl',
+    label: 'Sort By',
+    default: null,
+    description: 'Metric used to sort the overall time series',
+    mapStateToProps: state => ({
+      choices: (state.datasource) ? state.datasource.metrics_combo : [],
+    }),
+  },
+
   rolling_type: {
     type: 'SelectControl',
     label: 'Rolling',

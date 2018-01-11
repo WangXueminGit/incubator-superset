@@ -165,6 +165,7 @@ class BaseViz(object):
         )
         limit = int(form_data.get("limit") or 0)
         timeseries_limit_metric = form_data.get("timeseries_limit_metric")
+        timeseries_order_metric = form_data.get("timeseries_order_metric")
         row_limit = int(
             form_data.get("row_limit") or config.get("ROW_LIMIT"))
 
@@ -219,6 +220,7 @@ class BaseViz(object):
             'row_limit': row_limit,
             'filter': filters,
             'timeseries_limit': limit,
+            'timeseries_order_metric': timeseries_order_metric,
             'extras': extras,
             'timeseries_limit_metric': timeseries_limit_metric,
             'form_data': form_data,
@@ -975,6 +977,12 @@ class NVD3TimeSeriesViz(NVD3Viz):
         if fd.get("granularity") == "all":
             raise Exception(_("Pick a time granularity for your time series"))
 
+        if fd.get('timeseries_order_metric'):
+            df_sort = df.pivot_table(
+                index=DTTM_ALIAS,
+                columns=fd.get('groupby'),
+                values=[fd.get('timeseries_order_metric')])
+
         if not aggregate:
             df = df.pivot_table(
                 index=DTTM_ALIAS,
@@ -999,8 +1007,19 @@ class NVD3TimeSeriesViz(NVD3Viz):
                 df = df.fillna(0)
 
         if self.sort_series:
-            dfs = df.sum()
-            dfs.sort_values(ascending=False, inplace=True)
+            if fd.get('timeseries_order_metric'):
+                df_sort = df_sort.sum().rename({
+                    fd.get('timeseries_order_metric'): 'SORT_COLUMN'
+                })
+                df_sort.sort_values(ascending=False, inplace=True)
+                dfs = df_sort
+                for metric in fd.get('metrics'):
+                    dfs = dfs.append(
+                        df_sort.rename({'SORT_COLUMN': metric})
+                    )
+                dfs = dfs[fd.get('metrics')]
+            else:
+                dfs = df.sum()
             df = df[dfs.index]
 
         if fd.get("contribution"):
