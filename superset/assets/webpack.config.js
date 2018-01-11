@@ -126,6 +126,9 @@ const config = {
     }),
     new webpack.IgnorePlugin(/cptable/),
   ],
+  watchOptions: {
+    poll: true
+  }
 };
 if (process.env.NODE_ENV === 'production') {
   config.plugins.push(new webpack.optimize.UglifyJsPlugin());
