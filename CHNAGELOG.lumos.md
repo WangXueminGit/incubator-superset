@@ -1,5 +1,11 @@
 ## Change Log by Shopee Lumos
 
+### 2018.1.1
+
+- [59e96092](https://git.garena.com/shopee-data/lumos-superset/commit/59e96092f03f9e76895a36fe5cf2a0ed7990f6f9) Implement the feature of showing gradient color in progress bar.
+- [03e8cbd2](https://git.garena.com/shopee-data/lumos-superset/commit/03e8cbd2862bb84a982c1fe3c3b5abd9230cadd5) Implement the feature of excluding the rows in progress bar.
+- [4f989058](https://git.garena.com/shopee-data/lumos-superset/commit/4f989058e9382ae1895d6aa48bef1d60694b8e9f) Fix the bug of hiding null value on line chart.
+
 ### 2017.12.3
 
 - [de21b690](https://git.garena.com/shopee-data/lumos-superset/commit/de21b690b414bcce1951c2f988ada54867d43a17) Enable superset worker for sql lab.
