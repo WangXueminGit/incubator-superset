@@ -136,6 +136,7 @@ const visTypes = {
           ['line_interpolation'],
           ['x_axis_format', 'y_axis_format'],
           ['x_axis_label', 'y_axis_label'],
+          ['x_axis_customize_tick_function', 'x_axis_domain_type'],
           ['show_point_value'],
           ['y_range_max'],
           ['y_range_min'],

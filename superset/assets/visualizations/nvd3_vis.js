@@ -117,6 +117,9 @@ function nvd3Vis(slice, payload) {
   let colorKey = 'key';
   const isExplore = $('#explore-container').length === 1;
 
+  let startTime = payload.query_obj['from_dttm'];
+  let endTime = payload.query_obj['to_dttm'];
+
   slice.container.html('');
   slice.clearError();
 
@@ -134,6 +137,59 @@ function nvd3Vis(slice, payload) {
     stretchMargin = Math.ceil(pixelsPerCharX * maxLabelSize);
     return stretchMargin;
   }
+
+  function customYearlyTickFunc (t0, t1, step) {
+    var startTime = new Date(t0),
+        endTime= new Date(t1), times = [];
+    endTime.setUTCFullYear(endTime.getUTCFullYear());
+    startTime.setUTCFullYear(startTime.getUTCFullYear());
+    while (startTime <= endTime) {
+      times.push(new Date(startTime));
+      startTime.setUTCFullYear(startTime.getUTCFullYear() + 1);
+    }
+    return times;
+  }
+
+  function customMonthlyTickFunc (t0, t1, step) {
+    var startTime = new Date(t0),
+        endTime= new Date(t1), times = [];
+    endTime.setUTCMonth(endTime.getUTCMonth());
+    startTime.setUTCMonth(startTime.getUTCMonth());
+    while (startTime <= endTime) {
+      times.push(new Date(startTime));
+      startTime.setUTCMonth(startTime.getUTCMonth() + 1);
+    }
+    return times;
+  }
+
+  function customWeeklyTickFunc (t0, t1, step) {
+    var startTime = new Date(t0),
+        endTime= new Date(t1), times = [];
+    endTime.setUTCDate(endTime.getUTCDate());
+    startTime.setUTCDate(startTime.getUTCDate());
+    while (startTime <= endTime) {
+      times.push(new Date(startTime));
+      startTime.setUTCDate(startTime.getUTCDate() + 7);
+    }
+    return times;
+  }
+
+  function customDailyTickFunc (t0, t1, step) {
+    var startTime = new Date(t0),
+        endTime= new Date(t1), times = [];
+    endTime.setUTCDate(endTime.getUTCDate());
+    startTime.setUTCDate(startTime.getUTCDate());
+    while (startTime <= endTime) {
+      times.push(new Date(startTime));
+      startTime.setUTCDate(startTime.getUTCDate() + 1);
+    }
+    return times;
+  }
+
+  const customTickFuncDict = {"customYearlyTickFunc": customYearlyTickFunc,
+                              "customMonthlyTickFunc": customMonthlyTickFunc,
+                              "customWeeklyTickFunc": customWeeklyTickFunc,
+                              "customDailyTickFunc": customDailyTickFunc};
 
   let width = slice.width();
   const fd = slice.formData;
@@ -175,11 +231,16 @@ function nvd3Vis(slice, payload) {
         }
         // To alter the tooltip header
         // chart.interactiveLayer.tooltip.headerFormatter(function(){return '';});
-        chart.xScale(d3.time.scale.utc());
+        chart.xScale(d3.time.scale.utc().clamp(true));
         chart.interpolate(fd.line_interpolation);
         chart.xAxis
         .showMaxMin(fd.x_axis_showminmax)
         .staggerLabels(false);
+
+        if (fd.x_axis_customize_tick_function !== 'auto') {
+          var customFunc = fd.x_axis_customize_tick_function;
+          chart.xAxis.ticks(customTickFuncDict[customFunc]);
+        }
         break;
 
       case 'simpleline':
@@ -416,6 +477,11 @@ function nvd3Vis(slice, payload) {
       });
       chart.yDomain([min, max]);
     }
+
+    if (fd.x_axis_domain_type !== 'auto') {
+      chart.xDomain([new Date(startTime), new Date(endTime)]);
+    }
+
     if (fd.x_log_scale) {
       chart.xScale(d3.scale.log());
     }

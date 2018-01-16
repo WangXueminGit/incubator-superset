@@ -52,6 +52,7 @@ class BaseViz(object):
         self.form_data = form_data
 
         self.query = ""
+        self.original_query_obj = None
         self.token = self.form_data.get(
             'token', 'token_' + uuid.uuid4().hex[:8])
         self.metrics = self.form_data.get('metrics') or []
@@ -87,6 +88,7 @@ class BaseViz(object):
         """Returns a pandas dataframe based on the query object"""
         if not query_obj:
             query_obj = self.query_obj()
+            self.original_query_obj = query_obj
 
         ori_from_dttm = query_obj['from_dttm']
         granularity = self.form_data.get("granularity") or self.form_data.get("granularity_sqla")
@@ -291,6 +293,7 @@ class BaseViz(object):
                 'query': self.query,
                 'status': self.status,
                 'stacktrace': stacktrace,
+                'query_obj': self.original_query_obj,
             }
             payload['cached_dttm'] = datetime.utcnow().isoformat().split('.')[0]
             logging.info("Caching for the next {} seconds".format(

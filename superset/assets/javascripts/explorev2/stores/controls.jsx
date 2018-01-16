@@ -27,6 +27,19 @@ export const TIME_STAMP_OPTIONS = [
   ['%H:%M:%S', '%H:%M:%S | 01:32:10'],
 ];
 
+const X_AXIS_TICK_FUNCTIONS = [
+  ['auto', 'auto'],
+  ['customDailyTickFunc', 'daily'],
+  ['customWeeklyTickFunc', 'weekly'],
+  ['customMonthlyTickFunc', 'monthly'],
+  ['customYearlyTickFunc', 'yearly'],
+];
+
+const X_AXIS_DOMAIN_TYPE = [
+  ['auto', 'auto'],
+  ['defined', 'defined in since and until section'],
+];
+
 export const controls = {
   datasource: {
     type: 'SelectControl',
@@ -833,6 +846,26 @@ export const controls = {
     default: '.3s',
     choices: D3_TIME_FORMAT_OPTIONS,
     description: D3_FORMAT_DOCS,
+  },
+
+  x_axis_customize_tick_function: {
+    type: 'SelectControl',
+    freeForm: false,
+    label: 'X axis interval type',
+    renderTrigger: true,
+    default: 'auto',
+    choices: X_AXIS_TICK_FUNCTIONS,
+    description: 'Choose a type of date in x-axis',
+  },
+
+  x_axis_domain_type: {
+    type: 'SelectControl',
+    freeForm: false,
+    label: 'X axis domain type',
+    renderTrigger: true,
+    default: 'auto',
+    choices: X_AXIS_DOMAIN_TYPE,
+    description: 'Choose a type of date in x-axis',
   },
 
   y_axis_2_format: {
