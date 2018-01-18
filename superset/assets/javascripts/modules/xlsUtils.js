@@ -186,7 +186,7 @@ function freezeSheets(workbook, freezeRows, freezeColumns){
 export default function downloadTable(type, title, tableDf, freezeRows, freezeColumns) {
   const newDf = removeHiddenRows(tableDf)
   const workbook = XLSX.utils.table_to_book(newDf, { raw: true });
-  const formattedWb = formatTable(workbook, tableDf);
+  const formattedWb = formatTable(workbook, newDf);
   const frozenWb =  (freezeRows || freezeColumns) ?
     freezeSheets(formattedWb, freezeRows, freezeColumns) : formattedWb
   const wopts = { bookType: type, bookSST: false, type: 'binary' };
