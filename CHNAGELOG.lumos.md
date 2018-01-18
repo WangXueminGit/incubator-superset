@@ -1,5 +1,15 @@
 ## Change Log by Shopee Lumos
 
+### 2018.1.2
+
+- [49160af3](https://git.garena.com/shopee-data/lumos-superset/commit/49160af3312f60771944c14bd4e2fba43b7f62e6) Implement the UI/UX reformation for SqlLab.
+- [01c7a6da](https://git.garena.com/shopee-data/lumos-superset/commit/01c7a6daa3cdd2739e0420298e3213be0feffa45) Enabled xls download feature for tables
+- [c99441e8](https://git.garena.com/shopee-data/lumos-superset/commit/c99441e816cba8e52969de331d91dfa85ef92f36) Add two time presets in the since and until part.
+- [f548e125](https://git.garena.com/shopee-data/lumos-superset/commit/f548e12548b672e8c21953665ccb61353eea2ecf) Implement the feature of showing scrollbar when necessary.
+- [2f6ca888](https://git.garena.com/shopee-data/lumos-superset/commit/2f6ca8881efdb13bab8656d650ffa694af390fac) Revert "Added scrollbar to dashboard"
+- [e9c80465](https://git.garena.com/shopee-data/lumos-superset/commit/e9c804650dd6f0cf76a4194255f1a9a59b3d6899) Hotfix to change the nav bar label and icon.
+- [4cd632d4](https://git.garena.com/shopee-data/lumos-superset/commit/4cd632d4e56b63a742f154a19ca34bf1440040af) Fix the bug of webpack can not detect file change.
+
 ### 2018.1.1
 
 - [59e96092](https://git.garena.com/shopee-data/lumos-superset/commit/59e96092f03f9e76895a36fe5cf2a0ed7990f6f9) Implement the feature of showing gradient color in progress bar.
