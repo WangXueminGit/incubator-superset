@@ -155,7 +155,7 @@ export default class ColumnControl extends React.Component {
   }
   getSelectedColumnsOptions(index) {
     const metrics = this.getCombinedMetric();
-    let subOptions = this.props.columns;
+    let subOptions = this.props.columns || [];
     for (let i = 0; i <= index; i++){
       subOptions = subOptions.filter((v) => (v[i] === metrics[i]));
     }
@@ -361,7 +361,7 @@ export default class ColumnControl extends React.Component {
           <div className="panel-heading">
             <SelectControl
               name="column_focus"
-              choices={this.getUnique(this.props.columns.map(
+              choices={this.getUnique((this.props.columns || []).map(
                   (v, _) => (typeof(v) == 'string' ? v : v[0])
                 ))}
               onChange={this.onSelectedMetricChange.bind(this)}
