@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2018.1.2-1
+
+- [7171cc32](https://git.garena.com/shopee-data/lumos-superset/commit/7171cc326927f8b5afc0ead46b241d557e67182f) Fixed Excel file being wrongly formatted when rows are hidden
+
 ### 2018.1.2
 
 - [49160af3](https://git.garena.com/shopee-data/lumos-superset/commit/49160af3312f60771944c14bd4e2fba43b7f62e6) Implement the UI/UX reformation for SqlLab.
