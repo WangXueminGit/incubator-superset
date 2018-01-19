@@ -151,13 +151,16 @@ export default class ColumnControl extends React.Component {
     }
   }
   getUnique(array) {
-    return [...(new Set(array))]
+    return [...(new Set(array)), '* (WILDCARD)']
   }
   getSelectedColumnsOptions(index) {
     const metrics = this.getCombinedMetric();
     let subOptions = this.props.columns || [];
     for (let i = 0; i <= index; i++){
-      subOptions = subOptions.filter((v) => (v[i] === metrics[i]));
+      subOptions = subOptions.filter((v) => (
+        metrics[i] !== '* (WILDCARD)' ?
+          v[i] === metrics[i] : true
+      ));
     }
     const uniqueOptions = new Set();
     return this.getUnique(subOptions.map((v) => (v[index + 1])))
@@ -361,7 +364,7 @@ export default class ColumnControl extends React.Component {
           <div className="panel-heading">
             <SelectControl
               name="column_focus"
-              choices={this.getUnique((this.props.columns || []).map(
+              choices={this.getUnique((this.props.columns || ['* (WILDCARD)']).map(
                   (v, _) => (typeof(v) == 'string' ? v : v[0])
                 ))}
               onChange={this.onSelectedMetricChange.bind(this)}

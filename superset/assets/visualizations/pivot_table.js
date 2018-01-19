@@ -132,16 +132,23 @@ module.exports = function(slice, payload) {
   }
   // Check if column is present in column options
   var colInConfig = function(column, optionsName) {
-    var parsedOptions = Object.keys(optionsName).map((v, i) => (v.split(",")))
+    var parsedOptions = Object.keys(optionsName).map((v, _) => (v.split(",")))
     var finalOptions = parsedOptions
       .filter(
-        (v1, index) =>
-          (v1.every((v2, i2) =>
-            (v2 === column[i2])
+        (option, _) =>
+          (option.every((value, index) =>
+            (value === '* (WILDCARD)' || value === column[index])
           )
         )
       )
     return finalOptions;
+  }
+  var getColPriority = function(optionName) {
+    return optionName.map(
+      (v, i) => ((v === '* (WILDCARD)' ? 0.5 : 1) * 0.1**i)
+    ).reduce(
+      (x, y) => (x + y)
+    )
   }
   // The function accepts option configuration name and
   // return corresponding style class name
@@ -153,12 +160,12 @@ module.exports = function(slice, payload) {
       let currentPriority = 0;
       let currentStyle = null;
       validOptions.forEach((optionName, _) => {
-        const columnPriority = optionName.length;
+        const optionPriority = getColPriority(optionName);
         options.forEach((option, i) => {
           if (optionsName[optionName] == option
-              && columnPriority > currentPriority) {
+              && optionPriority > currentPriority) {
             currentStyle = styleClassName[i];
-            currentPriority = columnPriority;
+            currentPriority = optionPriority;
           }
         })
       })
@@ -169,12 +176,10 @@ module.exports = function(slice, payload) {
   var getFormattingForColumn = function(column, formatting) {
     const validFormattingOptions = colInConfig(column, formatting)
     if (validFormattingOptions.length >= 1) {
-      const formattingPriority = validFormattingOptions.map((v, _) => (v.length))
+      const formattingPriority = validFormattingOptions.map((v, _) => (getColPriority(v)))
       const chosenPriority = Math.max(...formattingPriority)
       const chosenIndex = formattingPriority.indexOf(chosenPriority)
       const chosenOption = validFormattingOptions[chosenIndex]
-        .slice(0, chosenPriority)
-        .toString()
       return formatting[chosenOption]
     }
   }
