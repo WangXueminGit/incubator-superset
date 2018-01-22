@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2018.1.2-2
+
+- [9f60ce34](https://git.garena.com/shopee-data/lumos-superset/commit/9f60ce3471df71a99cb161c05962663ec2ed0d27) Hotfix for showing progress bar in table.
+
 ### 2018.1.2-1
 
 - [7171cc32](https://git.garena.com/shopee-data/lumos-superset/commit/7171cc326927f8b5afc0ead46b241d557e67182f) Fixed Excel file being wrongly formatted when rows are hidden
