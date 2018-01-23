@@ -9,14 +9,14 @@ from flask_login import current_user
 from flask_appbuilder import CompactCRUDMixin, expose
 from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
-from numpy import genfromtxt
+from numpy import nan
+from pandas import read_csv
 import sqlalchemy as sa
 
 from flask_babel import lazy_gettext as _
 from flask_babel import gettext as __
 
 from flask_appbuilder.urltools import get_filter_args
-
 from superset import appbuilder, db, utils, security, sm, config
 from superset.utils import has_access
 from superset.views.base import (
@@ -589,8 +589,16 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         # Check first row
         if 'csv' in request.files:
             f = request.files['csv']
-            data = genfromtxt(f, dtype=None, delimiter=',', skip_header=0, converters={0: lambda s: str(s)})
-
+            df = read_csv(
+                f.stream,
+                dtype=None,
+                delimiter=',',
+                quotechar='"',
+                header=None
+            )
+            data = df \
+                .replace({nan: None}) \
+                .as_matrix()
             data_array = data.tolist()
             available_columns = [column.column_name for column in table.columns]
             input_columns = data_array.pop(0)
@@ -611,10 +619,14 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
 
             for row in data_array:
                 try:
-                    data_string = ','.join(["'{}'".format(column.replace("'", "''")) for column in row])
+                    data_string = ','.join([
+                        "'{}'".format(str(column).replace("'", "''"))
+                        if column else 'null'
+                        for column in row
+                    ])
                     schema = table.schema if table.schema else 'public'
                     sql = "INSERT INTO {}.{} ({}) VALUES ({})".format(schema, table.table_name, columns, data_string)
-                    connection.execute(sql)
+                    connection.execute(sa.text(sql))
                 except Exception as e:
                     transaction.rollback()
                     connection.close()
