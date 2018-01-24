@@ -1,4 +1,4 @@
-FROM python:2
+FROM python:2.7.13
 
 MAINTAINER Xiao Hanyu <hanyu.xiao@shopeemobile.com>
 
