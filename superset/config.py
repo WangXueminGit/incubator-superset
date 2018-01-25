@@ -312,7 +312,7 @@ HTTP_HEADERS = {}
 DEFAULT_DB_ID = None
 
 # Timeout duration for SQL Lab synchronous queries
-SQLLAB_TIMEOUT = 30
+SQLLAB_TIMEOUT = 300
 
 # SQLLAB_DEFAULT_DBID
 SQLLAB_DEFAULT_DBID = None
