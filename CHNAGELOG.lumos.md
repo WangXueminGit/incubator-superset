@@ -1,5 +1,15 @@
 ## Change Log by Shopee Lumos
 
+### 2018.1.3
+
+- [5bd942ff](https://git.garena.com/shopee-data/lumos-superset/commit/5bd942ff6e158048b1865c4181f9786bcd0e964e) Updated SQL Lab timeout to 300s from 30s
+- [eaa68074](https://git.garena.com/shopee-data/lumos-superset/commit/eaa68074b65d4cbeb96802cf4da8dd2b0ae67678) Added wildcard filtering for configuration option.
+- [0f24cadf](https://git.garena.com/shopee-data/lumos-superset/commit/0f24cadfba8d845bc2abb3b0d8b4b9a960bd974e) Fix sqllab-created tables incompatbility with Column Configuration Control
+- [0b7d41ad](https://git.garena.com/shopee-data/lumos-superset/commit/0b7d41adb3b4b094067ba1984ab81547bf53d782) Fix uploading csv to table failing csv file contains ',' inside a quotation
+- [0ab1fdd3](https://git.garena.com/shopee-data/lumos-superset/commit/0ab1fdd3d22f995ffacd87d8399120a3061126c3) Implement feature of customizing x axis.
+- [71978f60](https://git.garena.com/shopee-data/lumos-superset/commit/71978f60794378315abbee7b153a4c04d29db14e) Import a script from another branch for docker init.
+- [fba80db3](https://git.garena.com/shopee-data/lumos-superset/commit/fba80db35f1d3e9475207c9e3c22ae3d030a9661) Stick python 2 version to 2.7.13.
+
 ### 2018.1.2-2
 
 - [9f60ce34](https://git.garena.com/shopee-data/lumos-superset/commit/9f60ce3471df71a99cb161c05962663ec2ed0d27) Hotfix for showing progress bar in table.
