@@ -237,7 +237,8 @@ function nvd3Vis(slice, payload) {
         .showMaxMin(fd.x_axis_showminmax)
         .staggerLabels(false);
 
-        if (fd.x_axis_customize_tick_function !== 'auto') {
+        if (fd.x_axis_customize_tick_function &&
+            fd.x_axis_customize_tick_function !== 'auto') {
           var customFunc = fd.x_axis_customize_tick_function;
           chart.xAxis.ticks(customTickFuncDict[customFunc]);
         }
@@ -478,7 +479,7 @@ function nvd3Vis(slice, payload) {
       chart.yDomain([min, max]);
     }
 
-    if (fd.x_axis_domain_type !== 'auto') {
+    if (fd.x_axis_domain_type && fd.x_axis_domain_type !== 'auto') {
       chart.xDomain([new Date(startTime), new Date(endTime)]);
     }
 
