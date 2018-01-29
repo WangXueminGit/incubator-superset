@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2018.1.3-1
+
+- [6e8bd5a3](https://git.garena.com/shopee-data/lumos-superset/commit/6e8bd5a3c7fd029734609b8eb4c28accbe9ad430) Hotfix of making nvd3 charts work well.
+
 ### 2018.1.3
 
 - [5bd942ff](https://git.garena.com/shopee-data/lumos-superset/commit/5bd942ff6e158048b1865c4181f9786bcd0e964e) Updated SQL Lab timeout to 300s from 30s
