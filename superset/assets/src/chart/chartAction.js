@@ -3,6 +3,7 @@ import { requiresQuery, ANNOTATION_SOURCE_TYPES } from '../modules/AnnotationTyp
 import { Logger, LOG_ACTIONS_LOAD_CHART } from '../logger';
 import { COMMON_ERR_MESSAGES } from '../common';
 import { t } from '../locales';
+import { setFetchColumns } from '../explore/actions/exploreActions';
 
 const $ = (window.$ = require('jquery'));
 
@@ -156,7 +157,9 @@ export function runQuery(formData, force = false, timeout = 60, key) {
           has_extra_filters: formData.extra_filters && formData.extra_filters.length > 0,
           viz_type: formData.viz_type,
         });
-        return dispatch(chartUpdateSucceeded(queryResponse, key));
+        return dispatch(chartUpdateSucceeded(queryResponse, key)) &&
+            // send the columns in queryresponse to the control
+            dispatch(setFetchColumns(queryResponse, key));
       })
       .catch((err) => {
         Logger.append(LOG_ACTIONS_LOAD_CHART, {
