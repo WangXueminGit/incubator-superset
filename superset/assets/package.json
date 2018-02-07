@@ -67,6 +67,7 @@
     "mustache": "^2.2.1",
     "nvd3": "1.8.5",
     "prop-types": "^15.5.8",
+    "rc-slider": "^8.6.0",
     "react": "^15.5.1",
     "react-ace": "^4.1.5",
     "react-addons-css-transition-group": "^15.4.2",

@@ -504,6 +504,10 @@ function nvd3Vis(slice, payload) {
       chart.xAxis.rotateLabels(45);
     }
 
+    if (fd.rotate_x_lable && fd.rotate_x_lable !== 0) {
+      chart.xAxis.rotateLabels(fd.rotate_x_lable);
+    }
+
     if (chart.hasOwnProperty('x2Axis')) {
       chart.x2Axis.tickFormat(xAxisFormatter);
       height += 30;
@@ -690,7 +694,8 @@ function nvd3Vis(slice, payload) {
       // - measure the width or height of the labels
       // ---- (x axis labels are rotated 45 degrees so we use height),
       // - adjust margins based on these measures and render again
-      if (isTimeSeries && vizType !== 'bar') {
+      if ((isTimeSeries || (fd.rotate_x_lable && fd.rotate_x_lable != 0))
+        && vizType !== 'bar') {
         const chartMargins = {
           bottom: maxXAxisLabelHeight + marginPad,
           right: maxXAxisLabelHeight + marginPad,

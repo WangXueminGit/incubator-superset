@@ -9,6 +9,7 @@ import RowControl from './controls/RowControl';
 import FilterControl from './controls/FilterControl';
 import HiddenControl from './controls/HiddenControl';
 import SelectControl from './controls/SelectControl';
+import SliderControl from './controls/SliderControl';
 import TextAreaControl from './controls/TextAreaControl';
 import TextControl from './controls/TextControl';
 import ColorPickerControl from './controls/ColorPickerControl';
@@ -21,6 +22,7 @@ const controlMap = {
   FilterControl,
   HiddenControl,
   SelectControl,
+  SliderControl,
   TextAreaControl,
   TextControl,
   ColorPickerControl,

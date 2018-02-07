@@ -708,6 +708,12 @@ export const controls = {
     description: 'Show value of Y at point by default',
   },
 
+  rotate_x_lable: {
+    type: 'SliderControl',
+    label: 'rotate x lable',
+    renderTrigger: true,
+  },
+
   x_axis_class_range: {
     type: 'CheckboxControl',
     label: 'X Axis class value is upper bound?',

@@ -137,7 +137,7 @@ const visTypes = {
           ['x_axis_format', 'y_axis_format'],
           ['x_axis_label', 'y_axis_label'],
           ['x_axis_customize_tick_function', 'x_axis_domain_type'],
-          ['show_point_value'],
+          ['show_point_value', 'rotate_x_lable'],
           ['y_range_max'],
           ['y_range_min'],
         ],
