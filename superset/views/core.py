@@ -2111,6 +2111,21 @@ class Superset(BaseSupersetView):
         return Response(status=201)
 
     @has_access
+    @expose("/sqllab_datasource/<datasource_name>/", methods=['GET'])
+    @log_this
+    def sqllab_datasource(self, datasource_name):
+        SqlaTable = ConnectorRegistry.sources['table']
+        table = (
+            db.session.query(SqlaTable)
+            .filter_by(table_name=datasource_name)
+            .first()
+        )
+        if table:
+            return json_success(json.dumps("True"))
+        else:
+            return json_success(json.dumps("False"))
+
+    @has_access
     @expose("/sqllab_viz/", methods=['POST'])
     @log_this
     def sqllab_viz(self):

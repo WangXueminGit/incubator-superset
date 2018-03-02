@@ -35,6 +35,7 @@ class VisualizeModal extends React.PureComponent {
       datasourceName: this.datasourceName(),
       columns: {},
       hints: [],
+      hintOfDatasourceName: [],
     };
   }
   componentDidMount() {
@@ -158,8 +159,31 @@ class VisualizeModal extends React.PureComponent {
       error: () => notify('An error occurred while creating the data source'),
     });
   }
+  checkDatasourceOverwrite() {
+    const hintOfDatasourceName = [];
+    if (this.state.datasourceName.length > 0) {
+      $.ajax({
+        type: 'GET',
+        url: `/superset/sqllab_datasource/${this.state.datasourceName}/`,
+        success: (data) => {
+          const response = data;
+          if (response === 'True') {
+            hintOfDatasourceName.push('Datasource name already exists, please change it');
+            this.setState({ hintOfDatasourceName });
+          }
+          else if (response === 'False') {
+            this.setState({ hintOfDatasourceName }, this.visualize);
+          }
+        },
+        error: () => {
+          notify.info('An error occurred while querying the data source table');
+        },
+        dataType: 'json',
+      });
+    }
+  }
   changeDatasourceName(event) {
-    this.setState({ datasourceName: event.target.value });
+    this.setState({ datasourceName: event.target.value, hintOfDatasourceName: [] });
     this.validate();
   }
   changeCheckbox(attr, columnName, event) {
@@ -257,7 +281,7 @@ class VisualizeModal extends React.PureComponent {
         />
       ),
     }));
-    const alerts = this.state.hints.map((hint, i) => (
+    const alerts = this.state.hints.concat(this.state.hintOfDatasourceName).map((hint, i) => (
       <Alert bsStyle="warning" key={i}>{hint}</Alert>
     ));
     const modal = (
@@ -299,9 +323,9 @@ class VisualizeModal extends React.PureComponent {
               data={tableData}
             />
             <Button
-              onClick={this.visualize.bind(this)}
+              onClick={this.checkDatasourceOverwrite.bind(this, true)}
               bsStyle="primary"
-              disabled={(this.state.hints.length > 0)}
+              disabled={(this.state.hints.length > 0) || (this.state.hintOfDatasourceName.length > 0)}
             >
               Visualize
             </Button>
