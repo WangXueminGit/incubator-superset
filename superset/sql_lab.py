@@ -159,6 +159,11 @@ def get_sql_results(self, query_id, return_results=True, store_results=False):
     cdf = dataframe.SupersetDataFrame(pd.DataFrame(
         list(data), columns=column_names))
 
+    payload_columns = cdf.columns if cdf.columns else []
+    if engine.name == 'presto':
+        for idx in range(len(payload_columns)):
+            payload_columns[idx].update(cursor._columns[idx])
+
     query.rows = cdf.size
     query.progress = 100
     query.status = QueryStatus.SUCCESS
@@ -178,7 +183,7 @@ def get_sql_results(self, query_id, return_results=True, store_results=False):
         'query_id': query.id,
         'status': query.status,
         'data': cdf.data if cdf.data else [],
-        'columns': cdf.columns if cdf.columns else [],
+        'columns': payload_columns,
         'query': query.to_dict(),
     }
     payload = json.dumps(payload, default=utils.json_iso_dttm_ser)
