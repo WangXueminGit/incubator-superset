@@ -11,7 +11,7 @@ import pandas as pd
 import pickle
 import re
 import requests
-import StringIO
+import io
 import time
 import traceback
 import zipfile
@@ -620,7 +620,7 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
         filters = json.loads(request.args.get('filters', "{}"))
         dashboard = db.session.query(models.Dashboard) \
             .filter_by(id=dashboard_id).one()
-        zsio = StringIO.StringIO()
+        zsio = io.BytesIO()
         zf = zipfile.ZipFile(zsio, "w", zipfile.ZIP_DEFLATED, False)
         for dashboard_slice in dashboard.data['slices']:
             slice_name = dashboard_slice['slice_name']
@@ -628,8 +628,8 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
         # Not all data sources are dataframes, thus these cannot be downloaded as csv
             if type(slice_viz.get_df()) == pd.DataFrame:
                 slice_csv = slice_viz.get_csv()
-                zf.writestr('%s.csv' % escape_filename(slice_name),
-                            BOM_UTF8 + slice_csv)
+                zf.write('%s.csv' % escape_filename(slice_name),
+                         BOM_UTF8 + slice_csv.encode())
         zf.close()
         zsio.seek(0)
         return Response(
@@ -1272,7 +1272,7 @@ class Superset(BaseSupersetView):
 
         if request.args.get("csv") == "true":
             return Response(
-                BOM_UTF8 + viz_obj.get_csv(),
+                BOM_UTF8 + viz_obj.get_csv().encode(),
                 status=200,
                 headers=generate_download_headers("csv"),
                 mimetype="application/csv")
@@ -1558,7 +1558,7 @@ class Superset(BaseSupersetView):
                     .has_access('schema_access', '[%s].[%s]' % (db_name, schema_name))
             return f
         schemas = database.all_schema_names()
-        filtered_schemas = filter(check_schema_perm(database.name), schemas)
+        filtered_schemas = list(filter(check_schema_perm(database.name), schemas))
         return Response(
             json.dumps({'schemas': filtered_schemas}),
             mimetype="application/json")
