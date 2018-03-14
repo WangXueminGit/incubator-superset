@@ -2160,32 +2160,54 @@ class Superset(BaseSupersetView):
                 is_hex=config.get('is_base16_encoded', False),
             )
             cols.append(col)
+            metrics.append(SqlMetric(
+                metric_name=column_name,
+                verbose_name=column_name,
+                metric_type='default',
+                expression='"' + column_name + '"'
+            ))
             if config.get('is_count_distinct') :
                 metrics.append(SqlMetric(
-                    metric_name="count_distinct__{column_name}".format(**locals()),
+                    metric_name='count_distinct__' + column_name,
+                    verbose_name='count_distinct__' + column_name,
+                    metric_type='count_distinct',
                     expression="COUNT(DISTINCT {column_name})"
                     .format(**locals()),
                 ))
-            elif config.get('is_sum') :
+            if config.get('is_sum') :
                 metrics.append(SqlMetric(
-                    metric_name="sum__{column_name}".format(**locals()),
+                    metric_name='sum__' + column_name,
+                    verbose_name='sum__' + column_name,
+                    metric_type='sum',
                     expression="sum({column_name})".format(**locals()),
                 ))
-            elif config.get('is_min') :
+            if config.get('is_avg'):
                 metrics.append(SqlMetric(
-                    metric_name="min__{column_name}".format(**locals()),
+                    metric_name='avg__' + column_name,
+                    verbose_name='avg__' + column_name,
+                    metric_type='avg',
+                    expression="avg({column_name})".format(**locals())
+                ))
+            if config.get('is_min') :
+                metrics.append(SqlMetric(
+                    metric_name='min__' + column_name,
+                    verbose_name='min__' + column_name,
+                    metric_type='min',
                     expression="min({column_name})".format(**locals()),
                 ))
-            elif config.get('is_max') :
+            if config.get('is_max') :
                 metrics.append(SqlMetric(
-                    metric_name="max__{column_name}".format(**locals()),
+                    metric_name='max__' + column_name,
+                    verbose_name='max__' + column_name,
+                    metric_type='max',
                     expression="max({column_name})".format(**locals()),
                 ))
-        if not metrics:
-            metrics.append(SqlMetric(
-                metric_name="count".format(**locals()),
-                expression="count(*)".format(**locals()),
-            ))
+        metrics.append(SqlMetric(
+            metric_name='count',
+            verbose_name='COUNT(*)',
+            metric_type='count',
+            expression="COUNT(*)"
+        ))
         table.columns = cols
         table.metrics = metrics
         db.session.commit()
