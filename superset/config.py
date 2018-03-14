@@ -91,6 +91,9 @@ QUERY_SEARCH_LIMIT = 1000
 # Flask-WTF flag for CSRF
 WTF_CSRF_ENABLED = True
 
+# Flask-WTF timeout for CSRF. Default = 3600
+WTF_CSRF_TIME_LIMIT = 28800
+
 # Whether to run the web server in debug mode or not
 DEBUG = False
 FLASK_USE_RELOAD = True
