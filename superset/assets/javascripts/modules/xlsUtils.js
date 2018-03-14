@@ -112,8 +112,9 @@ function formatContent(refs, ws, tBody, rCount) {
     const rowClassList = tr.classList;
     const rowStyles = Object.values(rowClassList)
       .map(v => classToCellProps[v]);
-    for (let C = refs.s.c; C <= refs.e.c; ++C) {
-      const cellAddress = { c: C, r: R };
+    for (let C = 0; C <= tr.children.length - 1; ++C) {
+      const colOffset = refs.e.c - tr.children.length + 1;
+      const cellAddress = { c: C + colOffset, r: R };
       const cellReference = XLSX.utils.encode_cell(cellAddress);
       const cellClassList = tr.children[C].classList;
       const cellStyles = Object.values(cellClassList)
