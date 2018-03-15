@@ -10,11 +10,12 @@ from logging.handlers import TimedRotatingFileHandler
 import json
 import os
 
+from flask import g
 from flask import Flask, redirect, request
 from flask_appbuilder import SQLA, AppBuilder, IndexView
 from flask_appbuilder.baseviews import expose
 from flask_appbuilder.security.sqla.manager import SecurityManager
-from flask_appbuilder.security.views import AuthOAuthView as DefaultAuthOAuthView
+from flask_appbuilder.security.views import AuthOAuthView as DefaultAuthOAuthView, UserInfoEditView
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.contrib.fixers import ProxyFix
@@ -23,7 +24,6 @@ from superset.connectors.connector_registry import ConnectorRegistry
 from superset import utils, config  # noqa
 from superset.users_model import MyUser
 from superset.users_view import MyUserModelView
-
 
 APP_DIR = os.path.dirname(__file__)
 CONFIG_MODULE = os.environ.get('SUPERSET_CONFIG', 'superset.config')
@@ -108,6 +108,16 @@ class MyIndexView(IndexView):
     def index(self):
         return redirect('/superset/welcome')
 
+class MyUserInfoEditView(UserInfoEditView):
+    def form_get(self, form):
+        item = self.appbuilder.sm.get_user_by_id(g.user.id)
+        # fills the form generic solution
+        for key, value in  form.data.items():
+            if key == 'csrf_token': continue
+            form_field = getattr(form, key)
+            form_field.data = getattr(item, key)
+
+
 class AuthOAuthView(DefaultAuthOAuthView):
     # Forced redirect to Google Login
     @expose('/login/')
@@ -119,6 +129,8 @@ class CustomSecurityManager(SecurityManager):
     authoauthview = AuthOAuthView
     user_model = MyUser
     useroauthmodelview = MyUserModelView
+    userinfoeditview = MyUserInfoEditView
+
 
 appbuilder = AppBuilder(
     app, db.session,
