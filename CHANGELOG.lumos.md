@@ -1,5 +1,15 @@
 ## Change Log by Shopee Lumos
 
+### 2018.3.1
+
+- [200ceb48](https://git.garena.com/shopee-data/lumos-superset/commit/200ceb4816042c965b12232ab064cbc57b2db392) Fix presto-generated visualisation using invalid syntax for date comparison
+- [55614da8](https://git.garena.com/shopee-data/lumos-superset/commit/55614da817b60939473e21b07cc914cb82223abb) Fixed bug for user has no csrf token in profile > edit user
+- [f566a7b8](https://git.garena.com/shopee-data/lumos-superset/commit/f566a7b8135d547110549c220c3bab1c024c90ed) Added Function and Coverage Columns to User Data
+- [2886ab70](https://git.garena.com/shopee-data/lumos-superset/commit/2886ab70f401a4be894d291ab33e625dc7fdf4ec) Add timeout for CSRF token to 8 hours
+- [da615a47](https://git.garena.com/shopee-data/lumos-superset/commit/da615a47acf52c4fade97bb2592ab16fad927df3) Fix the bug of checking in datasource overwriting.
+- [9009d82a](https://git.garena.com/shopee-data/lumos-superset/commit/9009d82a149f64e1b7e95e959e9fc9324601bb14) change entrypoint to make sqllab run in a standalone container
+- [54c96bd5](https://git.garena.com/shopee-data/lumos-superset/commit/54c96bd5ea83e587451d102ad5efd1633eab2224) Typo fix...
+
 ### 2018.1.3-1
 
 - [6e8bd5a3](https://git.garena.com/shopee-data/lumos-superset/commit/6e8bd5a3c7fd029734609b8eb4c28accbe9ad430) Hotfix of making nvd3 charts work well.
