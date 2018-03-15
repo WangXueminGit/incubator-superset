@@ -21,6 +21,8 @@ from werkzeug.contrib.fixers import ProxyFix
 
 from superset.connectors.connector_registry import ConnectorRegistry
 from superset import utils, config  # noqa
+from superset.users_model import MyUser
+from superset.users_view import MyUserModelView
 
 
 APP_DIR = os.path.dirname(__file__)
@@ -106,7 +108,6 @@ class MyIndexView(IndexView):
     def index(self):
         return redirect('/superset/welcome')
 
-
 class AuthOAuthView(DefaultAuthOAuthView):
     # Forced redirect to Google Login
     @expose('/login/')
@@ -116,13 +117,15 @@ class AuthOAuthView(DefaultAuthOAuthView):
 
 class CustomSecurityManager(SecurityManager):
     authoauthview = AuthOAuthView
-
+    user_model = MyUser
+    useroauthmodelview = MyUserModelView
 
 appbuilder = AppBuilder(
     app, db.session,
     base_template='superset/base.html',
     indexview=MyIndexView,
-    security_manager_class=CustomSecurityManager or app.config.get("CUSTOM_SECURITY_MANAGER"))
+    security_manager_class=CustomSecurityManager
+)
 
 sm = appbuilder.sm
 
@@ -133,5 +136,7 @@ results_backend = app.config.get("RESULTS_BACKEND")
 module_datasource_map = app.config.get("DEFAULT_MODULE_DS_MAP")
 module_datasource_map.update(app.config.get("ADDITIONAL_MODULE_DS_MAP"))
 ConnectorRegistry.register_sources(module_datasource_map)
+
+sm.get_session.close()
 
 from superset import views  # noqa

@@ -10,6 +10,7 @@ from flask_appbuilder.security.sqla import models as ab_models
 from superset import conf, db, sm
 from superset.models import core as models
 from superset.connectors.connector_registry import ConnectorRegistry
+from superset.users_view import MyUserModelView
 
 
 READ_ONLY_MODEL_VIEWS = {
@@ -36,7 +37,7 @@ ADMIN_ONLY_VIEW_MENUS = {
     'ResetPasswordView',
     'RoleModelView',
     'Security',
-    'UserDBModelView',
+    'MyUserModelView',
 }
 
 ADMIN_ONLY_PERMISSIONS = {

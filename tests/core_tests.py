@@ -19,6 +19,7 @@ from superset.models import core as models
 from superset.models.sql_lab import Query
 from superset.views.core import DatabaseView
 from superset.connectors.sqla.models import SqlaTable
+from superset.users_view import MyUserModelView
 
 from .base_tests import SupersetTestCase
 
@@ -117,7 +118,7 @@ class CoreTests(SupersetTestCase):
             assert_func('ResetPasswordView', view_menus)
             assert_func('RoleModelView', view_menus)
             assert_func('Security', view_menus)
-            assert_func('UserDBModelView', view_menus)
+            assert_func('MyUserModelView', view_menus)
             assert_func('SQL Lab',
                         view_menus)
             assert_func('AccessRequestsModelView', view_menus)
@@ -647,4 +648,3 @@ class CoreTests(SupersetTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

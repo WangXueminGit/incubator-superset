@@ -59,7 +59,7 @@ SUPERSET_WEBSERVER_PORT = 8088
 
 SUPERSET_WEBSERVER_TIMEOUT = get_env_variable('SUPERSET_WEBSERVER_TIMEOUT',
                                               1800)
-CUSTOM_SECURITY_MANAGER = None
+#CUSTOM_SECURITY_MANAGER = None
 # ---------------------------------------------------------
 
 # Your App secret key

@@ -33,6 +33,7 @@ from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import TextAsFrom
 from sqlalchemy_utils import EncryptedType
+from superset.users_model import MyUser
 
 from superset import app, db, db_engine_specs, utils, sm
 from superset.connectors.connector_registry import ConnectorRegistry
@@ -328,8 +329,8 @@ class Dashboard(Model, AuditMixinNullable, ImportMixin):
     slug = Column(String(255), unique=True)
     slices = relationship(
         'Slice', secondary=dashboard_slices, backref='dashboards')
-    owners = relationship("User", secondary=dashboard_user)
-    guests = relationship("User", secondary=dashboard_guest)
+    owners = relationship("MyUser", secondary=dashboard_user)
+    guests = relationship("MyUser", secondary=dashboard_guest)
 
     export_fields = ('dashboard_title', 'position_json', 'json_metadata',
                      'description', 'css', 'slug')
