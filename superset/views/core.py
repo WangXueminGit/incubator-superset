@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from base64 import b64decode
 from datetime import datetime, timedelta
 import hashlib
 import json
@@ -2375,7 +2376,11 @@ class Superset(BaseSupersetView):
     def sql_json(self):
         """Runs arbitrary sql and returns and json"""
         async = request.form.get('runAsync') == 'true'
-        sql = request.form.get('sql')
+        sql_encoding = request.form.get('sql_encoding')
+        if sql_encoding == 'base64':
+            sql = b64decode(request.form.get('sql')).decode('utf-8')
+        else:
+            sql = request.form.get('sql')
         database_id = request.form.get('database_id')
         schema = request.form.get('schema') or None
 
