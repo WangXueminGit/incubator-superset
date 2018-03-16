@@ -103,7 +103,7 @@ class TableElement extends React.PureComponent {
     if (table.columns) {
       cols = table.columns.slice();
       if (this.state.sortColumns) {
-        cols.sort((a, b) => a.name.toUpperCase() > b.name.toUpperCase());
+        cols.sort((a, b) => a.name.toUpperCase().localeCompare(b.name.toUpperCase()));
       }
     }
     const metadata = (
