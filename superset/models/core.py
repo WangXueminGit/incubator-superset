@@ -104,7 +104,7 @@ class Slice(Model, AuditMixinNullable, ImportMixin):
     description = Column(Text)
     cache_timeout = Column(Integer)
     perm = Column(String(1000))
-    owners = relationship("User", secondary=slice_user)
+    owners = relationship("MyUser", secondary=slice_user)
 
     export_fields = ('slice_name', 'datasource_type', 'datasource_name',
                      'viz_type', 'params', 'cache_timeout')
