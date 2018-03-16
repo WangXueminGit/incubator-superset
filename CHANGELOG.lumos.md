@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2018.3.2
+- [966a931c](https://git.garena.com/shopee-data/lumos-superset/commit/966a931cb9f0bce05e4c4865894af996e5532d56) Fix the bug of adding sql metric in datasource when creating table from SqlLab.
+- [854546c7](https://git.garena.com/shopee-data/lumos-superset/commit/854546c7ba95ccfcaf7a507487bf7d89138663b4) Quickfix of bug when add/edit owner and guests
+
 ### 2018.3.1
 
 - [200ceb48](https://git.garena.com/shopee-data/lumos-superset/commit/200ceb4816042c965b12232ab064cbc57b2db392) Fix presto-generated visualisation using invalid syntax for date comparison
@@ -226,3 +230,4 @@ Start from April, 2017, lumos add following things:
 - Miscs
   - [8aee6c](https://git.garena.com/shopee-data/lumos-superset/commit/8aee6c689565a7b25fd1d0bbf26a2db95d8041ed) Fix column/metric duplication upon refreshing tables in Lumos
   - [0c1e8e](https://git.garena.com/shopee-data/lumos-superset/commit/0c1e8e770af53f4cc8f7025af0c2f59c7a731419) Enable hex characters for encoding CJK characters
+
