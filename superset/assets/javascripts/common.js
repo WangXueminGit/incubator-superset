@@ -19,3 +19,18 @@ export function appSetup() {
   window.jQuery = $;
   require('bootstrap');
 }
+
+export const OS = {
+  MAC: 1,
+  WINDOWS: 2,
+  OTHERS: 3,
+};
+
+export function detectOS() {
+  if (navigator.platform.indexOf('Mac') > -1) {
+    return OS.MAC;
+  } else if (navigator.appVersion.indexOf('Win') > -1) {
+    return OS.WINDOWS;
+  }
+  return OS.OTHERS;
+}

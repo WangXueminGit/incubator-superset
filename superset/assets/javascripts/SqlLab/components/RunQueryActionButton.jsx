@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '../../components/Button';
+import { detectOS, OS } from '../../common';
 
 const propTypes = {
   allowAsync: PropTypes.bool.isRequired,
@@ -18,7 +19,9 @@ export default function RunQueryActionButton(props) {
   const runBtnText = props.selectedText ? 'Run Selected Query' : 'Run Query';
   const btnStyle = props.selectedText ? 'warning' : 'primary';
   const shouldShowStopBtn = ['running', 'pending'].indexOf(props.queryState) > -1;
-  const asyncToolTip = 'Run query asynchronously';
+  const asyncToolTip = detectOS() === OS.MAC ? 'Run Query (⌘ + return)' :
+                       detectOS() === OS.WINDOWS ? 'Run Query (Ctrl + Enter)' :
+                       '';
 
   const commonBtnProps = {
     bsSize: 'small',

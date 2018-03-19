@@ -22,6 +22,7 @@ import SqlEditorLeftBar from './SqlEditorLeftBar';
 import AceEditorWrapper from './AceEditorWrapper';
 import { STATE_BSSTYLE_MAP } from '../constants';
 import RunQueryActionButton from './RunQueryActionButton';
+import { detectOS, OS } from '../../common';
 
 const propTypes = {
   actions: PropTypes.object.isRequired,
@@ -146,6 +147,18 @@ class SqlEditor extends React.PureComponent {
         </FormGroup>
       );
     }
+    $('.ace_text-input').keydown((key) => {
+      const os = detectOS();
+      if (os === OS.MAC) {
+        if (key.metaKey && !key.ctrlKey && key.which === 13) { // mac
+          this.runQuery(this.props.database.allow_run_async);
+        }
+      } else if (os === OS.WINDOWS) {
+        if (key.ctrlKey && key.which === 13) { // windows
+          this.runQuery(this.props.database.allow_run_async);
+        }
+      }
+    });
     const editorBottomBar = (
       <div className="sql-toolbar clearfix" id="js-sql-toolbar">
         <div className="pull-left">
