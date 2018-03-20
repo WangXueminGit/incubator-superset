@@ -534,10 +534,6 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
         'owners': _("Owners is a list of users who can alter the dashboard."),
     }
     base_filters = [['slice', DashboardFilter, lambda: []]]
-    add_form_query_rel_fields = {
-        'slices': [['slices', SliceFilter, None]],
-    }
-    edit_form_query_rel_fields = add_form_query_rel_fields
     label_columns = {
         'dashboard_link': _("Dashboard"),
         'dashboard_title': _("Title"),
