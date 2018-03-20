@@ -792,7 +792,7 @@ class Log(Model):
     dashboard_id = Column(Integer)
     slice_id = Column(Integer)
     json = Column(Text)
-    user = relationship('User', backref='logs', foreign_keys=[user_id])
+    user = relationship('MyUser', backref='logs', foreign_keys=[user_id])
     dttm = Column(DateTime, default=datetime.utcnow)
     dt = Column(Date, default=date.today())
     duration_ms = Column(Integer)

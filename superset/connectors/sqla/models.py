@@ -28,6 +28,7 @@ from superset.models.helpers import QueryResult
 from superset.models.core import Database
 from superset.jinja_context import get_template_processor
 from superset.models.helpers import set_perm
+from superset.users_model import MyUser
 
 
 class TableColumn(Model, BaseColumn):
@@ -187,7 +188,7 @@ class SqlaTable(Model, BaseDatasource):
     fetch_values_predicate = Column(String(1000))
     user_id = Column(Integer, ForeignKey('ab_user.id'))
     owner = relationship(
-        'User',
+        'MyUser',
         backref='tables',
         foreign_keys=[user_id])
     database = relationship(

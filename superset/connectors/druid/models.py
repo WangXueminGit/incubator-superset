@@ -35,6 +35,7 @@ from superset.utils import (
 )
 from superset.connectors.base import BaseDatasource, BaseColumn, BaseMetric
 from superset.models.helpers import AuditMixinNullable, QueryResult, set_perm
+from superset.users_model import MyUser
 
 DRUID_TZ = conf.get("DRUID_TZ")
 
@@ -323,7 +324,7 @@ class DruidDatasource(Model, BaseDatasource):
         'DruidCluster', backref='datasources', foreign_keys=[cluster_name])
     user_id = Column(Integer, ForeignKey('ab_user.id'))
     owner = relationship(
-        'User',
+        'MyUser',
         backref=backref('datasources', cascade='all, delete-orphan'),
         foreign_keys=[user_id])
 

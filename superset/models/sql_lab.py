@@ -22,6 +22,7 @@ from sqlalchemy.orm import backref, relationship
 
 from superset.utils import QueryStatus
 from superset.models.helpers import AuditMixinNullable
+from superset.users_model import MyUser
 
 install_aliases()
 
@@ -79,7 +80,7 @@ class Query(Model):
         backref=backref('queries', cascade='all, delete-orphan')
     )
     user = relationship(
-        'User',
+        'MyUser',
         foreign_keys=[user_id])
 
     __table_args__ = (
@@ -147,7 +148,7 @@ class SavedQuery(Model, AuditMixinNullable):
     description = Column(Text)
     sql = Column(Text)
     user = relationship(
-        'User',
+        'MyUser',
         backref=backref('saved_queries', cascade='all, delete-orphan'),
         foreign_keys=[user_id])
     database = relationship(
