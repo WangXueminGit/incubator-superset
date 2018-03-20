@@ -155,7 +155,6 @@ class SqlEditorLeftBar extends React.PureComponent {
             )}
             mutator={this.dbMutator.bind(this)}
             placeholder="Select a database"
-            autoSelect
           />
         </div>
         <div className="m-t-5">
