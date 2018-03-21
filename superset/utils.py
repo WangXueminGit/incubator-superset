@@ -604,7 +604,6 @@ def has_access(f):
         else:
             logging.warning(LOGMSG_ERR_SEC_ACCESS_DENIED.format(
                 permission_str, self.__class__.__name__))
-            flash(as_unicode(FLAMSG_ERR_SEC_ACCESS_DENIED), "danger")
         # adds next arg to forward to the original path once user is logged in.
         return redirect(url_for(
             self.appbuilder.sm.auth_view.__class__.__name__ + ".login",
