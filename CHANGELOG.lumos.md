@@ -1,5 +1,17 @@
 ## Change Log by Shopee Lumos
 
+### 2018.3.3
+- [a590e752](https://git.garena.com/shopee-data/lumos-superset/commit/a590e7523039c81ef70db46a02b726fe3837f2c9) Added hotkeys and overlaytrigger to run query.
+- [ecdaa454](https://git.garena.com/shopee-data/lumos-superset/commit/ecdaa454b291ed29ba17141ac7a8d58598eae4a1) Change `iterator` to `list`
+- [9f54146c](https://git.garena.com/shopee-data/lumos-superset/commit/9f54146cc3b5389564957d75ef8221a12aa16c49) Add a pure js base64 encoding library.
+- [9ce470c6](https://git.garena.com/shopee-data/lumos-superset/commit/9ce470c6fcd1ca5fe9bac1618b93893e30aa42b4) bugfix sqllab not sorting according to alphabetical order.
+- [e58cb311](https://git.garena.com/shopee-data/lumos-superset/commit/e58cb311725c3beca59a4490cbcc5ea83de4b8f6) Two bugs are fixed in this patch.
+- [ac461b31](https://git.garena.com/shopee-data/lumos-superset/commit/ac461b312c38f10d4a91109ee929cbaa3a95ca9d) Added base64 encoding for sql query sent in /superset/sql_json
+- [274f778d](https://git.garena.com/shopee-data/lumos-superset/commit/274f778daeb8cd6954ece37892a775889c8189cd) Fixed bug that occurs when downloading pivot tables with hidden columns.
+- [4514f08b](https://git.garena.com/shopee-data/lumos-superset/commit/4514f08b5078e0c936930a8cffe63c8ac8ba7822) Fixed bug for unable to save SQL query
+- [ce578d50](https://git.garena.com/shopee-data/lumos-superset/commit/ce578d500fd2aed672930acf478d9402c2105b1b) Implement the feature of rotating x lables.
+- [6c996c28](https://git.garena.com/shopee-data/lumos-superset/commit/6c996c280a81e1c38f64688f88bc6d5d5cd83f10) Upgrade to Python 3.
+
 ### 2018.3.2
 - [966a931c](https://git.garena.com/shopee-data/lumos-superset/commit/966a931cb9f0bce05e4c4865894af996e5532d56) Fix the bug of adding sql metric in datasource when creating table from SqlLab.
 - [854546c7](https://git.garena.com/shopee-data/lumos-superset/commit/854546c7ba95ccfcaf7a507487bf7d89138663b4) Quickfix of bug when add/edit owner and guests
