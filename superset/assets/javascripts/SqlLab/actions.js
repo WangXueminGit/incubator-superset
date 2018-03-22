@@ -2,6 +2,8 @@
 import shortid from 'shortid';
 import { now } from '../modules/dates';
 
+import { Base64 } from 'js-base64'
+
 const $ = require('jquery');
 
 export const RESET_STATE = 'RESET_STATE';
@@ -125,7 +127,7 @@ export function runQuery(query) {
       json: true,
       runAsync: query.runAsync,
       schema: query.schema,
-      sql: btoa(query.sql),
+      sql: Base64.encode(query.sql),
       sql_encoding: 'base64',
       sql_editor_id: query.sqlEditorId,
       tab: query.tab,
