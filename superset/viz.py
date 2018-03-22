@@ -319,6 +319,7 @@ class BaseViz(object):
     def json_dumps(self, obj):
         return json.dumps(obj, default=utils.json_int_dttm_ser, ignore_nan=True)
 
+
     @property
     def data(self):
         """This is the data object serialized to the js layer"""
@@ -504,10 +505,10 @@ class PivotTableViz(BaseViz):
             for i in range(lenOfColumnLevels):
                 df.columns = df.columns.swaplevel(i, i + 1)
         # Setting default order, if x is None, x refers to the metrics column which should be always ascending
-        index_sort_order = map(lambda x: x != time_column or x is None, df.columns.names)
+        index_sort_order = list(map(lambda x: x != time_column or x is None, df.columns.names))
         # Overwrite with custom order
         if custom_column_orders:
-            columns_order = map(json.loads, custom_column_orders)
+            columns_order = list(map(json.loads, custom_column_orders))
             for col_name, col_order in columns_order:
                 index_sort_order[df.columns.names.index(col_name)] = col_order
         # Applying column ordering
@@ -522,10 +523,10 @@ class PivotTableViz(BaseViz):
             df.columns = df.columns.swaplevel(0, len(df.columns.levels) - 1)
         else:
             df = df.rename_axis(safe_get_value, axis=1)
-        parsed_columns = map(
-            lambda x: map(str, x) if type(x) == tuple else [x],
+        parsed_columns = list(map(
+            lambda x: list(map(str, x)) if type(x) == tuple else [x],
             df.columns.values
-        )
+        ))
         return dict(
             columns=parsed_columns,
             html=df.to_html(

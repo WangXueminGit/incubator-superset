@@ -688,7 +688,7 @@ class Database(Model, AuditMixinNullable):
                 rs = engine.execute('show tables in %s' % schema).fetchall()
             else:
                 rs = engine.execute('show tables in %s' % schema).fetchall()
-            return sorted(map(lambda x: x[1], rs))
+            return sorted(list(map(lambda x: x[1], rs)))
         elif not schema:
             tables_dict = self.db_engine_spec.fetch_result_sets(
                 self, 'table', force=force)
