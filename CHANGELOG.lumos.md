@@ -1,6 +1,11 @@
 ## Change Log by Shopee Lumos
 
+### 2018.3.3-1
+
+- [d818d506](https://git.garena.com/shopee-data/lumos-superset/commit/d818d506342048148a4f6ef2e302e13ec5f22862) Fixed bug for unable to copy dashboard
+
 ### 2018.3.3
+
 - [a590e752](https://git.garena.com/shopee-data/lumos-superset/commit/a590e7523039c81ef70db46a02b726fe3837f2c9) Added hotkeys and overlaytrigger to run query.
 - [ecdaa454](https://git.garena.com/shopee-data/lumos-superset/commit/ecdaa454b291ed29ba17141ac7a8d58598eae4a1) Change `iterator` to `list`
 - [9f54146c](https://git.garena.com/shopee-data/lumos-superset/commit/9f54146cc3b5389564957d75ef8221a12aa16c49) Add a pure js base64 encoding library.
@@ -13,6 +18,7 @@
 - [6c996c28](https://git.garena.com/shopee-data/lumos-superset/commit/6c996c280a81e1c38f64688f88bc6d5d5cd83f10) Upgrade to Python 3.
 
 ### 2018.3.2
+
 - [966a931c](https://git.garena.com/shopee-data/lumos-superset/commit/966a931cb9f0bce05e4c4865894af996e5532d56) Fix the bug of adding sql metric in datasource when creating table from SqlLab.
 - [854546c7](https://git.garena.com/shopee-data/lumos-superset/commit/854546c7ba95ccfcaf7a507487bf7d89138663b4) Quickfix of bug when add/edit owner and guests
 
