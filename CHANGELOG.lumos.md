@@ -1,5 +1,10 @@
 ## Change Log by Shopee Lumos
 
+### 2018.3.3-2
+
+- [f1c84c44](https://git.garena.com/shopee-data/lumos-superset/commit/f1c84c44dc5af6218e7358541c81604e5725076b) Fix python 3 sort.
+- [b46b0e16](https://git.garena.com/shopee-data/lumos-superset/commit/b46b0e16784889530e5f3f4c5bc7e5fc57f23ff8) Hotfix for `encoding before hashing` problem.
+
 ### 2018.3.3-1
 
 - [d818d506](https://git.garena.com/shopee-data/lumos-superset/commit/d818d506342048148a4f6ef2e302e13ec5f22862) Fixed bug for unable to copy dashboard
