@@ -306,7 +306,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
         widgets = widgets or {}
 
         private_roles = [role for role in current_user.roles if role.name not in config.ROBOT_PERMISSION_ROLES]
-        private_roles.sort()
+        private_roles.sort(key=lambda item: item.name)
         is_admin = False
         for role in current_user.roles:
             if role.name in config.ROLE_CREATE_TABLE_GLOBAL:
@@ -644,7 +644,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                 "Data uploaded"),
                 "success")
             return redirect('/tablemodelview/list/')
-        
+
         # If get
         # Get table column name
         # Render upload form
@@ -717,5 +717,5 @@ appbuilder.add_view(
     icon="fa-database",
     category="Data",
     category_label=__("Data"),
-    category_icon='fa-database',)    
+    category_icon='fa-database',)
 appbuilder.add_separator('Data')
