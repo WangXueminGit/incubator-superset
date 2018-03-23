@@ -560,7 +560,7 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
         else:
             obj.slug = slugify(obj.dashboard_title)
         if '__' not in obj.slug:
-            obj.slug = '{}__{}'.format(obj.slug, hashlib.sha256(str(time.time())).hexdigest())
+            obj.slug = '{}__{}'.format(obj.slug, hashlib.sha256(str(time.time()).encode('utf-8')).hexdigest())
         utils.validate_json(obj.json_metadata)
         utils.validate_json(obj.position_json)
         owners = [o for o in obj.owners]
@@ -1472,7 +1472,7 @@ class Superset(BaseSupersetView):
                 "info")
         elif request.args.get('add_to_dash') == 'new':
             slug = '{}__{}'.format(slugify(request.args.get('new_dashboard_name')),
-                                   hashlib.sha256(str(time.time())).hexdigest())
+                                   hashlib.sha256(str(time.time()).encode('utf-8')).hexdigest())
             dash = models.Dashboard(
                 dashboard_title=request.args.get('new_dashboard_name'),
                 owners=[g.user] if g.user else [],
