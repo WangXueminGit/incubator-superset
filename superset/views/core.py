@@ -403,7 +403,7 @@ appbuilder.add_view(
     icon='fa-table',)
 
 
-class SliceModelView(SupersetModelView, DeleteMixin): 
+class SliceModelView(SupersetModelView, DeleteMixin):
      # noqa
     datamodel = SQLAInterface(models.Slice)
     can_add = False
@@ -1631,7 +1631,7 @@ class Superset(BaseSupersetView):
             dash.slices = original_dash.slices
         dash.slug = slugify(dash.dashboard_title)
         if '__' not in dash.slug:
-            dash.slug = '{}__{}'.format(dash.slug, hashlib.sha256(str(time.time())).hexdigest())
+            dash.slug = '{}__{}'.format(dash.slug, hashlib.sha256(str(time.time()).encode('utf-8')).hexdigest())
         dash.params = original_dash.params
 
         self._set_dash_metadata(dash, data)
