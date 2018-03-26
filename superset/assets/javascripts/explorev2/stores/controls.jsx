@@ -710,7 +710,7 @@ export const controls = {
 
   rotate_x_lable: {
     type: 'SliderControl',
-    label: 'rotate x lable',
+    label: 'Rotate x-axis label',
     renderTrigger: true,
   },
 
