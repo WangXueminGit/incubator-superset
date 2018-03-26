@@ -28,7 +28,7 @@ const sqlWords = sqlKeywords.map(s => ({
 const propTypes = {
   actions: PropTypes.object.isRequired,
   onBlur: PropTypes.func,
-  onAltEnter: PropTypes.func,
+  onCtrlEnter: PropTypes.func,
   sql: PropTypes.string.isRequired,
   tables: PropTypes.array,
   queryEditor: PropTypes.object.isRequired,
@@ -36,7 +36,7 @@ const propTypes = {
 
 const defaultProps = {
   onBlur: () => {},
-  onAltEnter: () => {},
+  onCtrlEnter: () => {},
   tables: [],
 };
 
@@ -63,16 +63,16 @@ class AceEditorWrapper extends React.PureComponent {
   onBlur() {
     this.props.onBlur(this.state.sql);
   }
-  onAltEnter() {
+  onCtrlEnter() {
     this.props.onBlur(this.state.sql);
-    this.props.onAltEnter();
+    this.props.onCtrlEnter();
   }
   onEditorLoad(editor) {
     editor.commands.addCommand({
       name: 'runQuery',
-      bindKey: { win: 'Alt-enter', mac: 'Alt-enter' },
+      bindKey: { win: 'ctrl-enter', mac: 'command-enter' },
       exec: () => {
-        this.onAltEnter();
+        this.onCtrlEnter();
       },
     });
     editor.$blockScrolling = Infinity; // eslint-disable-line no-param-reassign

@@ -147,18 +147,6 @@ class SqlEditor extends React.PureComponent {
         </FormGroup>
       );
     }
-    $('.ace_text-input').keydown((key) => {
-      const os = detectOS();
-      if (os === OS.MAC) {
-        if (key.metaKey && !key.ctrlKey && key.which === 13) { // mac
-          this.runQuery(this.props.database.allow_run_async);
-        }
-      } else if (os === OS.WINDOWS) {
-        if (key.ctrlKey && key.which === 13) { // windows
-          this.runQuery(this.props.database.allow_run_async);
-        }
-      }
-    });
     const editorBottomBar = (
       <div className="sql-toolbar clearfix" id="js-sql-toolbar">
         <div className="pull-left">
@@ -220,7 +208,7 @@ class SqlEditor extends React.PureComponent {
               actions={this.props.actions}
               onBlur={this.setQueryEditorSql.bind(this)}
               queryEditor={this.props.queryEditor}
-              onAltEnter={this.runQuery.bind(this)}
+              onCtrlEnter={this.runQuery.bind(this)}
               sql={this.props.queryEditor.sql}
               tables={this.props.tables}
             />
