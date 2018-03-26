@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { getExploreUrl } from '../../explorev2/exploreUtils';
-import downloadTable from '../../modules/xlsUtils.js';
+import { downloadTableAsXls } from '../../modules/xlsUtils.js';
 
 const propTypes = {
   dashboard: PropTypes.object.isRequired,
@@ -12,15 +12,6 @@ const propTypes = {
 };
 
 function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
-  function downloadTableAsXls() {
-    const freezeRows = slice.form_data.viz_type === 'table' ?
-      1 : slice.form_data.columns.length + 2;
-    const freezeColumns = slice.form_data.groupby.length;
-    const sliceContainer = document.getElementById('con_' + slice.slice_id)
-    const dataframes = sliceContainer.getElementsByClassName('dataFrame');
-    const tableDf = dataframes[1];
-    downloadTable('xlsx', slice.slice_name, tableDf, freezeRows, freezeColumns);
-  }
   let xlsExportButton = null;
   let moveChartButton = null;
   let editChartButton = null;
@@ -30,7 +21,7 @@ function SliceCell({ expandedSlices, removeSlice, dashboard, slice }) {
     xlsExportButton = (
       <a
         className="exportCSV"
-        onClick={downloadTableAsXls}
+        onClick={downloadTableAsXls.bind(this, slice, slice.slice_name)}
         title="Export as XLS"
         data-toggle="tooltip"
       >

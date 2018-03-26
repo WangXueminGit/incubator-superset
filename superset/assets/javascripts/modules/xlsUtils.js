@@ -184,7 +184,56 @@ function freezeSheets(workbook, freezeRows, freezeColumns){
   const finalWs = Object.assign({}, ws, wsFreeze);
   return Object.assign({}, workbook, { Sheets: { Sheet1: finalWs } });
 }
-export default function downloadTable(type, title, tableDf, freezeRows, freezeColumns) {
+
+function switchLimit(sliceContainer) {
+  const limitSelector = jQuery(sliceContainer).find("select");
+  limitSelector.append($('<option>', {
+    value: 1000000,
+    text: '1000000'
+  }));
+  const originalLimit = limitSelector[0].value
+  limitSelector[0].value = "1000000";
+  limitSelector.trigger('change');
+  return originalLimit
+}
+
+function revertLimit(sliceContainer, originalLimit) {
+  jQuery(sliceContainer).find("option[value='1000000']").remove();
+  const limitSelector = jQuery(sliceContainer).find("select");
+  limitSelector[0].value = originalLimit;
+  limitSelector.trigger('change');
+}
+
+function getPagination(sliceContainer) {
+  return jQuery(sliceContainer)
+    .find('.paginate_button.active > a')
+    .get(0)
+    .text;
+}
+
+function setPagination(sliceContainer, pagination) {
+  for (let i = 1; i < pagination; i++){
+      jQuery(
+        jQuery(sliceContainer)
+          .find('.paginate_button')
+          .get(-1)
+      ).triggerHandler("click");
+  }
+}
+
+function downloadTable(
+    type,
+    title,
+    sliceContainer,
+    tableDf,
+    freezeRows,
+    freezeColumns,
+    has_pagination) {
+  let originalLimit, pagination;
+  if (has_pagination) {
+    pagination = getPagination(sliceContainer);
+    originalLimit = switchLimit(sliceContainer);
+  }
   const newDf = removeHiddenRows(tableDf)
   const workbook = XLSX.utils.table_to_book(newDf, { raw: true });
   const formattedWb = formatTable(workbook, newDf);
@@ -195,5 +244,36 @@ export default function downloadTable(type, title, tableDf, freezeRows, freezeCo
   FileSaver.saveAs(
     new Blob([s2ab(wbout)], { type: 'application/octet-stream' }),
     title + '.' + type,
+  );
+  if (has_pagination) {
+    revertLimit(sliceContainer, originalLimit);
+    setPagination(sliceContainer, pagination)
+  }
+}
+
+export function downloadTableAsXls(slice, title) {
+  const formData = (slice.formData) ? slice.formData : slice.form_data
+  const freezeRows = formData.viz_type === 'table' ?
+    1 : formData.columns.length + 2;
+  const freezeColumns = formData.groupby.length;
+
+  let sliceContainer = document;
+  if (slice.slice_id) {
+    sliceContainer = document.getElementById('con_' + slice.slice_id);
+  }
+
+  const df_pagination = sliceContainer.getElementsByClassName('dataTables_paginate');
+  const has_pagination = df_pagination.length === 1;
+
+  const dataframes = sliceContainer.getElementsByClassName('dataFrame');
+  const tableDf = dataframes[1];
+
+  downloadTable('xlsx',
+    title,
+    sliceContainer,
+    tableDf,
+    freezeRows,
+    freezeColumns,
+    has_pagination
   );
 }

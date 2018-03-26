@@ -4,7 +4,7 @@ import cx from 'classnames';
 import URLShortLinkButton from './URLShortLinkButton';
 import EmbedCodeButton from './EmbedCodeButton';
 import DisplayQueryButton from './DisplayQueryButton';
-import downloadTable from '../../modules/xlsUtils.js';
+import { downloadTableAsXls } from '../../modules/xlsUtils.js';
 
 const propTypes = {
   canDownload: PropTypes.oneOfType([PropTypes.string, PropTypes.bool])
@@ -25,14 +25,6 @@ export default function ExploreActionButtons({
   vizType,
   title,
 }) {
-  function downloadTableAsXls() {
-    const freezeRows = slice.formData.viz_type === 'table' ?
-      1 : slice.formData.columns.length + 2;
-    const freezeColumns = slice.formData.groupby.length;
-    const dataframes = document.getElementsByClassName('dataFrame');
-    const tableDf = dataframes[1];
-    downloadTable('xlsx', title, tableDf, freezeRows, freezeColumns);
-  }
   const exportToCSVClasses = cx('btn btn-default btn-sm', {
     'disabled disabledButton': !canDownload,
   });
@@ -40,7 +32,7 @@ export default function ExploreActionButtons({
   if (vizType === 'pivot_table' || vizType === 'table') {
     xlsExportButton = (
       <button
-        onClick={downloadTableAsXls.bind(this)}
+        onClick={downloadTableAsXls.bind(this, slice, title)}
         className={exportToCSVClasses}
         title="Export to .xls format"
         target="_blank"
