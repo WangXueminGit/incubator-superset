@@ -294,6 +294,8 @@ def base_json_conv(obj):
         return float(obj)
     elif isinstance(obj, uuid.UUID):
         return str(obj)
+    elif isinstance(obj, bytes):
+        return obj.decode('utf8')
 
 
 def json_iso_dttm_ser(obj):
