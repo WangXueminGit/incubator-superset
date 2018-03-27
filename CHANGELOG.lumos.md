@@ -1,5 +1,10 @@
 ## Change Log by Shopee Lumos
 
+### 2018.3.3-3
+
+- [b8c0afeb](https://git.garena.com/shopee-data/lumos-superset/commit/b8c0afeb96338601cdc2183f423ef5dfa6339074) Fix hotkeys reaction
+- [101128e3](https://git.garena.com/shopee-data/lumos-superset/commit/101128e35038dd868474143b17dc6aca25b83112) Fix SQL Lab failing when one of the row types is in `bytes` format
+
 ### 2018.3.3-2
 
 - [f1c84c44](https://git.garena.com/shopee-data/lumos-superset/commit/f1c84c44dc5af6218e7358541c81604e5725076b) Fix python 3 sort.
