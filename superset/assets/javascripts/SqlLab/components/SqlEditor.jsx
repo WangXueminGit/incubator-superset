@@ -42,7 +42,6 @@ const defaultProps = {
   hideLeftBar: false,
 };
 
-
 class SqlEditor extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -72,6 +71,9 @@ class SqlEditor extends React.PureComponent {
     this.startQuery(effectiveRunAsync);
   }
   startQuery(runAsync = false, ctas = false) {
+    if (this.props.latestQuery && this.props.latestQuery.state === 'running') {
+      return;
+    }
     const qe = this.props.queryEditor;
     const query = {
       dbId: qe.dbId,
