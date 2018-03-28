@@ -43,7 +43,7 @@ PACKAGE_FILE = os.path.join(PACKAGE_DIR, 'package.json')
 with open(PACKAGE_FILE) as package_file:
     VERSION_STRING = json.load(package_file)['version']
 
-ROW_LIMIT = 1000000
+ROW_LIMIT = 2000000
 VIZ_ROW_LIMIT = 10000
 SUPERSET_WORKERS = 2
 SUPERSET_CELERY_WORKERS = 32
@@ -276,7 +276,7 @@ BACKUP_COUNT = 30
 MAPBOX_API_KEY = ""
 
 # Maximum number of rows returned in the SQL editor
-SQL_MAX_ROW = 1000000
+SQL_MAX_ROW = 2000000
 DISPLAY_SQL_MAX_ROW = 1000
 
 # Maximum number of tables/views displayed in the dropdown window in SQL Lab.

@@ -51,7 +51,7 @@ class BaseEngineSpec(object):
     cursor_execute_kwargs = {}
     time_grains = tuple()
     time_groupby_inline = False
-    limit_method = LimitMethod.FETCH_MANY
+    limit_method = LimitMethod.WRAP_SQL
     time_secondary_columns = False
 
     @classmethod
