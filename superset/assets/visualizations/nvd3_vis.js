@@ -44,7 +44,7 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
         return true;
       }
       return i === countSeriesDisplayed - 1;
-    }).selectAll('rect.positive');
+    }).selectAll('rect');
 
   const groupLabels = svg.select('g.nv-barsWrap').append('g')
     .attr('class', 'nv-barsWrap-value');
@@ -71,13 +71,9 @@ const showEachBarValue = function (svg, chart, data, stacked, axisFormat, min) {
   svg.select('g.nv-barsWrap-value-on-bar').remove();
   const format = d3.format(axisFormat || '.3s');
   const countSeriesDisplayed = data.length;
-  const rectsToBeLabeled = svg.selectAll('g.nv-group').selectAll('rect.positive');
+  const rectsToBeLabeled = svg.selectAll('g.nv-group').selectAll('rect');
   const groupLabels = svg.select('g.nv-barsWrap').append('g')
     .attr('class', 'nv-barsWrap-value-on-bar');
-  if (min == '') {
-    min = 0;
-  }
-  const minimum = parseFloat(min);
   rectsToBeLabeled.each(
     function (d, index) {
       const rectObj = d3.select(this);
@@ -89,7 +85,7 @@ const showEachBarValue = function (svg, chart, data, stacked, axisFormat, min) {
       const t = groupLabels.append('text')
         .attr('x', xPos) // rough position first, fine tune later
         .attr('y', yPos + 15)
-        .text(d.y < minimum ? null : format(d.y))
+        .text((min !== '' && d.y < parseFloat(min)) ? null : format(d.y))
         .attr('transform', transformAttr)
         .attr('class', 'bar-chart-label')
         .attr('font-size', '13');

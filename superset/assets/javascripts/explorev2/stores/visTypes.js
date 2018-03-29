@@ -208,10 +208,11 @@ const visTypes = {
         controlSetRows: [
           ['show_brush', 'show_legend'],
           ['show_bar_value', 'show_bar_value_on_the_bar'],
+          ['bar_stacked', 'hide_value_below'],
           ['rich_tooltip', 'y_axis_zero'],
           ['y_log_scale', 'contribution'],
           ['x_axis_format', 'y_axis_format'],
-          ['line_interpolation', 'bar_stacked'],
+          ['line_interpolation'],
           ['x_axis_showminmax', 'bottom_margin'],
           ['x_axis_label', 'y_axis_label'],
           ['reduce_x_ticks', 'show_controls'],
