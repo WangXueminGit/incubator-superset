@@ -25,8 +25,8 @@ redis>=2.10.0
 simplejson==3.10.0
 six==1.10.0
 python-slugify==1.2.4
-sqlalchemy==1.1.9
-sqlalchemy-utils==0.32.14
+sqlalchemy==1.2.2
+sqlalchemy-utils==0.32.21
 sqlparse==0.2.3
 thrift>=0.9.3
 thrift-sasl>=0.2.1
