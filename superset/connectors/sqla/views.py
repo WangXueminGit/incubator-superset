@@ -4,7 +4,7 @@ import re
 
 from past.builtins import basestring
 
-from flask import Markup, flash, redirect, request
+from flask import Markup, flash, redirect, request, g
 from flask_login import current_user
 from flask_appbuilder import CompactCRUDMixin, expose
 from flask_appbuilder.actions import action
@@ -28,7 +28,44 @@ from superset.widgets import CustomFormWidget
 
 from . import models
 
-from superset.views.core import DatabaseView
+from superset.views.core import DatabaseView, get_user_roles
+
+def check_ownership(obj, raise_if_false=True):
+    """Meant to be used in `pre_update` hooks on models to enforce ownership
+
+    Admin have all access, and other users need to be referenced on either
+    the created_by field that comes with the ``AuditMixin``, or in a field
+    named ``owners`` which is expected to be a one-to-many with the User
+    model. It is meant to be used in the ModelView's pre_update hook in
+    which raising will abort the update.
+    """
+    if not obj:
+        return False
+
+    security_exception = utils.SupersetSecurityException(
+        "You don't have the rights to alter [{}]".format(obj))
+
+    if g.user.is_anonymous():
+        if raise_if_false:
+            raise security_exception
+        return False
+    roles = (r.name for r in get_user_roles())
+    if 'Admin' in roles:
+        return True
+    session = db.create_scoped_session()
+    orig_obj = session.query(obj.__class__).filter_by(id=obj.id).first()
+    if(
+        g.user and
+        orig_obj.user_id != g.user.id and
+        orig_obj.created_by_fk != g.user.id
+    ):
+        if raise_if_false:
+            raise security_exception
+        return False
+    if raise_if_false:
+        raise security_exception
+    else:
+        return False
 
 
 class TableColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
@@ -376,6 +413,12 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
                                          custom_fields=self.custom_fields,
                                          )
         return widgets
+
+    def pre_update(self, obj):
+        check_ownership(obj)
+
+    def pre_delete(self, obj):
+        check_ownership(obj)
 
     def pre_add(self, table):
         form = request.form

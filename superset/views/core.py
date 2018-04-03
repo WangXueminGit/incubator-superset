@@ -150,6 +150,7 @@ def check_ownership(obj, raise_if_false=True):
     orig_obj = session.query(obj.__class__).filter_by(id=obj.id).first()
     owner_names = (user.username for user in orig_obj.owners)
     if (
+            orig_obj and
             hasattr(orig_obj, 'created_by') and
             orig_obj.created_by and
             orig_obj.created_by.username == g.user.username):
