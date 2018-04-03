@@ -2,8 +2,9 @@ import functools
 import json
 import logging
 import traceback
+import superset
 
-from flask import g, redirect, Response
+from flask import g, redirect, Response, flash
 from flask_babel import gettext as __
 
 from flask_appbuilder import BaseView
@@ -186,8 +187,68 @@ class DeleteMixin(object):
         single=False
     )
     def muldelete(self, items):
-        self.datamodel.delete_all(items)
+        # skip for admin (:
+        roles = (r.name for r in get_user_roles())
+        if 'Admin' in roles:
+            self.datamodel.delete_all(items)
+            self.update_redirect()
+            return redirect(self.get_redirect())
+
+        security_exception = __("You don't have the permission to delete one "\
+                                "of the following: {}".format(items))
+
+        if g.user.is_anonymous():
+            raise security_exception
+        # To identify whether its dashboards or slices or tables
         self.update_redirect()
+        try:
+            if(isinstance(self,superset.connectors.sqla.views.TableModelView)):
+                for item in items:
+                    session = db.create_scoped_session()
+                    orig_obj = session.query(item.__class__).filter_by(id=item.id).first()
+                    if(
+                        g.user and
+                        orig_obj.user_id != g.user.id and
+                        orig_obj.created_by_fk != g.user.id
+                    ):
+                        flash(security_exception,"danger")
+                        return redirect(self.get_redirect())
+            elif(isinstance(self,superset.views.core.DashboardModelView)):
+                for item in items:
+                    session = db.create_scoped_session()
+                    orig_obj = session.query(item.__class__).filter_by(id=item.id).first()
+                    owner_ids = (user.id for user in orig_obj.owners)
+                    if(
+                        owner_ids and
+                        g.user and
+                        g.user.id in owner_ids
+                    ):
+                        continue
+                    elif(orig_obj.created_by_fk or
+                         orig_obj.created_by_fk != g.user.id):
+                        flash(security_exception,"danger")
+                        return redirect(self.get_redirect())
+            elif(isinstance(self,superset.views.core.SliceModelView)):
+                for item in items:
+                    session = db.create_scoped_session()
+                    orig_obj = session.query(item.__class__).filter_by(id=item.id).first()
+                    owner_ids = (user.id for user in orig_obj.owners)
+                    if(
+                        owner_ids and
+                        g.user and
+                        g.user.id in owner_ids
+                    ):
+                        continue
+                    elif(orig_obj.created_by_fk or
+                         orig_obj.created_by_fk != g.user.id):
+                        flash(security_exception,"danger")
+                        return redirect(self.get_redirect())
+            else:
+                pass # do no checks
+        except Exception as e:
+            raise utils.SupersetSecurityException("An error occured at muldelete")
+
+        self.datamodel.delete_all(items)
         return redirect(self.get_redirect())
 
 
