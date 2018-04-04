@@ -32,12 +32,14 @@ const propTypes = {
   sql: PropTypes.string.isRequired,
   tables: PropTypes.array,
   queryEditor: PropTypes.object.isRequired,
+  allowAsync: PropTypes.bool.isRequired,
 };
 
 const defaultProps = {
   onBlur: () => {},
   onCtrlEnter: () => {},
   tables: [],
+  allowAsync: true,
 };
 
 class AceEditorWrapper extends React.PureComponent {
@@ -65,7 +67,7 @@ class AceEditorWrapper extends React.PureComponent {
   }
   onCtrlEnter() {
     this.props.onBlur(this.state.sql);
-    this.props.onCtrlEnter();
+    this.props.onCtrlEnter(this.props.allowAsync);
   }
   onEditorLoad(editor) {
     editor.commands.addCommand({

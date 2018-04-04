@@ -207,6 +207,7 @@ class SqlEditor extends React.PureComponent {
           </Collapse>
           <Col md={this.props.hideLeftBar ? 12 : 9}>
             <AceEditorWrapper
+              allowAsync={this.props.database ? this.props.database.allow_run_async : false}
               actions={this.props.actions}
               onBlur={this.setQueryEditorSql.bind(this)}
               queryEditor={this.props.queryEditor}
