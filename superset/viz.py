@@ -1342,7 +1342,8 @@ class DistributionBarViz(DistributionPieViz):
             pt = (pt / pt.sum()).T
         pt = pt.reindex(row.index)
         chart_data = []
-        for name, ys in pt.iteritems():
+        for name in self.metrics:
+            ys = pt[name]
             if pt[name].dtype.kind not in "biufc" or name in self.groupby:
                 continue
             if isinstance(name, string_types):

@@ -465,7 +465,7 @@ class SqlaTable(Model, BaseDatasource):
             time_filters.append(dttm_col.get_time_filter(from_dttm, to_dttm))
 
         select_exprs += metrics_exprs
-        select_names = map(lambda x: x.name, select_exprs)
+        select_names = list(map(lambda x: x.name, select_exprs))
         if timeseries_order_metric and \
            timeseries_order_metric_expr.name not in select_names:
             select_exprs.append(timeseries_order_metric_expr)
