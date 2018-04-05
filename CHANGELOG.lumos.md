@@ -1,5 +1,21 @@
 ## Change Log by Shopee Lumos
 
+### 2018.4.5
+
+- [5b62b939](https://git.garena.com/shopee-data/lumos-superset/commit/5b62b939a9fa466d567c72a85273581570742290) Added mapbox_api_key to enable mapbox visualizations on Lumos
+- [169a34c2](https://git.garena.com/shopee-data/lumos-superset/commit/169a34c2ad4afbbc0fcb0114ce6095d4ebb2660c) Enable gevent worker for gunicorn.
+- [970f2248](https://git.garena.com/shopee-data/lumos-superset/commit/970f22486c6d78e399a83ce619788f7a2ea83e12) Fixed bug where non-admins can access other people slices to edit/delete
+- [baaed557](https://git.garena.com/shopee-data/lumos-superset/commit/baaed55737f3016606ba4557d2b1e5246c90fd18) Added feature to prevent deleting of other people tables, slices and dashboards
+- [a16e5124](https://git.garena.com/shopee-data/lumos-superset/commit/a16e51240c6a105b06a3652cc1c50c318d863cae) Changed BaseEngineSpec's `limit method` to WRAP_SQL
+- [669b7bb4](https://git.garena.com/shopee-data/lumos-superset/commit/669b7bb40bd90730a5c62996c03a48ee96f1fb6b) Fix the bug of resolving presto sql with percent symbol.
+- [b47986fc](https://git.garena.com/shopee-data/lumos-superset/commit/b47986fc75223fb4e55633968bb15607a43547aa) Fix bug of displaying negative number in bar chart
+- [5ee1e6b9](https://git.garena.com/shopee-data/lumos-superset/commit/5ee1e6b9d90dcbd337eee3e99b62b5138115d7bd) Enabled full table xlsx download even with pagination
+- [289df419](https://git.garena.com/shopee-data/lumos-superset/commit/289df419a64fcff656865f8bb870
+04cfda213d58) Removed permission is denied error when logging in successfully
+- [a2bb3ca7](https://git.garena.com/shopee-data/lumos-superset/commit/a2bb3ca770d49461ab833242058b58be961b4cfb) Reduce the number of SQL qureies for edit dashboard
+- [e62becc2](https://git.garena.com/shopee-data/lumos-superset/commit/e62becc26218aea181e851b26f138621936b7af0) Optimize hotkey to prevent user from spamming
+- [1ef4a55b](https://git.garena.com/shopee-data/lumos-superset/commit/1ef4a55b1a3a157057f94d9c9e7d809d9a05c1b9) Fix the spelling error in `rotate label`.
+
 ### 2018.3.3-3
 
 - [b8c0afeb](https://git.garena.com/shopee-data/lumos-superset/commit/b8c0afeb96338601cdc2183f423ef5dfa6339074) Fix hotkeys reaction
