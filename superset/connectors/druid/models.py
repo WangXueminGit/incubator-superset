@@ -132,11 +132,11 @@ class DruidColumn(Model, BaseColumn):
         backref=backref('columns', cascade='all, delete-orphan'),
         enable_typechecks=False)
     dimension_spec_json = Column(Text)
-
+    is_hex = Column(Boolean, default=False)
     export_fields = (
         'datasource_name', 'column_name', 'is_active', 'type', 'groupby',
         'count_distinct', 'sum', 'avg', 'max', 'min', 'filterable',
-        'description', 'dimension_spec_json'
+        'description', 'dimension_spec_json', 'is_hex'
     )
 
     def __repr__(self):
@@ -921,7 +921,7 @@ class DruidDatasource(Model, BaseDatasource):
             client.query_builder.last_query.query_dict, indent=2)
         return query_str
 
-    def query(self, query_obj):
+    def query(self, query_obj, force=False):
         qry_start_dttm = datetime.now()
         client = self.cluster.get_pydruid_client()
         query_str = self.get_query_str(
