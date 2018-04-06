@@ -62,10 +62,7 @@ def check_ownership(obj, raise_if_false=True):
         if raise_if_false:
             raise security_exception
         return False
-    if raise_if_false:
-        raise security_exception
-    else:
-        return False
+    return True
 
 
 class TableColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
