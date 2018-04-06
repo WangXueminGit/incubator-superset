@@ -124,7 +124,8 @@ class VisualizeModal extends React.PureComponent {
       datasourceName: this.state.datasourceName,
       schema: this.state.schema,
       columns: this.state.columns,
-      sql: this.props.query.sql,
+      sql: Base64.encode(this.props.query.sql),
+      sql_encoding: 'base64',
       dbId: this.props.query.dbId,
     };
     notify.info('Creating a data source and popping a new tab');

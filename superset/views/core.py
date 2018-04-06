@@ -2140,7 +2140,11 @@ class Superset(BaseSupersetView):
             table = SqlaTable(table_name=table_name)
         table.database_id = data.get('dbId')
         table.schema = data.get('schema')
-        q = SupersetQuery(data.get('sql'))
+        sql_encoding = data.get('sql_encoding')
+        if sql_encoding == 'base64':
+            q = SupersetQuery(b64decode(data.get('sql')).decode('utf-8'))
+        else:
+            q = SupersetQuery(data.get('sql'))
         table.sql = q.stripped()
         db.session.add(table)
         cols = []
