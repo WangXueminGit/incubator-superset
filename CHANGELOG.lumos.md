@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2018.4.5-1
+
+- [ddd10d00](https://git.garena.com/shopee-data/lumos-superset/commit/ddd10d009ff9aea5bcd779d1c9f691d26f261170) Fixed mapbox not working on production
+
 ### 2018.4.5
 
 - [5b62b939](https://git.garena.com/shopee-data/lumos-superset/commit/5b62b939a9fa466d567c72a85273581570742290) Added mapbox_api_key to enable mapbox visualizations on Lumos
