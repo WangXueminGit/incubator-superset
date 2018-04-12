@@ -37,6 +37,12 @@ function bigNumberVis(slice, payload) {
       }
     }
   }
+
+  for (let i = 0; i < data.length; ++i) {
+    for (let j = 0; j < data[i].length; ++j) {
+      data[i][j] = parseFloat(data[i][j]);
+    }
+  }
   const dateExt = d3.extent(data, d => d[0]);
   const valueExt = d3.extent(data, d => d[1]);
 
