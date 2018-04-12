@@ -28,6 +28,17 @@
       id="csrf_token"
       value="{{ csrf_token() if csrf_token else '' }}"
     >
+
+    {% if appbuilder.get_app.config.get("LUMOS_ENV") == "production" %}
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{appbuilder.get_app.config.get("GA_ID")}}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{appbuilder.get_app.config.get("GA_ID")}}');
+    </script>
+    {% endif %}
   </head>
 
   <body>

@@ -85,6 +85,9 @@ SQLALCHEMY_DATABASE_URI = "postgresql://%s:%s@%s:%s/%s" % (POSTGRES_USER,
                                                            POSTGRES_PORT,
                                                            POSTGRES_DB)
 
+GA_ID = get_env_variable('GA_ID')
+LUMOS_ENV = get_env_variable('LUMOS_ENV')
+
 # The limit of queries fetched for query search
 QUERY_SEARCH_LIMIT = 1000
 
