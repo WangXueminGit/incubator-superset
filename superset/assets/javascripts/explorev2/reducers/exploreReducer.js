@@ -109,7 +109,9 @@ export const exploreReducer = function (state, action) {
     [actions.CHART_RENDERING_FAILED]() {
       return Object.assign({}, state, {
         chartStatus: 'failed',
-        chartAlert: 'An error occurred while rendering the visualization: ' + action.error,
+        chartAlert:  (state.datasources && state.datasources.length > 500)?
+          'This chart cannot render (too many rows). Please click "Export as CSV" to obtain the data in a CSV file format.':
+          'An error occurred while rendering the visualization: ' + action.error,
       });
     },
     [actions.TRIGGER_QUERY]() {
