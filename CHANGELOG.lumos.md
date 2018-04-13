@@ -1,10 +1,16 @@
 ## Change Log by Shopee Lumos
 
-### 2018.4.5-1
+### 2018.4.1-2
+
+- [8ccf7c71](https://git.garena.com/shopee-data/lumos-superset/commit/8ccf7c71777147bb901b0c056ba18a47668155d7) Add google analytics for lumos site monitoring.
+- [369bb803](https://git.garena.com/shopee-data/lumos-superset/commit/369bb803ebe253649af424ee0a4ffde297942489) Fixed Druid Database unable to visualize
+- [554bafc0](https://git.garena.com/shopee-data/lumos-superset/commit/554bafc0305d5a43def744c2d7713bacb0ff8c46) Update user guide URL
+
+### 2018.4.1-1
 
 - [ddd10d00](https://git.garena.com/shopee-data/lumos-superset/commit/ddd10d009ff9aea5bcd779d1c9f691d26f261170) Fixed mapbox not working on production
 
-### 2018.4.5
+### 2018.4.1
 
 - [5b62b939](https://git.garena.com/shopee-data/lumos-superset/commit/5b62b939a9fa466d567c72a85273581570742290) Added mapbox_api_key to enable mapbox visualizations on Lumos
 - [169a34c2](https://git.garena.com/shopee-data/lumos-superset/commit/169a34c2ad4afbbc0fcb0114ce6095d4ebb2660c) Enable gevent worker for gunicorn.
