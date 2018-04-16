@@ -701,7 +701,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
     @has_access
     def update_columns(self, path, pk):
         item = self.datamodel.get(pk, self._base_filters)
-        if not item:
+        if not item or not vars(request.form):
             return redirect('/tablemodelview/edit/' + str(pk))
         # convert pk to correct type, if pk is non string type.
         pk = self.datamodel.get_pk_value(item)
