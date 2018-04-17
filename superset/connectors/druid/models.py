@@ -5,12 +5,13 @@ import logging
 from copy import deepcopy
 from datetime import datetime, timedelta
 from six import string_types
+from multiprocessing.pool import ThreadPool
 
 import requests
 import sqlalchemy as sa
 from sqlalchemy import (
     Column, Integer, String, ForeignKey, Text, Boolean,
-    DateTime,
+    DateTime, UniqueConstraint, or_,
 )
 from sqlalchemy.orm import backref, relationship
 from dateutil.parser import parse as dparse
@@ -38,6 +39,11 @@ from superset.models.helpers import AuditMixinNullable, QueryResult, set_perm
 from superset.users_model import MyUser
 
 DRUID_TZ = conf.get("DRUID_TZ")
+
+# Function wrapper because bound methods cannot
+# be passed to processes
+def _fetch_metadata_for(datasource):
+    return datasource.latest_metadata()
 
 
 class JavascriptPostAggregator(Postaggregator):
@@ -95,19 +101,108 @@ class DruidCluster(Model, AuditMixinNullable):
         ).format(obj=self)
         return json.loads(requests.get(endpoint).text)['version']
 
-    def refresh_datasources(self, datasource_name=None, merge_flag=False):
+    def refresh_datasources(
+            self,
+            datasource_name=None,
+            merge_flag=True,
+            refreshAll=True):
         """Refresh metadata of all datasources in the cluster
         If ``datasource_name`` is specified, only that datasource is updated
         """
         self.druid_version = self.get_druid_version()
-        for datasource in self.get_datasources():
-            if datasource not in conf.get('DRUID_DATA_SOURCE_BLACKLIST', []):
-                if not datasource_name or datasource_name == datasource:
-                    DruidDatasource.sync_to_db(datasource, self, merge_flag)
+        ds_list = self.get_datasources()
+        blacklist = conf.get('DRUID_DATA_SOURCE_BLACKLIST', [])
+        ds_refresh = []
+        if not datasource_name:
+            ds_refresh = list(filter(lambda ds: ds not in blacklist, ds_list))
+        elif datasource_name not in blacklist and datasource_name in ds_list:
+            ds_refresh.append(datasource_name)
+        else:
+            return
+        self.refresh(ds_refresh, merge_flag, refreshAll)
+
+    def refresh(self, datasource_names, merge_flag, refreshAll):
+        """
+        Fetches metadata for the specified datasources andm
+        merges to the Superset database
+        """
+        session = db.session
+        ds_list = (
+            session.query(DruidDatasource)
+            .filter(or_(DruidDatasource.datasource_name == name
+                    for name in datasource_names))
+        )
+
+        ds_map = {ds.name: ds for ds in ds_list}
+        for ds_name in datasource_names:
+            datasource = ds_map.get(ds_name, None)
+            if not datasource:
+                datasource = DruidDatasource(datasource_name=ds_name)
+                with session.no_autoflush:
+                    session.add(datasource)
+                flasher(
+                    'Adding new datasource [{}]'.format(ds_name), 'success')
+                ds_map[ds_name] = datasource
+            elif refreshAll:
+                flasher(
+                    'Refreshing datasource [{}]'.format(ds_name), 'info')
+            else:
+                del ds_map[ds_name]
+                continue
+            datasource.cluster = self
+            datasource.merge_flag = merge_flag
+        session.flush()
+
+        # Prepare multithreaded executation
+        pool = ThreadPool()
+        ds_refresh = list(ds_map.values())
+        metadata = pool.map(_fetch_metadata_for, ds_refresh)
+        pool.close()
+        pool.join()
+
+        for i in range(0, len(ds_refresh)):
+            datasource = ds_refresh[i]
+            cols = metadata[i]
+            if cols:
+                col_objs_list = (
+                    session.query(DruidColumn)
+                    .filter(DruidColumn.datasource_name == datasource.name)
+                    .filter(or_(DruidColumn.column_name == col for col in cols))
+                )
+                col_objs = {col.column_name: col for col in col_objs_list}
+                for col in cols:
+                    if col == '__time':  # skip the time column
+                        continue
+                    col_obj = col_objs.get(col, None)
+                    if not col_obj:
+                        col_obj = DruidColumn(
+                            datasource_name=datasource.name,
+                            column_name=col)
+                        with session.no_autoflush:
+                            session.add(col_obj)
+                    datatype = cols[col]['type']
+                    if datatype == 'STRING':
+                        col_obj.groupby = True
+                        col_obj.filterable = True
+                    if datatype == 'hyperUnique' or datatype == 'thetaSketch':
+                        col_obj.count_distinct = True
+                    # Allow sum/min/max for long or double
+                    if datatype == 'LONG' or datatype == 'DOUBLE':
+                        col_obj.sum = True
+                        col_obj.min = True
+                        col_obj.max = True
+                    col_obj.type = datatype
+                    col_obj.datasource = datasource
+                datasource.generate_metrics_for(col_objs_list)
+        session.commit()
+
 
     @property
     def perm(self):
         return "[{obj.cluster_name}].(id:{obj.id})".format(obj=self)
+
+    def get_perm(self):
+        return self.perm
 
     @property
     def name(self):
@@ -134,8 +229,8 @@ class DruidColumn(Model, BaseColumn):
     dimension_spec_json = Column(Text)
     is_hex = Column(Boolean, default=False)
     export_fields = (
-        'datasource_name', 'column_name', 'is_active', 'type', 'groupby',
-        'count_distinct', 'sum', 'avg', 'max', 'min', 'filterable',
+        'datasource_name', 'column_name', 'is_active', 'type',
+        'groupby', 'count_distinct', 'sum', 'avg', 'max', 'min', 'filterable',
         'description', 'dimension_spec_json', 'is_hex'
     )
 
@@ -146,6 +241,87 @@ class DruidColumn(Model, BaseColumn):
     def dimension_spec(self):
         if self.dimension_spec_json:
             return json.loads(self.dimension_spec_json)
+
+    def get_metrics(self):
+        metrics = {}
+        metrics['count'] = DruidMetric(
+            metric_name='count',
+            verbose_name='COUNT(*)',
+            metric_type='count',
+            json=json.dumps({'type': 'count', 'name': 'count'}),
+        )
+        # Somehow we need to reassign this for UDAFs
+        if self.type in ('DOUBLE', 'FLOAT'):
+            corrected_type = 'DOUBLE'
+        else:
+            corrected_type = self.type
+
+        if self.sum and self.is_num:
+            mt = corrected_type.lower() + 'Sum'
+            name = 'sum__' + self.column_name
+            metrics[name] = DruidMetric(
+                metric_name=name,
+                metric_type='sum',
+                verbose_name='SUM({})'.format(self.column_name),
+                json=json.dumps({
+                    'type': mt, 'name': name, 'fieldName': self.column_name}),
+            )
+
+        if self.avg and self.is_num:
+            mt = corrected_type.lower() + 'Avg'
+            name = 'avg__' + self.column_name
+            metrics[name] = DruidMetric(
+                metric_name=name,
+                metric_type='avg',
+                verbose_name='AVG({})'.format(self.column_name),
+                json=json.dumps({
+                    'type': mt, 'name': name, 'fieldName': self.column_name}),
+            )
+
+        if self.min and self.is_num:
+            mt = corrected_type.lower() + 'Min'
+            name = 'min__' + self.column_name
+            metrics[name] = DruidMetric(
+                metric_name=name,
+                metric_type='min',
+                verbose_name='MIN({})'.format(self.column_name),
+                json=json.dumps({
+                    'type': mt, 'name': name, 'fieldName': self.column_name}),
+            )
+        if self.max and self.is_num:
+            mt = corrected_type.lower() + 'Max'
+            name = 'max__' + self.column_name
+            metrics[name] = DruidMetric(
+                metric_name=name,
+                metric_type='max',
+                verbose_name='MAX({})'.format(self.column_name),
+                json=json.dumps({
+                    'type': mt, 'name': name, 'fieldName': self.column_name}),
+            )
+        if self.count_distinct:
+            name = 'count_distinct__' + self.column_name
+            if self.type == 'hyperUnique' or self.type == 'thetaSketch':
+                metrics[name] = DruidMetric(
+                    metric_name=name,
+                    verbose_name='COUNT(DISTINCT {})'.format(self.column_name),
+                    metric_type=self.type,
+                    json=json.dumps({
+                        'type': self.type,
+                        'name': name,
+                        'fieldName': self.column_name,
+                    }),
+                )
+            else:
+                metrics[name] = DruidMetric(
+                    metric_name=name,
+                    verbose_name='COUNT(DISTINCT {})'.format(self.column_name),
+                    metric_type='count_distinct',
+                    json=json.dumps({
+                        'type': 'cardinality',
+                        'name': name,
+                        'fieldNames': [self.column_name]}),
+                )
+        return metrics
 
     def generate_metrics(self):
         """Generate metrics based on the column metadata"""
@@ -260,6 +436,7 @@ class DruidMetric(Model, BaseMetric):
     """ORM object referencing Druid metrics for a datasource"""
 
     __tablename__ = 'metrics'
+
     datasource_name = Column(
         String(255),
         ForeignKey('datasources.datasource_name'))
@@ -501,8 +678,23 @@ class DruidDatasource(Model, BaseDatasource):
             return segment_metadata[-1]['columns']
 
     def generate_metrics(self):
-        for col in self.columns:
-            col.generate_metrics()
+        self.generate_metrics_for(self.columns)
+
+    def generate_metrics_for(self, columns):
+        metrics = {}
+        for col in columns:
+            metrics.update(col.get_metrics())
+        dbmetrics = (
+            db.session.query(DruidMetric)
+            .filter(DruidMetric.datasource_name == self.name)
+            .filter(or_(DruidMetric.metric_name == m for m in metrics))
+        )
+        dbmetrics = {metric.metric_name: metric for metric in dbmetrics}
+        for metric in metrics.values():
+            metric.datasource_name = self.name
+            if not dbmetrics.get(metric.metric_name, None):
+                with db.session.no_autoflush:
+                    db.session.add(metric)
 
     @classmethod
     def sync_to_db_from_config(cls, druid_config, user, cluster):

@@ -148,7 +148,6 @@ appbuilder.add_view(
 
 class DruidDatasourceModelView(SupersetModelView, DeleteMixin):  # noqa
     datamodel = SQLAInterface(models.DruidDatasource)
-    list_widget = ListWidgetWithCheckboxes
     list_columns = [
         'datasource_link', 'cluster', 'changed_by_', 'changed_on_', 'offset']
     order_columns = [
@@ -241,14 +240,14 @@ class Druid(BaseSupersetView):
 
     @has_access
     @expose("/refresh_datasources/")
-    def refresh_datasources(self):
+    def refresh_datasources(self, refreshAll=True):
         """endpoint that refreshes druid datasources metadata"""
         session = db.session()
         DruidCluster = ConnectorRegistry.sources['druid'].cluster_class
         for cluster in session.query(DruidCluster).all():
             cluster_name = cluster.cluster_name
             try:
-                cluster.refresh_datasources()
+                cluster.refresh_datasources(refreshAll=refreshAll)
             except Exception as e:
                 flash(
                     "Error while processing cluster '{}'\n{}".format(
