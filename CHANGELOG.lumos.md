@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2018.4.1-3
+
+- [b96b711f](https://git.garena.com/shopee-data/lumos-superset/commit/b96b711f0a60e1f50789b44c0ef08634c380affa) Fixed bug where druid cannot refresh correctly
+
 ### 2018.4.1-2
 
 - [8ccf7c71](https://git.garena.com/shopee-data/lumos-superset/commit/8ccf7c71777147bb901b0c056ba18a47668155d7) Add google analytics for lumos site monitoring.
