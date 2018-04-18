@@ -282,6 +282,7 @@ function nvd3Vis(slice, payload) {
         chart.stacked(stacked);
 
         if (fd.show_bar_value) {
+          chart.margin({ top: 50 });
           setTimeout(function () {
             addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
           }, animationTime);
@@ -319,6 +320,7 @@ function nvd3Vis(slice, payload) {
           });
         }
         if (fd.show_bar_value) {
+          chart.margin({ top: 50 });
           setTimeout(function () {
             addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
           }, animationTime);
