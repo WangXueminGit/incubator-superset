@@ -626,7 +626,7 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
         # Not all data sources are dataframes, thus these cannot be downloaded as csv
             if type(slice_viz.get_df()) == pd.DataFrame:
                 slice_csv = slice_viz.get_csv()
-                zf.write('%s.csv' % escape_filename(slice_name),
+                zf.writestr('%s.csv' % escape_filename(slice_name),
                          BOM_UTF8 + slice_csv.encode())
         zf.close()
         zsio.seek(0)
