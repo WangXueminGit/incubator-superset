@@ -14,6 +14,8 @@ const CHART_TYPES = [
   { value: 'pie', label: 'Pie Chart', requiresTime: false },
   { value: 'line', label: 'Time Series - Line Chart', requiresTime: true },
   { value: 'bar', label: 'Time Series - Bar Chart', requiresTime: true },
+  { value: 'table', label: 'Table', requiresTime: false },
+  { value: 'pivot_table', label: 'Pivot Table', requiresTime: false },
 ];
 
 const propTypes = {
