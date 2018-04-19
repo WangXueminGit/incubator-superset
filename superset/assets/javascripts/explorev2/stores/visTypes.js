@@ -89,7 +89,7 @@ const visTypes = {
           ['groupby'],
           ['columns'],
           ['row_limit'],
-          ['show_legend', 'order_bars'],
+          ['show_legend', 'order_x_bars'],
           ['bar_stacked', 'show_bar_value'],
           ['show_bar_value_on_the_bar', 'hide_value_below'],
           ['y_axis_format', 'bottom_margin'],

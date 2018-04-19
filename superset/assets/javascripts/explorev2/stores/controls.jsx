@@ -240,10 +240,15 @@ export const controls = {
     description: 'Show the value on the bar',
   },
 
-  order_bars: {
-    type: 'CheckboxControl',
-    label: 'Sort Bars',
-    default: false,
+  order_x_bars: {
+    type: 'SelectControl',
+    label: 'Sort Bars by X axis',
+    default: 0,
+    choices: [
+      [0, 'unsorted'],
+      [1, 'ascending'],
+      [2, 'descending'],
+    ],
     description: 'Sort bars by x labels.',
   },
 

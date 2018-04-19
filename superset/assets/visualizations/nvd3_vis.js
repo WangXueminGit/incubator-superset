@@ -308,12 +308,25 @@ function nvd3Vis(slice, payload) {
 
         stacked = fd.bar_stacked;
         chart.stacked(stacked);
-        if (fd.order_bars) {
+
+        if (fd.order_x_bars === 0) {
+          // do nothing
+        } else if (fd.order_x_bars === 1) {
           payload.data.forEach((d) => {
             d.values.sort(
               function compare(a, b) {
                 if (a.x < b.x) return -1;
                 if (a.x > b.x) return 1;
+                return 0;
+              },
+            );
+          });
+        } else if (fd.order_x_bars === 2) {
+          payload.data.forEach((d) => {
+            d.values.sort(
+              function compare(a, b) {
+                if (a.x < b.x) return 1;
+                if (a.x > b.x) return -1;
                 return 0;
               },
             );
