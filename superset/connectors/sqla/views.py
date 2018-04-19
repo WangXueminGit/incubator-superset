@@ -12,6 +12,7 @@ from flask_appbuilder.models.sqla.interface import SQLAInterface
 from numpy import nan
 from pandas import read_csv
 import sqlalchemy as sa
+import superset
 
 from flask_babel import lazy_gettext as _
 from flask_babel import gettext as __
@@ -42,25 +43,32 @@ def check_ownership(obj, raise_if_false=True):
     if not obj:
         return False
 
-    security_exception = utils.SupersetSecurityException(
-        "You don't have the rights to alter [{}]".format(obj))
-
+    if(isinstance(obj, str)):
+        session = db.create_scoped_session()
+        orig_obj = session.query(superset.connectors.sqla.models.SqlaTable).filter_by(id=obj).first()
+        security_exception = __("You don't have the rights to alter "\
+            "table {}".format(orig_obj.table_name))
+    else:
+        security_exception = __("You don't have the rights to alter "\
+            "[{}]".format(obj))
     if g.user.is_anonymous():
         if raise_if_false:
-            raise security_exception
+            raise Exception(security_exception)
         return False
     roles = (r.name for r in get_user_roles())
     if 'Admin' in roles:
         return True
-    session = db.create_scoped_session()
-    orig_obj = session.query(obj.__class__).filter_by(id=obj.id).first()
+
+    if not isinstance(obj, str):
+        session = db.create_scoped_session()
+        orig_obj = session.query(obj.__class__).filter_by(id=obj.id).first()
     if(
         g.user and
         orig_obj.user_id != g.user.id and
         orig_obj.created_by_fk != g.user.id
     ):
         if raise_if_false:
-            raise security_exception
+            raise Exception(security_exception)
         return False
     return True
 
@@ -133,6 +141,7 @@ class TableColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
         'database_expression': _("Database Expression"),
         'is_hex': _("Base16 encoded"),
     }
+
 appbuilder.add_view_no_menu(TableColumnInlineView)
 
 
@@ -181,10 +190,13 @@ class SqlMetricInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
 
     @action("delete_metrics", "Delete metric records", "Delete selected metrics from this table?", "fa-times")
     def delete_metrics(self, metrics):
-        if isinstance(metrics, list):
-            self.datamodel.delete_all(metrics)
-        else:
-            self.datamodel.delete(metrics)
+        # Note: for metric - everyone is under same permission
+        if metrics is not None:
+            if isinstance(metrics, list):
+                self.datamodel.delete_all(metrics)
+            else:
+                self.datamodel.delete(metrics)
+        self.update_redirect()
         return redirect(self.get_redirect())
 
 appbuilder.add_view_no_menu(SqlMetricInlineView)
@@ -416,6 +428,8 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
 
     def pre_delete(self, obj):
         check_ownership(obj)
+        self.update_redirect()
+        redirect(self.get_redirect())
 
     def pre_add(self, table):
         form = request.form
@@ -594,6 +608,11 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
     @expose('/edit/<pk>', methods=['GET', 'POST'])
     @has_access
     def edit(self, pk):
+        try:
+            check_ownership(pk)
+        except Exception as e:
+            flash(__(str(e)), "danger")
+            return redirect('/tablemodelview/list/')
         """Simple hack to redirect to explore view after saving"""
         resp = super(TableModelView, self).edit(pk)
         if isinstance(resp, basestring):
