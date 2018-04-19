@@ -1,5 +1,14 @@
 ## Change Log by Shopee Lumos
 
+### 2018.4.2
+
+- [299dc152](https://git.garena.com/shopee-data/lumos-superset/commit/299dc152fbb8946f2d16bd130ee543f9e369e867) Fix the bug of downloading dashboard as csv.
+- [558e2cfa](https://git.garena.com/shopee-data/lumos-superset/commit/558e2cfa2c80a29d3f4b1ec87e58a8f27c55bbc1) Fix the bug of rendering large table in frontend.
+- [595f7c95](https://git.garena.com/shopee-data/lumos-superset/commit/595f7c9569cc24a6766e9800e82825907240a75a) Fix the bug of special character unviewable in csv when downloaded in sqllab.
+- [bd3a99d2](https://git.garena.com/shopee-data/lumos-superset/commit/bd3a99d2a453cae291dc50e8b52e7e59b7905735) Add base64 encoding for sql query sent in /superset/sqllab_viz
+- [d0ce9ba7](https://git.garena.com/shopee-data/lumos-superset/commit/d0ce9ba77b09c1fd383d2e700acd7834d96d4807) Added feature to sort `Distribution - Bar Chart` viz using the Metrics control
+- [92368beb](https://git.garena.com/shopee-data/lumos-superset/commit/92368beba425654ecce730e1b25b3276d29d3f68) Added feature to sort overall time series metric
+
 ### 2018.4.1-3
 
 - [b96b711f](https://git.garena.com/shopee-data/lumos-superset/commit/b96b711f0a60e1f50789b44c0ef08634c380affa) Fixed bug where druid cannot refresh correctly
