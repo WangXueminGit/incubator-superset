@@ -906,6 +906,7 @@ class DruidDatasource(Model, BaseDatasource):
             is_timeseries=True,
             timeseries_limit=None,
             timeseries_limit_metric=None,
+            timeseries_order_metric=None,
             row_limit=None,
             inner_from_dttm=None, inner_to_dttm=None,
             orderby=None,
