@@ -1,5 +1,10 @@
 ## Change Log by Shopee Lumos
 
+### 2018.4.2-1
+
+- [ac3340ce](https://git.garena.com/shopee-data/lumos-superset/commit/ac3340ce07646402e784d613a9ec1cf6cac4f7df) Fixed bug where druid cannot visualize timeseries
+- [24b1db3c](https://git.garena.com/shopee-data/lumos-superset/commit/24b1db3c29482c4b7739eb40ecaaca4242344b5b) Fixed bug of broken visualization of unexpected keyword
+
 ### 2018.4.2
 
 - [299dc152](https://git.garena.com/shopee-data/lumos-superset/commit/299dc152fbb8946f2d16bd130ee543f9e369e867) Fix the bug of downloading dashboard as csv.
