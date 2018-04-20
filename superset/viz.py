@@ -125,11 +125,13 @@ class BaseViz(object):
             if DTTM_ALIAS in df.columns:
                 if timestamp_format in ("epoch_s", "epoch_ms"):
                     df[DTTM_ALIAS] = pd.to_datetime(df[DTTM_ALIAS], utc=False)
+                    if self.datasource.offset:
+                        df[DTTM_ALIAS] += timedelta(hours=self.datasource.offset)
                 else:
                     df[DTTM_ALIAS] = pd.to_datetime(
                         df[DTTM_ALIAS], utc=False, format=timestamp_format)
-                if self.datasource.offset:
-                    df[DTTM_ALIAS] += timedelta(hours=self.datasource.offset)
+                    if self.datasource.offset:
+                        df[DTTM_ALIAS] = df[DTTM_ALIAS].values + np.timedelta64(hours=self.datasource.offset)
             df.replace([np.inf, -np.inf], np.nan)
 
         for hex_column in [column.column_name for column in self.datasource.columns if column.is_hex]:
