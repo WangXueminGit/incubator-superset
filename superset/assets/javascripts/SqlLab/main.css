@@ -136,9 +136,6 @@ div.Workspace {
     margin-top: -3px;
     font-weight: bold;
 }
-.Pane2 {
-    width: 0;
-}
 .running {
     background-color: lime;
     color: black;
@@ -271,7 +268,7 @@ div.tablePopover:hover {
 }
 
 .QueryTable .label {
-    margin-top: 5px;
+    display: inline-block;
 }
 
 .ResultsModal .modal-body {
@@ -298,4 +295,18 @@ a.Link {
 }
 .tooltip-inner {
     max-width: 500px;
+}
+.SouthPane {
+    margin-top: 10px;
+    position: absolute;
+    width: 100%;
+    overflow: scroll;
+}
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+    padding-bottom: 8px;
+}
+.splitPane.horizontal {
+    padding-right: 4px;
 }

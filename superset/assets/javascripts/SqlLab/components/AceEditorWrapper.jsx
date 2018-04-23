@@ -33,6 +33,7 @@ const propTypes = {
   tables: PropTypes.array,
   queryEditor: PropTypes.object.isRequired,
   allowAsync: PropTypes.bool.isRequired,
+  height: PropTypes.string,
 };
 
 const defaultProps = {
@@ -121,8 +122,7 @@ class AceEditorWrapper extends React.PureComponent {
         theme="xcode"
         onLoad={this.onEditorLoad.bind(this)}
         onBlur={this.onBlur.bind(this)}
-        minLines={12}
-        maxLines={12}
+        height={this.props.height}
         onChange={this.textChange.bind(this)}
         width="100%"
         editorProps={{ $blockScrolling: true }}
