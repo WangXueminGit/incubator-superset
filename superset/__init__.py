@@ -15,13 +15,14 @@ from flask import Flask, redirect, request
 from flask_appbuilder import SQLA, AppBuilder, IndexView
 from flask_appbuilder.baseviews import expose
 from flask_appbuilder.security.sqla.manager import SecurityManager
-from flask_appbuilder.security.views import AuthOAuthView as DefaultAuthOAuthView, UserInfoEditView
+from flask_appbuilder.security.views import UserInfoEditView
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.contrib.fixers import ProxyFix
 
 from superset.connectors.connector_registry import ConnectorRegistry
 from superset import utils, config  # noqa
+from superset.custom_authentication import CustomAuthOauthView
 from superset.users_model import MyUser
 from superset.users_view import MyUserModelView
 
@@ -106,7 +107,11 @@ for middleware in app.config.get('ADDITIONAL_MIDDLEWARE'):
 class MyIndexView(IndexView):
     @expose('/')
     def index(self):
+        return_url = request.args.get('next')
+        if return_url:
+            return redirect(return_url)
         return redirect('/superset/welcome')
+
 
 class MyUserInfoEditView(UserInfoEditView):
     def form_get(self, form):
@@ -117,12 +122,15 @@ class MyUserInfoEditView(UserInfoEditView):
             form_field = getattr(form, key)
             form_field.data = getattr(item, key)
 
-
-class AuthOAuthView(DefaultAuthOAuthView):
+class AuthOAuthView(CustomAuthOauthView):
     # Forced redirect to Google Login
     @expose('/login/')
     def auto_login(self):
+        return_url = request.args.get('next')
+        if return_url:
+            return redirect('/login/google?next=' + return_url)
         return redirect('/login/google')
+
 
 
 class CustomSecurityManager(SecurityManager):
@@ -130,6 +138,7 @@ class CustomSecurityManager(SecurityManager):
     user_model = MyUser
     useroauthmodelview = MyUserModelView
     userinfoeditview = MyUserInfoEditView
+    oauth_whitelists = {}
 
 
 appbuilder = AppBuilder(
