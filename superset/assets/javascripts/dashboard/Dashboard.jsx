@@ -127,7 +127,9 @@ export function dashboardContainer(dashboard, datasources, userid, userType) {
       // if (typeof window.callPhantom !== "function") {
       this.startPeriodicRender(0);
       // }
-      this.bindResizeToWindowResize();
+
+      // Disable window.on('resize') event
+      // this.bindResizeToWindowResize();
       this.initialReload = true;
     },
     onChange() {
