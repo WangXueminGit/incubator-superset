@@ -28,26 +28,33 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
   const format = d3.format(axisFormat || '.3s');
   const countSeriesDisplayed = data.length;
 
-  const totalStackedValues = stacked && data.length !== 0 ?
-    data[0].values.map(function (bar, iBar) {
-      const bars = data.map(function (series) {
-        return series.values[iBar];
-      });
-      return d3.sum(bars, function (d) {
-        return d.y;
-      });
-    }) : [];
+  let biggestI = -1;
+  let offset = 0;
+  // Find the largest available
+  svg.selectAll('g.nv-series').filter(
+    function (d, i) {
+      if (stacked) {
+        if (d.disabled) {
+          offset += 1;
+          return null;
+        }
+        if (i > biggestI) {
+          biggestI = i - offset;
+        }
+      }
+      return null;
+    });
+
+  if (biggestI === -1) biggestI = countSeriesDisplayed - 1;
 
   const rectsToBeLabeled = svg.selectAll('g.nv-group').filter(
     function (d, i) {
-      if (!stacked) {
-        return true;
-      }
-      return i === countSeriesDisplayed - 1;
+      return !stacked || (stacked && i === biggestI);
     }).selectAll('rect');
 
   const groupLabels = svg.select('g.nv-barsWrap').append('g')
     .attr('class', 'nv-barsWrap-value');
+
   rectsToBeLabeled.each(
     function (d, index) {
       const rectObj = d3.select(this);
@@ -58,7 +65,7 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
       const t = groupLabels.append('text')
         .attr('x', xPos) // rough position first, fine tune later
         .attr('y', yPos - 5)
-        .text(format(stacked ? totalStackedValues[index] : d.y))
+        .text(format(stacked ? d.y1 : d.y))
         .attr('transform', transformAttr)
         .attr('class', 'bar-chart-label')
         .attr('font-size', '10');
