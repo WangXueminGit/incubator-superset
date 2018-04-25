@@ -133,9 +133,11 @@ function tableVis(slice, payload) {
     'table-condensed table-hover dataTable no-footer', true)
     .attr('width', '100%');
 
+  const cols = data.columns.map(c => slice.datasource.verbose_map[c] || c);
+
   table.append('thead').append('tr')
     .selectAll('th')
-    .data(data.columns)
+    .data(cols)
     .enter()
     .append('th')
     .text(function (d) {
@@ -338,7 +340,7 @@ function tableVis(slice, payload) {
                            settings.oInit.sliceId, JSON.stringify(data))
     },
     stateLoadCallback: function(settings) {
-      if (('slice_state' in settings.oInit.slice.formData) && 
+      if (('slice_state' in settings.oInit.slice.formData) &&
         (settings.oInit.slice.formData['slice_state']!==undefined)) {
           return JSON.parse(settings.oInit.slice.formData.slice_state);
         }

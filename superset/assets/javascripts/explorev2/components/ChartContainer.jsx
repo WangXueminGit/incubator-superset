@@ -74,6 +74,7 @@ class ChartContainer extends React.PureComponent {
     return {
       viewSqlQuery: this.props.queryResponse.query,
       containerId: props.containerId,
+      datasource: props.datasource,
       selector: this.state.selector,
       formData: this.props.formData,
       container: {
@@ -306,6 +307,7 @@ function mapStateToProps(state) {
     chartStatus: state.chartStatus,
     chartUpdateEndTime: state.chartUpdateEndTime,
     chartUpdateStartTime: state.chartUpdateStartTime,
+    datasource: state.datasource,
     column_formats: state.datasource ? state.datasource.column_formats : null,
     containerId: state.slice ? `slice-container-${state.slice.slice_id}` : 'slice-container',
     formData,

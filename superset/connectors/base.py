@@ -51,7 +51,7 @@ class BaseDatasource(AuditMixinNullable, ImportMixin):
 
     @property
     def column_names(self):
-        return sorted([c.column_name for c in self.columns])
+        return sorted([(c.column_name, c.verbose_name or c.column_name) for c in self.columns])
 
     @property
     def main_dttm_col(self):
@@ -59,11 +59,11 @@ class BaseDatasource(AuditMixinNullable, ImportMixin):
 
     @property
     def groupby_column_names(self):
-        return sorted([c.column_name for c in self.columns if c.groupby])
+        return sorted([(c.column_name, c.verbose_name or c.column_name) for c in self.columns if c.groupby])
 
     @property
     def filterable_column_names(self):
-        return sorted([c.column_name for c in self.columns if c.filterable])
+        return sorted([(c.column_name, c.verbose_name or c.column_name) for c in self.columns if c.filterable])
 
     @property
     def dttm_cols(self):
@@ -99,23 +99,37 @@ class BaseDatasource(AuditMixinNullable, ImportMixin):
     @property
     def data(self):
         """Data representation of the datasource sent to the frontend"""
+
+        verbose_map = {'__timestamp': 'Time'}
+        verbose_map.update({
+            o.metric_name: o.verbose_name or o.metric_name
+            for o in self.metrics
+        })
+        verbose_map.update({
+            o.column_name: o.verbose_name or o.column_name
+            for o in self.columns
+        })
+
         order_by_choices = []
-        for s in sorted(self.column_names):
-            order_by_choices.append((json.dumps([s, True]), s + ' [asc]'))
-            order_by_choices.append((json.dumps([s, False]), s + ' [desc]'))
+        for (s, v) in sorted(self.column_names):
+            order_by_choices.append((json.dumps([s, True]), (v or s) + ' [asc]'))
+            order_by_choices.append((json.dumps([s, False]), (v or s) + ' [desc]'))
 
         d = {
-            'all_cols': utils.choicify(self.column_names),
+            'all_cols': self.column_names,
             'column_formats': self.column_formats,
             'edit_url': self.url,
             'filter_select': self.filter_select_enabled,
-            'filterable_cols': utils.choicify(self.filterable_column_names),
-            'gb_cols': utils.choicify(self.groupby_column_names),
+            'filterable_cols': self.filterable_column_names,
+            'gb_cols': self.groupby_column_names,
             'id': self.id,
             'metrics_combo': self.metrics_combo,
             'name': self.name,
             'order_by_choices': order_by_choices,
             'type': self.type,
+            'metrics': [o.data for o in self.metrics],
+            'columns': [o.data for o in self.columns],
+            'verbose_map': verbose_map,
         }
 
         return d
@@ -193,6 +207,10 @@ class BaseColumn(AuditMixinNullable, ImportMixin):
             any([t in self.type.upper() for t in self.str_types])
         )
 
+    @property
+    def data(self):
+        attrs = ('column_name', 'verbose_name', 'description', 'expression')
+        return {s: getattr(self, s) for s in attrs}
 
 class BaseMetric(AuditMixinNullable, ImportMixin):
 
@@ -224,3 +242,8 @@ class BaseMetric(AuditMixinNullable, ImportMixin):
     @property
     def perm(self):
         raise NotImplementedError()
+
+    @property
+    def data(self):
+        attrs = ('metric_name', 'verbose_name', 'description', 'expression')
+        return {s: getattr(self, s) for s in attrs}

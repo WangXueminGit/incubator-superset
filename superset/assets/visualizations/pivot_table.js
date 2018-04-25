@@ -25,8 +25,21 @@ module.exports = function(slice, payload) {
   const container = slice.container;
   const fd = slice.formData;
   const height = container.height();
+  let cols = payload.data.columns;
+  if (Array.isArray(cols[0])) {
+    cols = cols.map(col => cols[0]);
+  }
   // payload data is a string of html with a single table element
   container.html(payload.data.html);
+
+  // jQuery hack to set verbose names in headers
+  const replaceCell = function () {
+    const s = $(this)[0].textContent;
+    $(this)[0].textContent = slice.datasource.verbose_map[s] || s;
+  };
+
+  slice.container.find('thead tr th').each(replaceCell);
+
   // Example:
   // fd.columns: ["state"]
   // fd.groupby: ["name"]

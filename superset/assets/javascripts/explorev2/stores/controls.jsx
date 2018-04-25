@@ -113,7 +113,8 @@ export const controls = {
     type: 'SelectControl',
     label: 'Right Axis Metric',
     choices: [],
-    default: [],
+    default: control =>
+      control.choices && control.choices.length > 0 ? [control.choices[0][0]] : null,
     description: 'Choose a metric for right axis',
     mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
@@ -285,7 +286,8 @@ export const controls = {
   secondary_metric: {
     type: 'SelectControl',
     label: 'Color Metric',
-    default: null,
+    default: control =>
+      control.choices && control.choices.length > 0 ? [control.choices[0][0]] : null,
     description: 'A metric to use for color',
     mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
@@ -681,7 +683,8 @@ export const controls = {
   x: {
     type: 'SelectControl',
     label: 'X Axis',
-    default: null,
+    default: control =>
+      control.choices && control.choices.length > 0 ? [control.choices[0][0]] : null,
     description: 'Metric assigned to the [X] axis',
     mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
@@ -691,7 +694,8 @@ export const controls = {
   y: {
     type: 'SelectControl',
     label: 'Y Axis',
-    default: null,
+    default: control =>
+      control.choices && control.choices.length > 0 ? [control.choices[0][0]] : null,
     description: 'Metric assigned to the [Y] axis',
     mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
@@ -701,7 +705,8 @@ export const controls = {
   size: {
     type: 'SelectControl',
     label: 'Bubble Size',
-    default: null,
+    default: control =>
+      control.choices && control.choices.length > 0 ? [control.choices[0][0]] : null,
     mapStateToProps: state => ({
       choices: (state.datasource) ? state.datasource.metrics_combo : [],
     }),

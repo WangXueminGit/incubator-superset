@@ -115,6 +115,20 @@ function getMaxLabelSize(container, axisClass) {
   return Math.max(...labelDimensions);
 }
 
+function formatLabel(column, verbose_map) {
+  let label;
+  if (Array.isArray(column) && column.length) {
+    label = verbose_map[column[0]] || column[0];
+    if (column.length > 1) {
+      label += ', ';
+    }
+    label += column.slice(1).join(', ');
+  } else {
+    label = verbose_map[column] || column;
+  }
+  return label;
+}
+
 function nvd3Vis(slice, payload) {
   let chart;
   let colorKey = 'key';
@@ -123,6 +137,14 @@ function nvd3Vis(slice, payload) {
   let startTime = payload.query_obj['from_dttm'];
   let endTime = payload.query_obj['to_dttm'];
 
+  let data;
+  if (payload.data) {
+    data = payload.data.map(x => ({
+      ...x, key: formatLabel(x.key, slice.datasource.verbose_map),
+    }));
+  } else {
+    data = [];
+  }
   slice.container.html('');
   slice.clearError();
 
@@ -200,9 +222,9 @@ function nvd3Vis(slice, payload) {
   const barchartWidth = function () {
     let bars;
     if (fd.bar_stacked) {
-      bars = d3.max(payload.data, function (d) { return d.values.length; });
+      bars = d3.max(data, function (d) { return d.values.length; });
     } else {
-      bars = d3.sum(payload.data, function (d) { return d.values.length; });
+      bars = d3.sum(data, function (d) { return d.values.length; });
     }
     if (bars * minBarWidth > width) {
       return bars * minBarWidth;
@@ -291,13 +313,13 @@ function nvd3Vis(slice, payload) {
         if (fd.show_bar_value) {
           chart.margin({ top: 50 });
           setTimeout(function () {
-            addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
+            addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
           }, animationTime);
         }
 
         if (fd.show_bar_value_on_the_bar) {
           setTimeout(function () {
-            showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format, fd.hide_value_below);
+            showEachBarValue(svg, chart, data, stacked, fd.y_axis_format, fd.hide_value_below);
           }, animationTime);
         }
 
@@ -342,12 +364,12 @@ function nvd3Vis(slice, payload) {
         if (fd.show_bar_value) {
           chart.margin({ top: 50 });
           setTimeout(function () {
-            addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
+            addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
           }, animationTime);
         }
         if (fd.show_bar_value_on_the_bar) {
           setTimeout(function () {
-            showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format, fd.hide_value_below);
+            showEachBarValue(svg, chart, data, stacked, fd.y_axis_format, fd.hide_value_below);
           }, animationTime);
         }
         if (!reduceXTicks) {
@@ -370,7 +392,7 @@ function nvd3Vis(slice, payload) {
 
         if (fd.pie_label_type === 'percent') {
           let total = 0;
-          payload.data.forEach((d) => { total += d.y; });
+          data.forEach((d) => { total += d.y; });
           chart.tooltip.valueFormatter(d => `${((d / total) * 100).toFixed()}%`);
         }
 
@@ -402,8 +424,8 @@ function nvd3Vis(slice, payload) {
             `<tr><td style="color: ${p.color};">` +
               `<strong>${p[fd.entity]}</strong> (${p.group})` +
             '</td></tr>');
-          s += row(fd.x, f(p.x));
-          s += row(fd.y, f(p.y));
+          s += row((slice.datasource.verbose_map[fd.x] || fd.x), f(p.x));
+          s += row((slice.datasource.verbose_map[fd.y] || fd.y), f(p.y));
           s += row(fd.size, f(p.size));
           s += '</table>';
           return s;
@@ -472,12 +494,12 @@ function nvd3Vis(slice, payload) {
       });
     }
     if (fd.y_range_min || fd.y_range_max) {
-      let min = d3.min(payload.data, function(c) {
+      let min = d3.min(data, function(c) {
         return d3.min(c.values, function(d){
             return d.y;
         })
       });
-      let max = d3.max(payload.data, function(c) {
+      let max = d3.max(data, function(c) {
         return d3.max(c.values, function(d){
             return d.y;
         })
@@ -591,7 +613,7 @@ function nvd3Vis(slice, payload) {
 
     if (fd.x_axis_class_range) {
       const lowerBoundary = fd.x_axis_lower_bound || null;
-      const xValues = payload.data[0].values.map((value) => value.x);
+      const xValues = data[0].values.map((value) => value.x);
       if (xValues.reduce((acc, value) => isNaN(value) && isNaN(Date.parse(value)) ? acc + 1 : 0) === 0) {
         let xLabels = [];
         for (let i = 0; i < xValues.length; i++) {
@@ -627,7 +649,7 @@ function nvd3Vis(slice, payload) {
     }
 
     svg
-    .datum(payload.data)
+    .datum(data)
     .transition().duration(500)
     .attr('height', height)
     .attr('width', width)
@@ -639,64 +661,72 @@ function nvd3Vis(slice, payload) {
       .style('fill-opacity', 1);
     }
 
-    chart.dispatch.on('renderEnd', function () {
-      svg.select('.nv-scatterWrap').attr('clip-path', null);
-      svg.select('.nv-line > g').attr('clip-path', null);
-      if (fd.show_point_value) {
-        svg.selectAll('.nv-point-label').remove();
-        svg.selectAll('path.nv-point').each(function (d, i) {
-          d3.select(this.parentNode).append('text')
-              .classed('nv-point-label nv-point-label-' + i, true)
-              .attr('dy', '-.35em')
-              .attr('transform', d3.select(this).attr('transform'))
-              .attr('dx', '.2em')
-              .attr('font-size', '10')
-              .text(d3.format(fd.y_axis_format || '.1s')(d[0].y))
-              .style({stroke: 'initial'});
-        });
-      }
-      if (fd.show_bar_value) {
-        svg.select('g.nv-barsWrap-value').remove();
-        setTimeout(function () {
-          addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
-        }, animationTime);
-      }
-      if (fd.show_bar_value_on_the_bar) {
-        svg.select('g.nv-barsWrap-value-on-bar').remove();
-        setTimeout(function () {
-          showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format, fd.hide_value_below);
-        }, animationTime);
-      }
-    });
-    chart.dispatch.on('stateChange', function () {
-      svg.select('.nv-scatterWrap').attr('clip-path', null);
-      svg.select('.nv-line > g').attr('clip-path', null);
-      if (fd.show_point_value) {
-        svg.selectAll('.nv-point-label').remove();
-        svg.selectAll('path.nv-point').each(function (d, i) {
-          d3.select(this.parentNode).append('text')
-              .classed('nv-point-label nv-point-label-' + i, true)
-              .attr('dy', '-.35em')
-              .attr('transform', d3.select(this).attr('transform'))
-              .attr('dx', '.2em')
-              .attr('font-size', '10')
-              .text(d3.format(fd.y_axis_format || '.1s')(d[0].y))
-              .style({ stroke: 'initial' });
-        });
-      }
-      if (fd.show_bar_value) {
-        svg.select('g.nv-barsWrap-value').remove();
-        setTimeout(function () {
-          addTotalBarValues(svg, chart, payload.data, stacked, fd.y_axis_format);
-        }, animationTime);
-      }
-      if (fd.show_bar_value_on_the_bar) {
-        svg.select('g.nv-barsWrap-value-on-bar').remove();
-        setTimeout(function () {
-          showEachBarValue(svg, chart, payload.data, stacked, fd.y_axis_format, fd.hide_value_below);
-        }, animationTime);
-      }
-    });
+    try {
+      chart.dispatch.on('renderEnd', () => {
+        svg.select('.nv-scatterWrap').attr('clip-path', null);
+        svg.select('.nv-line > g').attr('clip-path', null);
+        if (typeof fd.show_point_value !== "undefined" && fd.show_point_value) {
+          svg.selectAll('.nv-point-label').remove();
+          svg.selectAll('path.nv-point').each(function (d, i) {
+            d3.select(this.parentNode).append('text')
+                .classed('nv-point-label nv-point-label-' + i, true)
+                .attr('dy', '-.35em')
+                .attr('transform', d3.select(this).attr('transform'))
+                .attr('dx', '.2em')
+                .attr('font-size', '10')
+                .text(d3.format(fd.y_axis_format || '.1s')(d[0].y))
+                .style({stroke: 'initial'});
+          });
+        }
+        if (typeof fd.show_bar_value !== "undefined" && fd.show_bar_value) {
+          svg.select('g.nv-barsWrap-value').remove();
+          setTimeout(function () {
+            addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
+          }, animationTime);
+        }
+        if (typeof fd.show_bar_value_on_the_bar !== "undefined" && fd.show_bar_value_on_the_bar) {
+          svg.select('g.nv-barsWrap-value-on-bar').remove();
+          setTimeout(function () {
+            showEachBarValue(svg, chart, data, stacked, fd.y_axis_format, fd.hide_value_below);
+          }, animationTime);
+        }
+      });
+    } catch (err) {
+      // pass
+    }
+    try {
+      chart.dispatch.on('stateChange', () => {
+        svg.select('.nv-scatterWrap').attr('clip-path', null);
+        svg.select('.nv-line > g').attr('clip-path', null);
+        if (typeof fd.show_point_value !== "undefined" && fd.show_point_value) {
+          svg.selectAll('.nv-point-label').remove();
+          svg.selectAll('path.nv-point').each(function (d, i) {
+            d3.select(this.parentNode).append('text')
+                .classed('nv-point-label nv-point-label-' + i, true)
+                .attr('dy', '-.35em')
+                .attr('transform', d3.select(this).attr('transform'))
+                .attr('dx', '.2em')
+                .attr('font-size', '10')
+                .text(d3.format(fd.y_axis_format || '.1s')(d[0].y))
+                .style({ stroke: 'initial' });
+          });
+        }
+        if (typeof fd.show_bar_value !== "undefined" && fd.show_bar_value) {
+          svg.select('g.nv-barsWrap-value').remove();
+          setTimeout(function () {
+            addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
+          }, animationTime);
+        }
+        if (typeof fd.show_bar_value_on_the_bar !== "undefined" && fd.show_bar_value_on_the_bar) {
+          svg.select('g.nv-barsWrap-value-on-bar').remove();
+          setTimeout(function () {
+            showEachBarValue(svg, chart, data, stacked, fd.y_axis_format, fd.hide_value_below);
+          }, animationTime);
+        }
+      });
+    } catch (err) {
+      // pass
+    }
 
     if (chart.yAxis !== undefined) {
       // Hack to adjust y axis left margin to accommodate long numbers
@@ -736,7 +766,7 @@ function nvd3Vis(slice, payload) {
 
       // render chart
       svg
-      .datum(payload.data)
+      .datum(data)
       .transition().duration(500)
       .attr('height', height)
       .attr('width', width)

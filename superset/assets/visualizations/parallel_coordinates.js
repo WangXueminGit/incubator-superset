@@ -10,21 +10,36 @@ const $ = require('jquery');
 function parallelCoordVis(slice, payload) {
   $('#code').attr('rows', '15');
   const fd = slice.formData;
-  const data = payload.data;
 
-  let cols = fd.metrics;
+  const verbose_map = slice.datasource.verbose_map;
+
+  let cols = [];
   if (fd.include_series) {
-    cols = [fd.series].concat(fd.metrics);
+    cols = [(verbose_map[fd.series] || fd.series)];
   }
 
-  const ttypes = {};
-  ttypes[fd.series] = 'string';
-  fd.metrics.forEach(function (v) {
-    ttypes[v] = 'number';
+  fd.metrics.forEach(function(element) {
+    cols.push(verbose_map[element] || element);
   });
 
+  let data = [];
+
+  payload.data.forEach(function(element) {
+    let temp_obj = {};
+    for (let key in element) {
+      temp_obj[(verbose_map[key] || verbose_map[key] || key)] = element[key];
+    }
+    data.push(temp_obj);
+  });
+
+  const ttypes = {};
+  cols.forEach(function (v) {
+    ttypes[v] = 'number';
+  });
+  ttypes[(verbose_map[fd.series] || fd.series)] = 'string';
+
   let ext = d3.extent(data, function (d) {
-    return d[fd.secondary_metric];
+    return d[(verbose_map[fd.secondary_metric] || fd.secondary_metric)];
   });
   ext = [ext[0], (ext[1] - ext[0]) / 2, ext[1]];
   const cScale = d3.scale.linear()
@@ -33,7 +48,7 @@ function parallelCoordVis(slice, payload) {
     .interpolate(d3.interpolateLab);
 
   const color = function (d) {
-    return cScale(d[fd.secondary_metric]);
+    return cScale(d[(verbose_map[fd.secondary_metric] || fd.secondary_metric)]);
   };
   const container = d3.select(slice.selector);
   container.selectAll('*').remove();
