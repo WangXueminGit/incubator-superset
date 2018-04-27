@@ -315,6 +315,8 @@ def json_iso_dttm_ser(obj):
         obj = obj.isoformat()
     elif isinstance(obj, time):
         obj = obj.isoformat()
+    elif isinstance(obj, memoryview):
+        obj = 'hidden'
     else:
         raise TypeError(
             "Unserializable object {} of type {}".format(obj, type(obj))
