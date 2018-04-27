@@ -204,7 +204,7 @@ class SqlEditorLeftBar extends React.PureComponent {
         <div className="m-t-5">
           <div className="scrollbar-container">
             <div className="scrollbar-content" style={{ height: tableMetaDataHeight }}>
-              {this.props.tables.map(table => (
+              {this.props.tables.reverse().map(table => (
                 <TableElement
                   table={table}
                   key={table.id}
