@@ -205,13 +205,16 @@ class BaseViz(object):
         for col, vals in self.get_extra_filters().items():
             if not (col and vals) or col.startswith('__'):
                 continue
-            elif col in self.datasource.filterable_column_names:
-                # Quote values with comma to avoid conflict
-                filters += [{
-                    'col': col,
-                    'op': 'in',
-                    'val': vals,
-                }]
+            else:
+                for item in self.datasource.filterable_column_names:
+                    # Quote values with comma to avoid conflict
+                    if col in item:
+
+                        filters += [{
+                            'col': col,
+                            'op': 'in',
+                            'val': vals,
+                        }]
         d = {
             'granularity': granularity,
             'from_dttm': from_dttm,
