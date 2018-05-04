@@ -209,7 +209,7 @@ class BaseColumn(AuditMixinNullable, ImportMixin):
 
     @property
     def data(self):
-        attrs = ('column_name', 'verbose_name', 'description', 'expression')
+        attrs = ('column_name', 'verbose_name', 'description')
         return {s: getattr(self, s) for s in attrs}
 
 class BaseMetric(AuditMixinNullable, ImportMixin):
@@ -245,5 +245,5 @@ class BaseMetric(AuditMixinNullable, ImportMixin):
 
     @property
     def data(self):
-        attrs = ('metric_name', 'verbose_name', 'description', 'expression')
+        attrs = ('metric_name', 'verbose_name', 'description')
         return {s: getattr(self, s) for s in attrs}
