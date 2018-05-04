@@ -1,5 +1,22 @@
 ## Change Log by Shopee Lumos
 
+### 2018.5.1
+
+- [27560add](https://git.garena.com/shopee-data/lumos-superset/commit/27560adde30e9e6212ee31c7614ce417c9ac5eb0) Added Feature that enable verbose name for visualizations and side bar
+- [e62cdbbe](https://git.garena.com/shopee-data/lumos-superset/commit/e62cdbbe1244b5ca8469643947833b7fcdbc4b6c) Added feature to redirect to respective url with multiple logins
+- [ac6936b5](https://git.garena.com/shopee-data/lumos-superset/commit/ac6936b592879f9c048ab33f4e0d9369c285952c) Added checks for table and table's  edit and delete - Edit/Delete Table - User cannot access tables they do not owned - Able to delete multiple metric names
+- [21043118](https://git.garena.com/shopee-data/lumos-superset/commit/21043118216433f386daf2cda2f44f458aa17577) bugfix for unable to edit or delete table
+- [64e633e8](https://git.garena.com/shopee-data/lumos-superset/commit/64e633e867fc8409222a8f6c6353d14c115e2a62) Bugfix for Error produced after saving column config at edit table page
+- [ca54dcd0](https://git.garena.com/shopee-data/lumos-superset/commit/ca54dcd0437c59cafdc2f0a5f16ede861644daaa) Fixed bug where total disappear when using legend display.
+- [82055436](https://git.garena.com/shopee-data/lumos-superset/commit/82055436acd66a316b71e01f27835fb411163de2) Fixed bug for the wrong order of y axis on big number with trendline
+- [cdf8d0cc](https://git.garena.com/shopee-data/lumos-superset/commit/cdf8d0cc3e61aa98e738ed6dffa99bd110e981ec) Bugfix for dbs table cannot be queried in main db
+- [ef60e203](https://git.garena.com/shopee-data/lumos-superset/commit/ef60e203c10c2bd285c7e8f44791f852b03e685f) Added viz type table and pivot table to sqllab visualization.
+- [46cfe4e7](https://git.garena.com/shopee-data/lumos-superset/commit/46cfe4e75daf5765f769be833a1192fc116fdc3a) Added feature to sort bars by x axis in descending order.
+- [89cf634e](https://git.garena.com/shopee-data/lumos-superset/commit/89cf634ed01d4cbe8de84c67a27ac2c262970e34) Add the feature to le
+t user close tab more easily.
+- [051a60a3](https://git.garena.com/shopee-data/lumos-superset/commit/051a60a3e58ebb3aed37cd50f8b2196539d2a4fc) Fixed bug where 'Show Values on Top' overlaps Legend in barcharts
+- [67d3f790](https://git.garena.com/shopee-data/lumos-superset/commit/67d3f79075e6030c4dd2da7b8b371ab5bf029aa3) Disable dashboard refresh when browser window resizes.
+
 ### 2018.4.2-1
 
 - [ac3340ce](https://git.garena.com/shopee-data/lumos-superset/commit/ac3340ce07646402e784d613a9ec1cf6cac4f7df) Fixed bug where druid cannot visualize timeseries
