@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2018.5.1-1
+
+- [a1f299a3](https://git.garena.com/shopee-data/lumos-superset/commit/a1f299a3637cc59995149876cbe5c74ec583cf5b) Hotfix expression not found in druid metric
+
 ### 2018.5.1
 
 - [27560add](https://git.garena.com/shopee-data/lumos-superset/commit/27560adde30e9e6212ee31c7614ce417c9ac5eb0) Added Feature that enable verbose name for visualizations and side bar
