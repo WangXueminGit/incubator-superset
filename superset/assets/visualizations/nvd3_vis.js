@@ -31,25 +31,41 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
   let biggestI = -1;
   let offset = 0;
   // Find the largest available
-  svg.selectAll('g.nv-series').filter(
-    function (d, i) {
-      if (stacked) {
-        if (d.disabled) {
-          offset += 1;
-          return null;
+  if (chart._options.showControls) {
+    svg.selectAll('g.nv-series').filter(
+      function (d, i) {
+        if (chart.stacked() && i < countSeriesDisplayed) {
+          if (d.disabled) {
+            offset += 1;
+            return null;
+          }
+          if (i > biggestI) {
+            biggestI = i - offset;
+          }
         }
-        if (i > biggestI) {
-          biggestI = i - offset;
+        return null;
+      });
+  } else {
+    svg.selectAll('g.nv-series').filter(
+      function (d, i) {
+        if (stacked) {
+          if (d.disabled) {
+            offset += 1;
+            return null;
+          }
+          if (i > biggestI) {
+            biggestI = i - offset;
+          }
         }
-      }
-      return null;
-    });
+        return null;
+      });
+  }
 
   if (biggestI === -1) biggestI = countSeriesDisplayed - 1;
 
   const rectsToBeLabeled = svg.selectAll('g.nv-group').filter(
     function (d, i) {
-      return !stacked || (stacked && i === biggestI);
+      return !chart.stacked() || (chart.stacked() && i === biggestI);
     }).selectAll('rect');
 
   const groupLabels = svg.select('g.nv-barsWrap').append('g')
@@ -311,7 +327,6 @@ function nvd3Vis(slice, payload) {
         chart.stacked(stacked);
 
         if (fd.show_bar_value) {
-          chart.margin({ top: 50 });
           setTimeout(function () {
             addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
           }, animationTime);
@@ -362,7 +377,6 @@ function nvd3Vis(slice, payload) {
           });
         }
         if (fd.show_bar_value) {
-          chart.margin({ top: 50 });
           setTimeout(function () {
             addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
           }, animationTime);
@@ -661,6 +675,8 @@ function nvd3Vis(slice, payload) {
       .style('fill-opacity', 1);
     }
 
+    let firstUpdate = true;
+
     try {
       chart.dispatch.on('renderEnd', () => {
         svg.select('.nv-scatterWrap').attr('clip-path', null);
@@ -679,10 +695,17 @@ function nvd3Vis(slice, payload) {
           });
         }
         if (typeof fd.show_bar_value !== "undefined" && fd.show_bar_value) {
+          const offsetTop = chart.legend._options.height
+                            + chart.legend._options.margin.top + 10;
+          chart.margin({ top: offsetTop });
           svg.select('g.nv-barsWrap-value').remove();
           setTimeout(function () {
             addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
           }, animationTime);
+          if (firstUpdate) {
+            chart.update();
+            firstUpdate = false;
+          }
         }
         if (typeof fd.show_bar_value_on_the_bar !== "undefined" && fd.show_bar_value_on_the_bar) {
           svg.select('g.nv-barsWrap-value-on-bar').remove();
@@ -712,6 +735,9 @@ function nvd3Vis(slice, payload) {
           });
         }
         if (typeof fd.show_bar_value !== "undefined" && fd.show_bar_value) {
+          const offsetTop = chart.legend._options.height
+                            + chart.legend._options.margin.top + 10;
+          chart.margin({ top: offsetTop });
           svg.select('g.nv-barsWrap-value').remove();
           setTimeout(function () {
             addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
