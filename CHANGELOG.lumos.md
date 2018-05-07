@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2018.5.1-2
+
+- [f222453e](https://git.garena.com/shopee-data/lumos-superset/commit/f222453e9c0cb50abdce93c61eee7b99123c2116) Hotfix filterbox unable to query correctly.
+
 ### 2018.5.1-1
 
 - [a1f299a3](https://git.garena.com/shopee-data/lumos-superset/commit/a1f299a3637cc59995149876cbe5c74ec583cf5b) Hotfix expression not found in druid metric
