@@ -108,7 +108,8 @@ const showEachBarValue = function (svg, chart, data, stacked, axisFormat, min) {
       const t = groupLabels.append('text')
         .attr('x', xPos) // rough position first, fine tune later
         .attr('y', yPos + 15)
-        .text((min !== '' && d.y < parseFloat(min)) ? null : format(d.y))
+        .text(((min !== '' && d.y < parseFloat(min)) || d.y == null || d.y == 0)
+         ? null : format(d.y))
         .attr('transform', transformAttr)
         .attr('class', 'bar-chart-label')
         .attr('font-size', '13');
