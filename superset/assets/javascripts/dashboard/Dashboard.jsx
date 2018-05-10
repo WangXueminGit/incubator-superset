@@ -194,6 +194,9 @@ export function dashboardContainer(dashboard, datasources, userid, userType) {
       }
     },
     effectiveExtraFilters(sliceId, datasourceId) {
+      if (this.getSlice(sliceId).formData.viz_type === 'filter_box') {
+        return [];
+      }
       const f = [];
       const immuneSlices = this.metadata.filter_immune_slices || [];
       if (sliceId && immuneSlices.includes(sliceId)) {

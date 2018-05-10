@@ -93,6 +93,7 @@ class SaveModal extends React.PureComponent {
       expanded_slices: expandedSlices,
       refreshInterval: refreshInterval,
       duplicate_slices: this.state.duplicateSlices,
+      default_filters: dashboard.readFilters(),
     };
     let url = null;
     if (saveType === 'overwrite') {
