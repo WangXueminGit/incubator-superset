@@ -813,8 +813,9 @@ class Log(Model):
             d.update(kwargs)
             slice_id = d.get('slice_id', 0)
             try:
-                slice_id = int(slice_id) if slice_id else 0
-            except ValueError:
+                slice_id = int(
+                    slice_id or json.loads(d.get('form_data')).get('slice_id'))
+            except (ValueError, TypeError):
                 slice_id = 0
             params = ""
             try:
