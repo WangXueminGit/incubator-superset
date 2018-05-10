@@ -9,6 +9,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from flask import escape, Markup
 from flask_appbuilder.models.mixins import AuditMixin
 from flask_appbuilder.models.decorators import renders
+from flask_appbuilder.security.sqla.models import ViewMenu
 from superset.utils import QueryStatus
 
 
@@ -124,4 +125,10 @@ def set_perm(mapper, connection, target):  # noqa
             link_table.update()
             .where(link_table.c.id == target.id)
             .values(perm=target.get_perm())
+        )
+        link_table = ViewMenu.__table__
+        connection.execute(
+            link_table.update()
+            .where(link_table.c.name == target.perm)
+            .values(name=target.get_perm())
         )
