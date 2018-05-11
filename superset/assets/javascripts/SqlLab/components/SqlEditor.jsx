@@ -202,6 +202,8 @@ class SqlEditor extends React.PureComponent {
   render() {
     const height = this.sqlEditorHeight();
     const defaultNorthHeight = this.props.queryEditor.height || 200;
+    const width = window.innerWidth;
+    const defaultLeftBarWidth = width * 0.25 || 300;
     return (
       <div
         className="SqlEditor"
@@ -210,10 +212,17 @@ class SqlEditor extends React.PureComponent {
         }}
       >
         <Row>
+          <SplitPane
+              split="vertical"
+              defaultSize={defaultLeftBarWidth}
+              minSize={300}
+              maxSize={width-300}
+            >
           <Collapse
             in={!this.props.hideLeftBar}
           >
-            <Col md={3}>
+            <Col md={3} style={{width: '100%'}}
+            >
               <SqlEditorLeftBar
                 height={height}
                 queryEditor={this.props.queryEditor}
@@ -224,7 +233,7 @@ class SqlEditor extends React.PureComponent {
           </Collapse>
           <Col
             md={this.props.hideLeftBar ? 12 : 9}
-            style={{ height: this.state.height }}
+            style={{ height: this.state.height, width: '100%'}}
           >
             <SplitPane
               split="horizontal"
@@ -233,6 +242,7 @@ class SqlEditor extends React.PureComponent {
               maxSize={height-100}
               onChange={this.onResize}
               onDragFinished={this.onResize}
+              style={{position: 'relative'}}
             >
               <div ref="ace" style={{ width: '100%' }}>
                 <div>
@@ -259,6 +269,7 @@ class SqlEditor extends React.PureComponent {
               </div>
             </SplitPane>
           </Col>
+          </SplitPane>
         </Row>
       </div>
     );
