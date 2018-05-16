@@ -758,7 +758,10 @@ function nvd3Vis(slice, payload) {
     if (chart.yAxis !== undefined) {
       // Hack to adjust y axis left margin to accommodate long numbers
       const marginPad = isExplore ? width * 0.01 : width * 0.03;
-      const maxYAxisLabelWidth = getMaxLabelSize(slice.container, 'nv-y');
+      let maxYAxisLabelWidth = getMaxLabelSize(slice.container, 'nv-y');
+      if (maxYAxisLabelWidth < 25) {
+        maxYAxisLabelWidth = 25;
+      }
       const maxXAxisLabelHeight = getMaxLabelSize(slice.container, 'nv-x');
       chart.margin({ left: maxYAxisLabelWidth + marginPad });
       if (fd.y_axis_label && fd.y_axis_label !== '') {
