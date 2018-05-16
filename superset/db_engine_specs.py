@@ -500,6 +500,13 @@ class PrestoEngineSpec(BaseEngineSpec):
                 error_dict['errorLocation'],
                 error_dict['message']
             )
+        if (
+                type(e).__name__ == 'DatabaseError' and
+                hasattr(e, 'args') and
+                len(e.args) > 0
+        ):
+            error_dict = e.args[0]
+            return error_dict.get('message')
         return utils.error_msg_from_exception(e)
 
     @classmethod
