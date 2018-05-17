@@ -1,5 +1,17 @@
 ## Change Log by Shopee Lumos
 
+### 2018.5.2
+
+- [eceb64cf](https://git.garena.com/shopee-data/lumos-superset/commit/eceb64cf10f995bb715f7b9a91feb025d89584cd) Implement the vertical split line in SqlLab in order to let user see full name of table.
+- [51014216](https://git.garena.com/shopee-data/lumos-superset/commit/51014216140cb07c001d52cd4e84ed7d96f52548) Implement the feature of making sqllab resizable.
+- [b15f0bc1](https://git.garena.com/shopee-data/lumos-superset/commit/b15f0bc1e5005215e8be2ed7f6e9a9d27e154180) Implement the feature of saving filter box value when saving dashboard.
+- [01d0f514](https://git.garena.com/shopee-data/lumos-superset/commit/01d0f5141ec858e8295256ec4402c577456757e4) Fix the bug of showing '0' on bar chart.
+- [3c14138a](https://git.garena.com/shopee-data/lumos-superset/commit/3c14138a865d2147bcc2a1171c1c1d21fcd27bf6) Fixed barchart total value rendering and overlapping problem for multiple lines legend
+- [27e81f9d](https://git.garena.com/shopee-data/lumos-superset/commit/27e81f9d615e00b6a9f6b42e93054e40cb2d70b7) Feature add instead of appending new tables selected to the bottom to top instead
+- [c059fd2a](https://git.garena.com/shopee-data/lumos-superset/commit/c059fd2a669cd6cd83cbd20fa55ccf8270c46693) Fixed bug where non-admin cannot access table after changing table name
+- [71f1520d](https://git.garena.com/shopee-data/lumos-superset/commit/71f1520d606db30807ba94344648c905a7666d38) Fixed slice_id not being recorded
+- [9934b952](https://git.garena.com/shopee-data/lumos-superset/commit/9934b9524c701097f8d1198dd97a37b499010f06) bugfix for hotkey not rendering view results
+
 ### 2018.5.1-2
 
 - [f222453e](https://git.garena.com/shopee-data/lumos-superset/commit/f222453e9c0cb50abdce93c61eee7b99123c2116) Hotfix filterbox unable to query correctly.
