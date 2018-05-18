@@ -126,9 +126,10 @@ def set_perm(mapper, connection, target):  # noqa
             .where(link_table.c.id == target.id)
             .values(perm=target.get_perm())
         )
-        link_table = ViewMenu.__table__
-        connection.execute(
-            link_table.update()
-            .where(link_table.c.name == target.perm)
-            .values(name=target.get_perm())
-        )
+        if mapper.class_manager.class_.type != 'druid':
+            link_table = ViewMenu.__table__
+            connection.execute(
+                link_table.update()
+                .where(link_table.c.name == target.perm)
+                .values(name=target.get_perm())
+            )
