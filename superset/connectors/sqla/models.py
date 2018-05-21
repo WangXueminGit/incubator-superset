@@ -579,7 +579,7 @@ class SqlaTable(Model, BaseDatasource):
 
     def query(self, query_obj, force=False):
         qry_start_dttm = datetime.now()
-        engine = self.database.get_sqla_engine()
+        engine = self.database.get_sqla_engine(schema=self.schema)
         qry = self.get_sqla_query(**query_obj)
         sql = self.get_query_str(query_obj)
         status = QueryStatus.SUCCESS
