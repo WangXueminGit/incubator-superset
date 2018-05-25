@@ -21,6 +21,7 @@ const tooltipTitleMap = {
 export default function ColumnElement(props) {
   const col = props.column;
   let name = col.name;
+  let type = col.type !== '' ? col.type : 'OBJECT';
   let icons;
   if (col.keys && col.keys.length > 0) {
     name = <strong>{col.name}</strong>;
@@ -49,7 +50,7 @@ export default function ColumnElement(props) {
         {name}{icons}
       </div>
       <div className="pull-right text-muted">
-        <small> {col.type}</small>
+        <small>{type}</small>
       </div>
     </div>);
 }

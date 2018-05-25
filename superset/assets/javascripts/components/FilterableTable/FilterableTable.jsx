@@ -36,9 +36,36 @@ export default class FilterableTable extends PureComponent {
     this.rowClassName = this.rowClassName.bind(this);
     this.sort = this.sort.bind(this);
 
+    this.orderedColumnKeysWithLabel = props.orderedColumnKeys.map(
+      (key) => {
+        if (key.type.startsWith('row')) {
+          let sublabelWithStyle = (
+            <span
+              style={{
+                fontStyle: 'italic',
+                fontWeight: 'lighter',
+              }}>{' ' + key.type.slice(key.type.indexOf('('))}
+            </span>
+          );
+          key.label = (
+            <span>
+              <span>
+                {key.name}
+              </span>
+              {sublabelWithStyle}
+            </span>
+          );
+          return key;
+        } else {
+          key.label = key.name;
+          return key;
+        }
+      }
+    )
+
     this.widthsForColumnsByKey = this.getWidthsForColumns();
-    this.totalTableWidth = props.orderedColumnKeys
-      .map(key => this.widthsForColumnsByKey[key])
+    this.totalTableWidth = this.orderedColumnKeysWithLabel
+      .map(key => this.widthsForColumnsByKey[key.name])
       .reduce((curr, next) => curr + next);
 
     this.state = {
@@ -59,12 +86,14 @@ export default class FilterableTable extends PureComponent {
   getWidthsForColumns() {
     const PADDING = 40; // accounts for cell padding and width of sorting icon
     const widthsByColumnKey = {};
-    this.props.orderedColumnKeys.forEach((key) => {
+    this.orderedColumnKeysWithLabel.forEach((key) => {
       const colWidths = this.list
-        .map(d => getTextWidth(d[key]) + PADDING) // get width for each value for a key
-        .push(getTextWidth(key) + PADDING); // add width of column key to end of list
+        .map(d => getTextWidth(d[key.name]) + PADDING) // get width for each value for a key
+        .push((key.type.startsWith('row')) ?
+            getTextWidth(key.name + ' ' + key.type.slice(key.type.indexOf('('))) + PADDING :
+            getTextWidth(key.label) + PADDING); // add width of column key to end of list
       // set max width as value for key
-      widthsByColumnKey[key] = Math.max(...colWidths);
+      widthsByColumnKey[key.name] = Math.max(...colWidths);
     });
     return widthsByColumnKey;
   }
@@ -132,10 +161,10 @@ export default class FilterableTable extends PureComponent {
       filterText,
       headerHeight,
       height,
-      orderedColumnKeys,
       overscanRowCount,
       rowHeight,
     } = this.props;
+    const orderedColumnKeysWithLabel = this.orderedColumnKeysWithLabel
 
     let sortedAndFilteredList = this.list;
     // filter list
@@ -172,13 +201,13 @@ export default class FilterableTable extends PureComponent {
             sortDirection={sortDirection}
             width={this.totalTableWidth}
           >
-            {orderedColumnKeys.map(columnKey => (
+            {orderedColumnKeysWithLabel.map(columnKey => (
               <Column
-                dataKey={columnKey}
+                dataKey={columnKey.name}
                 disableSort={false}
                 headerRenderer={this.headerRenderer}
-                width={this.widthsForColumnsByKey[columnKey]}
-                label={columnKey}
+                width={this.widthsForColumnsByKey[columnKey.name]}
+                label={columnKey.label}
                 key={columnKey}
               />
             ))}
