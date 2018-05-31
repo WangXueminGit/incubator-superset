@@ -1,5 +1,14 @@
 ## Change Log by Shopee Lumos
 
+### 2018.5.3
+
+- [aea70459](https://git.garena.com/shopee-data/lumos-superset/commit/aea70459244104006d29fc2a97166db100c75c54) Implement the feature of showing details of column type `dictionary` when users do query in sqllab.
+- [8aba8171](https://git.garena.com/shopee-data/lumos-superset/commit/8aba8171fb50b36a3b672f6f82be8b6da281acd1) Optimize presto SQL Lab performance
+- [0f3f0b41](https://git.garena.com/shopee-data/lumos-superset/commit/0f3f0b41fb20a16e4ae0375147f9304d118bbdbd) Fix bug of query with schema can not visualized in sql lab for presto.
+- [5e4fc263](https://git.garena.com/shopee-data/lumos-superset/commit/5e4fc263dcf63a9d030c83fc80f3e76380c03538) Fix the bug of showing some credential information to user in the error information when they query presto db in sqllab.
+- [356880e4](https://git.garena.com/shopee-data/lumos-superset/commit/356880e4bc21ae3bf66236d49e85549683be1494) Fix the bug of not showing y axis label in some situations.
+- [3a7a5c5e](https://git.garena.com/shopee-data/lumos-superset/commit/3a7a5c5e193a6d1af90560423ec544840a825fb9) Hotfix druid refresh metadata throwing error table name already exists
+
 ### 2018.5.2
 
 - [eceb64cf](https://git.garena.com/shopee-data/lumos-superset/commit/eceb64cf10f995bb715f7b9a91feb025d89584cd) Implement the vertical split line in SqlLab in order to let user see full name of table.
