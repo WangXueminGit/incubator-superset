@@ -1,5 +1,9 @@
 ## Change Log by Shopee Lumos
 
+### 2018.5.3-1
+
+- [0c872f6c](https://git.garena.com/shopee-data/lumos-superset/commit/0c872f6c35d59a447217f40b21243b3d57b523d4) Hotfix of making sqllab works for null type column
+
 ### 2018.5.3
 
 - [aea70459](https://git.garena.com/shopee-data/lumos-superset/commit/aea70459244104006d29fc2a97166db100c75c54) Implement the feature of showing details of column type `dictionary` when users do query in sqllab.
