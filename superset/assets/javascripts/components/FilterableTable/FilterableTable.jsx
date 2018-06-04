@@ -38,7 +38,7 @@ export default class FilterableTable extends PureComponent {
 
     this.orderedColumnKeysWithLabel = props.orderedColumnKeys.map(
       (key) => {
-        if (key.type.startsWith('row')) {
+        if (key.type !== null && key.type.startsWith('row')) {
           let sublabelWithStyle = (
             <span
               style={{
@@ -89,7 +89,7 @@ export default class FilterableTable extends PureComponent {
     this.orderedColumnKeysWithLabel.forEach((key) => {
       const colWidths = this.list
         .map(d => getTextWidth(d[key.name]) + PADDING) // get width for each value for a key
-        .push((key.type.startsWith('row')) ?
+        .push((key.type !== null && key.type.startsWith('row')) ?
             getTextWidth(key.name + ' ' + key.type.slice(key.type.indexOf('('))) + PADDING :
             getTextWidth(key.label) + PADDING); // add width of column key to end of list
       // set max width as value for key
