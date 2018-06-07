@@ -408,6 +408,7 @@ class SliceModelView(SupersetModelView, DeleteMixin):
      # noqa
     datamodel = SQLAInterface(models.Slice)
     can_add = False
+    list_title = __("List Charts")
     label_columns = {
         'datasource_link': 'Datasource',
     }
@@ -429,7 +430,7 @@ class SliceModelView(SupersetModelView, DeleteMixin):
             "object is exposed here for reference and for power users who may "
             "want to alter specific parameters."),
         'cache_timeout': _(
-            "Duration (in seconds) of the caching timeout for this slice."
+            "Duration (in seconds) of the caching timeout for this chart."
         ),
     }
     base_filters = [['id', SliceFilter, lambda: []]]
@@ -442,7 +443,7 @@ class SliceModelView(SupersetModelView, DeleteMixin):
         'modified': _("Last Modified"),
         'owners': _("Owners"),
         'params': _("Parameters"),
-        'slice_link': _("Slice"),
+        'slice_link': _("Chart"),
         'slice_name': _("Name"),
         'table': _("Table"),
         'viz_type': _("Visualization Type"),
@@ -472,19 +473,19 @@ class SliceModelView(SupersetModelView, DeleteMixin):
 
 appbuilder.add_link(
     "New Slice",
-    label=__("New Slice"),
+    label=__("New Chart"),
     href='/slicemodelview/add',
     category='Slices',
-    category_label=__("Slices"),
+    category_label=__("Charts"),
     category_icon='fa-bar-chart',
     icon="fa-bar-chart")
 
 appbuilder.add_view(
     SliceModelView,
     "Browse Slices",
-    label=__("Browse Slices"),
+    label=__("Browse Charts"),
     category='Slices',
-    category_label=__("Slices"),
+    category_label=__("Charts"),
     category_icon='fa-bar-chart',
     icon="fa-search")
 
@@ -494,7 +495,7 @@ class SliceAsync(SliceModelView):  # noqa
         'creator', 'modified', 'icons']
     label_columns = {
         'icons': ' ',
-        'slice_link': _('Slice'),
+        'slice_link': _('Chart'),
     }
 
 appbuilder.add_view_no_menu(SliceAsync)
@@ -539,7 +540,7 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
         'dashboard_link': _("Dashboard"),
         'dashboard_title': _("Title"),
         'slug': _("Slug"),
-        'slices': _("Slices"),
+        'slices': _("Charts"),
         'owners': _("Owners"),
         'creator': _("Creator"),
         'modified': _("Modified"),
@@ -1463,7 +1464,7 @@ class Superset(BaseSupersetView):
                 .one()
             )
             flash(
-                "Slice [{}] was added to dashboard [{}]".format(
+                "Chart [{}] was added to dashboard [{}]".format(
                     slc.slice_name,
                     dash.dashboard_title),
                 "info")
@@ -1493,7 +1494,7 @@ class Superset(BaseSupersetView):
 
     def save_slice(self, slc):
         session = db.session()
-        msg = "Slice [{}] has been saved".format(slc.slice_name)
+        msg = "Chart [{}] has been saved".format(slc.slice_name)
         session.add(slc)
         session.commit()
         flash(msg, "info")
@@ -1502,7 +1503,7 @@ class Superset(BaseSupersetView):
         session = db.session()
         session.merge(slc)
         session.commit()
-        msg = "Slice [{}] has been overwritten".format(slc.slice_name)
+        msg = "Chart [{}] has been overwritten".format(slc.slice_name)
         flash(msg, "info")
 
     @api
@@ -1691,7 +1692,7 @@ class Superset(BaseSupersetView):
         session.merge(dash)
         session.commit()
         session.close()
-        return "SLICES ADDED"
+        return "CHARTS ADDED"
 
     @api
     @has_access_api
@@ -1940,7 +1941,7 @@ class Superset(BaseSupersetView):
             slices = session.query(models.Slice).filter_by(id=slice_id).all()
             if not slices:
                 return json_error_response(__(
-                    "Slice %(id)s not found", id=slice_id), status=404)
+                    "Chart %(id)s not found", id=slice_id), status=404)
         elif table_name and db_name:
             SqlaTable = ConnectorRegistry.sources['table']
             table = (

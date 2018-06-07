@@ -50,7 +50,7 @@ export default class AddSliceContainer extends React.PureComponent {
   render() {
     return (
       <div className="container">
-        <Panel header={<h3>{'Create a new slice'}</h3>}>
+        <Panel header={<h3>{'Create a new chart'}</h3>}>
           <Grid>
             <Row>
               <Col xs={12} sm={6}>

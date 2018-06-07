@@ -30,7 +30,7 @@ export default class Favorites extends React.PureComponent {
         className="table table-condensed"
         columns={['slice', 'creator', 'favorited']}
         mutator={mutator}
-        noDataText="No favorite slices yet, go click on stars!"
+        noDataText="No favorite charts yet, go click on stars!"
         sortable
       />
     );

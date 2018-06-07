@@ -1337,9 +1337,9 @@ export const controls = {
 
   slice_id: {
     type: 'HiddenControl',
-    label: 'Slice ID',
+    label: 'Chart ID',
     hidden: true,
-    description: 'The id of the active slice',
+    description: 'The id of the active chart',
   },
 
   cache_timeout: {
@@ -1378,9 +1378,9 @@ export const controls = {
 
   slice_state: {
     type: 'HiddenControl',
-    label: 'Save slice state across browsers',
+    label: 'Save chart state across browsers',
     hidden: true,
-    description: 'Keep slice state when take screenshot',
+    description: 'Keep chart state when take screenshot',
   },
 };
 export default controls;

@@ -29,7 +29,7 @@ class CreatedContent extends React.PureComponent {
         className="table table-condensed"
         columns={['slice', 'favorited']}
         mutator={mutator}
-        noDataText="No slices"
+        noDataText="No charts"
         sortable
       />
     );
@@ -57,7 +57,7 @@ class CreatedContent extends React.PureComponent {
         <h3>Dashboards</h3>
         {this.renderDashboardTable()}
         <hr />
-        <h3>Slices</h3>
+        <h3>Charts</h3>
         {this.renderSliceTable()}
       </div>
     );

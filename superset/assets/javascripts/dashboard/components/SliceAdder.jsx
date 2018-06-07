@@ -167,11 +167,11 @@ class SliceAdder extends React.Component {
     return (
       <ModalTrigger
         triggerNode={this.props.triggerNode}
-        tooltip="Add a new slice to the dashboard"
+        tooltip="Add a new chart to the dashboard"
         isButton
         modalBody={modalContent}
         bsSize="large"
-        modalTitle="Add Slices to Dashboard"
+        modalTitle="Add Charts to Dashboard"
       />
     );
   }

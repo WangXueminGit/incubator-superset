@@ -69,7 +69,7 @@ class SaveModal extends React.Component {
     if (sliceParams.action === 'saveas') {
       sliceName = this.state.newSliceName;
       if (sliceName === '') {
-        this.setState({ alert: 'Please enter a slice name' });
+        this.setState({ alert: 'Please enter a chart name' });
         return;
       }
       sliceParams.slice_name = sliceName;

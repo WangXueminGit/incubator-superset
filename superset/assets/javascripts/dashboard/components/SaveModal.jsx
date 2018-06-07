@@ -147,7 +147,7 @@ class SaveModal extends React.PureComponent {
                 checked={this.state.duplicateSlices}
                 onChange={this.toggleDuplicateSlices.bind(this)}
               />
-              <span className="m-l-5">also copy (duplicate) slices. (Note: copied slices will link to the original data sources.)</span>
+              <span className="m-l-5">also copy (duplicate) charts. (Note: copied charts will link to the original data sources.)</span>
             </div>
           </FormGroup>
         }

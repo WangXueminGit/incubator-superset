@@ -153,7 +153,7 @@ def load_energy():
 
 
 def load_world_bank_health_n_pop():
-    """Loads the world bank health dataset, slices and a dashboard"""
+    """Loads the world bank health dataset, charts and a dashboard"""
     tbl_name = 'wb_health_population'
     with gzip.open(os.path.join(DATA_FOLDER, 'countries.json.gz')) as f:
         pdf = pd.read_json(f)
@@ -861,7 +861,7 @@ def load_unicode_test_data():
         "limit": "100",
     }
 
-    print("Creating a slice")
+    print("Creating a chart")
     slc = Slice(
         slice_name="Unicode Cloud",
         viz_type='word_cloud',
@@ -1064,7 +1064,7 @@ def load_multiformat_time_series_data():
     obj.fetch_metadata()
     tbl = obj
 
-    print("Creating some slices")
+    print("Creating some charts")
     for i, col in enumerate(tbl.columns):
         slice_data = {
             "metric": 'count',

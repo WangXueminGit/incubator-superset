@@ -220,13 +220,13 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
     base_order = ('changed_on', 'desc')
     description_columns = {
         'slices': _(
-            "The list of slices associated with this table. By "
+            "The list of charts associated with this table. By "
             "altering this datasource, you may change how these associated "
-            "slices behave. "
-            "Also note that slices need to point to a datasource, so "
-            "this form will fail at saving if removing slices from a "
-            "datasource. If you want to change the datasource for a slice, "
-            "overwrite the slice from the 'explore view'"),
+            "charts behave. "
+            "Also note that charts need to point to a datasource, so "
+            "this form will fail at saving if removing charts from a "
+            "datasource. If you want to change the datasource for a chart, "
+            "overwrite the chart from the 'explore view'"),
         'offset': _("Timezone offset (in hours) for this datasource"),
         'table_name': utils.markdown(
             "For `admin`, you can add existing tables in the datasource. "
@@ -257,7 +257,7 @@ class TableModelView(SupersetModelView, DeleteMixin):  # noqa
     }
     base_filters = [['id', DatasourceFilter, lambda: []]]
     label_columns = {
-        'slices': _("Associated Slices"),
+        'slices': _("Associated Charts"),
         'link': _("Table"),
         'changed_by_': _("Changed By"),
         'database': _("Database"),
